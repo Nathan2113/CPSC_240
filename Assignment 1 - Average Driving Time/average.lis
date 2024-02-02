@@ -1,0 +1,440 @@
+     1                                  ; REMEMBER TO CHANGE COMMENTS
+     2                                  
+     3                                  
+     4                                  
+     5                                  
+     6                                  
+     7                                  ;****************************************************************************************************************************
+     8                                  ;Program name: "Begin Assembly".  This program serves as a model for new programmers of X86 programming language.  This     *
+     9                                  ;shows the standard layout of a function written in X86 assembly.  The program is a live example of how to complie,         *
+    10                                  ;assembly, link, and execute a program containing source code written in X86.  Copyright (C) 2024  Floyd Holliday.          *
+    11                                  ;                                                                                                                           *
+    12                                  ;This program is free software: you can redistribute it and/or modify it under the terms of the GNU General Public License  *
+    13                                  ;version 3 as published by the Free Software Foundation.  This program is distributed in the hope that it will be useful,   *
+    14                                  ;but WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See   *
+    15                                  ;the GNU General Public License for more details A copy of the GNU General Public License v3 is available here:             *
+    16                                  ;<https://www.gnu.org/licenses/>.                                                                                           *
+    17                                  ;****************************************************************************************************************************
+    18                                  
+    19                                  
+    20                                  
+    21                                  
+    22                                  ;========1=========2=========3=========4=========5=========6=========7=========8=========9=========0=========1=========2=========3**
+    23                                  ;Author information
+    24                                  ;  Author name: Floyd Holliday
+    25                                  ;  Author email: holliday@fullerton.edu
+    26                                  ;
+    27                                  ;Program information
+    28                                  ;  Program name: Begin Assembly
+    29                                  ;  Programming languages: One module in C, one in X86, and one in bash.
+    30                                  ;  Date program began: 2024-Jan-5
+    31                                  ;  Date of last update: 2024-Apr-22
+    32                                  ;  Files in this program: beginhere.c, helloworld.asm, r.sh.  At a future date rg.sh may be added.
+    33                                  ;  Testing: Alpha testing completed.  All functions are correct.
+    34                                  ;  Status: Ready for release to customers
+    35                                  ;
+    36                                  ;Purpose
+    37                                  ;  This program is a starting point for those learning to program in x86 assembly. 
+    38                                  ;
+    39                                  ;This file:
+    40                                  ;  File name: helloword.asm
+    41                                  ;  Language: X86-64
+    42                                  ;  Max page width: 124 columns
+    43                                  ;  Assemble (standard): nasm -l hello.lis -o hello.o helloworld.asm
+    44                                  ;  Assemble (debug): nasm -g dwarf -l hello.lis -o hello.o helloworld.asm
+    45                                  ;  Optimal print specification: Landscape, 7 points, monospace, 8½x11 paper
+    46                                  ;  Prototype of this function: unsigned long helloword();
+    47                                  ; 
+    48                                  ;
+    49                                  ;
+    50                                  ;
+    51                                  ;========1=========2=========3=========4=========5=========6=========7=========8=========9=========0=========1=========2=========3**
+    52                                  
+    53                                  ;Declaration section.  The section has no name other than "Declaration section".  Declare here everything that does
+    54                                  ;not have its own place of declaration
+    55                                  
+    56                                  extern printf
+    57                                  
+    58                                  extern fgets
+    59                                  
+    60                                  extern stdin
+    61                                  
+    62                                  extern strlen
+    63                                  
+    64                                  extern scanf
+    65                                  
+    66                                  global average
+    67                                  
+    68                                  name_string_size equ 48
+    69                                  
+    70                                  title_string_size equ 48
+    71                                  
+    72                                  segment .data
+    73                                  ;This section (or segment) is for declaring initialized arrays
+    74                                  
+    75 00000000 506C6561736520656E-     name_prompt db "Please enter your first and last names: ", 0
+    75 00000009 74657220796F757220-
+    75 00000012 666972737420616E64-
+    75 0000001B 206C617374206E616D-
+    75 00000024 65733A2000         
+    76 00000029 506C6561736520656E-     title_prompt db "Please enter your title such as Lieutenant, Chief, Mr, Ms, Influencer, Chairman, Freshman,", 10, "Foreman, Project Leader, etc: ", 0
+    76 00000032 74657220796F757220-
+    76 0000003B 7469746C6520737563-
+    76 00000044 68206173204C696575-
+    76 0000004D 74656E616E742C2043-
+    76 00000056 686965662C204D722C-
+    76 0000005F 204D732C20496E666C-
+    76 00000068 75656E6365722C2043-
+    76 00000071 686169726D616E2C20-
+    76 0000007A 46726573686D616E2C-
+    76 00000083 0A466F72656D616E2C-
+    76 0000008C 2050726F6A65637420-
+    76 00000095 4C65616465722C2065-
+    76 0000009E 74633A2000         
+    77 000000A3 5468616E6B20796F75-     thank_you_p1 db "Thank you %s", 0
+    77 000000AC 20257300           
+    78 000000B0 2025730A0A00            thank_you_p2 db " %s", 10, 10, 0
+    79 000000B6 456E74657220746865-     fullerton_prompt db "Enter the number of miles traveled from Fullerton to Santa Ana: ", 0
+    79 000000BF 206E756D626572206F-
+    79 000000C8 66206D696C65732074-
+    79 000000D1 726176656C65642066-
+    79 000000DA 726F6D2046756C6C65-
+    79 000000E3 72746F6E20746F2053-
+    79 000000EC 616E746120416E613A-
+    79 000000F5 2000               
+    80 000000F7 456E74657220746865-     santa_ana_prompt db "Enter the number of miles traveled from Santa Ana to Long Beach: ", 0
+    80 00000100 206E756D626572206F-
+    80 00000109 66206D696C65732074-
+    80 00000112 726176656C65642066-
+    80 0000011B 726F6D2053616E7461-
+    80 00000124 20416E6120746F204C-
+    80 0000012D 6F6E67204265616368-
+    80 00000136 3A2000             
+    81 00000139 456E74657220746865-     long_beach_prompt db "Enter the number of miles traveled from Long Beach to Fullerton: ", 0
+    81 00000142 206E756D626572206F-
+    81 0000014B 66206D696C65732074-
+    81 00000154 726176656C65642066-
+    81 0000015D 726F6D204C6F6E6720-
+    81 00000166 426561636820746F20-
+    81 0000016F 46756C6C6572746F6E-
+    81 00000178 3A2000             
+    82 0000017B 456E74657220796F75-     speed_prompt db "Enter your average speed during that leg of the trip: ", 0
+    82 00000184 722061766572616765-
+    82 0000018D 207370656564206475-
+    82 00000196 72696E672074686174-
+    82 0000019F 206C6567206F662074-
+    82 000001A8 686520747269703A20-
+    82 000001B1 00                 
+    83 000001B2 256C6600                format db "%lf", 0
+    84                                  
+    85                                  ;TESTING
+    86 000001B6 0A54726176656C6564-     trip_output_test db 10, "Traveled miles: %lf", 0
+    86 000001BF 206D696C65733A2025-
+    86 000001C8 6C6600             
+    87 000001CB 0A5370656564205472-     trip_speed_test db 10, "Speed Traveled: %lf", 10, 10, 0
+    87 000001D4 6176656C65643A2025-
+    87 000001DD 6C660A0A00         
+    88                                  
+    89                                  
+    90                                  segment .bss
+    91                                  ;This section (or segment) is for declaring empty arrays
+    92                                  
+    93                                  align 64
+    94 00000000 <res 340h>              backup_storage_area resb 832
+    95                                  
+    96 00000340 <res 30h>               user_name resb name_string_size
+    97                                  
+    98 00000370 <res 30h>               user_title resb title_string_size
+    99                                  
+   100                                  segment .text
+   101                                  
+   102                                  average:
+   103                                  
+   104                                  ;Back up the GPRs (General Purpose Registers)
+   105 00000000 55                      push rbp
+   106 00000001 4889E5                  mov rbp, rsp
+   107 00000004 53                      push rbx
+   108 00000005 51                      push rcx
+   109 00000006 52                      push rdx
+   110 00000007 57                      push rdi
+   111 00000008 56                      push rsi
+   112 00000009 4150                    push r8
+   113 0000000B 4151                    push r9
+   114 0000000D 4152                    push r10
+   115 0000000F 4153                    push r11
+   116 00000011 4154                    push r12
+   117 00000013 4155                    push r13
+   118 00000015 4156                    push r14
+   119 00000017 4157                    push r15
+   120 00000019 9C                      pushf
+   121                                  
+   122                                  ;Backup the registers other than the GPRs
+   123 0000001A B807000000              mov rax,7
+   124 0000001F BA00000000              mov rdx,0
+   125 00000024 0FAE2425[00000000]      xsave [backup_storage_area]
+   126                                  
+   127                                  ;Output prompt for first and last name
+   128 0000002C B800000000              mov rax, 0
+   129 00000031 48BF-                   mov rdi, name_prompt
+   129 00000033 [0000000000000000] 
+   130 0000003B E8(00000000)            call printf
+   131                                  
+   132                                  ;Input user names
+   133 00000040 B800000000              mov rax, 0
+   134 00000045 48BF-                   mov rdi, user_name
+   134 00000047 [4003000000000000] 
+   135 0000004F BE30000000              mov rsi, name_string_size
+   136 00000054 488B1425[00000000]      mov rdx, [stdin]
+   137 0000005C E8(00000000)            call fgets
+   138                                  
+   139                                  ;Remove newline
+   140 00000061 B800000000              mov rax, 0
+   141 00000066 48BF-                   mov rdi, user_name
+   141 00000068 [4003000000000000] 
+   142 00000070 E8(00000000)            call strlen
+   143 00000075 C680[3F030000]00        mov [user_name+rax-1], byte 0
+   144                                  
+   145                                  ;Output prompt for user's title
+   146 0000007C B800000000              mov rax, 0
+   147 00000081 48BF-                   mov rdi, title_prompt
+   147 00000083 [2900000000000000] 
+   148 0000008B E8(00000000)            call printf
+   149                                  
+   150                                  ;Input user title
+   151 00000090 B800000000              mov rax, 0
+   152 00000095 48BF-                   mov rdi, user_title
+   152 00000097 [7003000000000000] 
+   153 0000009F BE30000000              mov rsi, title_string_size
+   154 000000A4 488B1425[00000000]      mov rdx, [stdin]
+   155 000000AC E8(00000000)            call fgets
+   156                                  
+   157                                  ;Remove newline
+   158 000000B1 B800000000              mov rax, 0
+   159 000000B6 48BF-                   mov rdi, user_title
+   159 000000B8 [7003000000000000] 
+   160 000000C0 E8(00000000)            call strlen
+   161 000000C5 C680[6F030000]00        mov [user_title+rax-1], byte 0
+   162                                  
+   163                                  ;Say thank you part 1
+   164 000000CC B800000000              mov rax, 0
+   165 000000D1 48BF-                   mov rdi, thank_you_p1
+   165 000000D3 [A300000000000000] 
+   166 000000DB 48BE-                   mov rsi, user_title
+   166 000000DD [7003000000000000] 
+   167 000000E5 E8(00000000)            call printf
+   168                                  
+   169                                  ;Say thank you part 2
+   170 000000EA B800000000              mov rax, 0
+   171 000000EF 48BF-                   mov rdi, thank_you_p2
+   171 000000F1 [B000000000000000] 
+   172 000000F9 48BE-                   mov rsi, user_name
+   172 000000FB [4003000000000000] 
+   173 00000103 E8(00000000)            call printf
+   174                                  
+   175                                  
+   176                                  
+   177                                  
+   178                                  
+   179                                  ;Ask for number of miles from Fullerton to Santa Ana
+   180 00000108 B800000000              mov rax, 0
+   181 0000010D 48BF-                   mov rdi, fullerton_prompt
+   181 0000010F [B600000000000000] 
+   182 00000117 E8(00000000)            call printf
+   183                                  
+   184                                  ;Input number of miles from Fullerton to Santa Ana
+   185 0000011C 48BF-                   mov rdi, format
+   185 0000011E [B201000000000000] 
+   186 00000126 6AF7                    push qword -9
+   187 00000128 6AF7                    push qword -9
+   188 0000012A 4889E6                  mov rsi, rsp
+   189 0000012D E8(00000000)            call scanf
+   190 00000132 F2440F100424            movsd xmm8, [rsp]
+   191 00000138 58                      pop rax
+   192 00000139 58                      pop rax
+   193                                  
+   194                                  ;Ask for average speed from Fullerton to Santa Ana
+   195 0000013A B800000000              mov rax, 0
+   196 0000013F 48BF-                   mov rdi, speed_prompt
+   196 00000141 [7B01000000000000] 
+   197 00000149 E8(00000000)            call printf
+   198                                  
+   199                                  ;Input average speed from Fullerton to Santa Ana
+   200 0000014E 48BF-                   mov rdi, format
+   200 00000150 [B201000000000000] 
+   201 00000158 6AF7                    push qword -9
+   202 0000015A 6AF7                    push qword -9
+   203 0000015C 4889E6                  mov rsi, rsp
+   204 0000015F E8(00000000)            call scanf
+   205 00000164 F2440F100C24            movsd xmm9, [rsp]
+   206 0000016A 58                      pop rax
+   207 0000016B 58                      pop rax
+   208                                  
+   209                                  ;Output Distance from Fullerton to Santa Ana
+   210 0000016C B801000000              mov rax, 1
+   211 00000171 48BF-                   mov rdi, trip_output_test
+   211 00000173 [B601000000000000] 
+   212 0000017B 48BE-                   mov rsi, format
+   212 0000017D [B201000000000000] 
+   213 00000185 F2410F10C0              movsd xmm0, xmm8
+   214 0000018A E8(00000000)            call printf
+   215                                  
+   216                                  ;Output Speed from Fullerton to Santa Ana
+   217 0000018F B801000000              mov rax, 1
+   218 00000194 48BF-                   mov rdi, trip_speed_test
+   218 00000196 [CB01000000000000] 
+   219 0000019E 48BE-                   mov rsi, format
+   219 000001A0 [B201000000000000] 
+   220 000001A8 F2410F10C1              movsd xmm0, xmm9
+   221 000001AD E8(00000000)            call printf
+   222                                  
+   223                                  
+   224                                  
+   225                                  
+   226                                  
+   227                                  
+   228                                  ;Ask for number of miles from Santa Ana to Long Beach
+   229 000001B2 B800000000              mov rax, 0
+   230 000001B7 48BF-                   mov rdi, santa_ana_prompt
+   230 000001B9 [F700000000000000] 
+   231 000001C1 E8(00000000)            call printf
+   232                                  
+   233                                  ;Input number of miles from Santa Ana to Long Beach
+   234 000001C6 48BF-                   mov rdi, format
+   234 000001C8 [B201000000000000] 
+   235 000001D0 6AF7                    push qword -9
+   236 000001D2 6AF7                    push qword -9
+   237 000001D4 4889E6                  mov rsi, rsp
+   238 000001D7 E8(00000000)            call scanf
+   239 000001DC F2440F101424            movsd xmm10, [rsp]
+   240 000001E2 58                      pop rax
+   241 000001E3 58                      pop rax
+   242                                  
+   243                                  ;Ask for average speed from Santa Ana to Long Beach
+   244 000001E4 B800000000              mov rax, 0
+   245 000001E9 48BF-                   mov rdi, speed_prompt
+   245 000001EB [7B01000000000000] 
+   246 000001F3 E8(00000000)            call printf
+   247                                  
+   248                                  ;Input average speed from Santa Ana to Long Beach
+   249 000001F8 48BF-                   mov rdi, format
+   249 000001FA [B201000000000000] 
+   250 00000202 6AF7                    push qword -9
+   251 00000204 6AF7                    push qword -9
+   252 00000206 4889E6                  mov rsi, rsp
+   253 00000209 E8(00000000)            call scanf
+   254 0000020E F2440F101C24            movsd xmm11, [rsp]
+   255 00000214 58                      pop rax
+   256 00000215 58                      pop rax
+   257                                  
+   258                                  ;Output Distance from Santa Ana to Long Beach
+   259 00000216 B801000000              mov rax, 1
+   260 0000021B 48BF-                   mov rdi, trip_output_test
+   260 0000021D [B601000000000000] 
+   261 00000225 48BE-                   mov rsi, format
+   261 00000227 [B201000000000000] 
+   262 0000022F F2410F10C2              movsd xmm0, xmm10
+   263 00000234 E8(00000000)            call printf
+   264                                  
+   265                                  ;Output Speed from Santa Ana to Long Beach
+   266 00000239 B801000000              mov rax, 1
+   267 0000023E 48BF-                   mov rdi, trip_speed_test
+   267 00000240 [CB01000000000000] 
+   268 00000248 48BE-                   mov rsi, format
+   268 0000024A [B201000000000000] 
+   269 00000252 F2410F10C3              movsd xmm0, xmm11
+   270 00000257 E8(00000000)            call printf
+   271                                  
+   272                                  
+   273                                  
+   274                                  
+   275                                  
+   276                                  
+   277                                  ;Ask for number of miles from Long Beach to Fullerton
+   278 0000025C B800000000              mov rax, 0
+   279 00000261 48BF-                   mov rdi, long_beach_prompt
+   279 00000263 [3901000000000000] 
+   280 0000026B E8(00000000)            call printf
+   281                                  
+   282                                  ;Input number of miles from Long Beach to Fullerton
+   283 00000270 48BF-                   mov rdi, format
+   283 00000272 [B201000000000000] 
+   284 0000027A 6AF7                    push qword -9
+   285 0000027C 6AF7                    push qword -9
+   286 0000027E 4889E6                  mov rsi, rsp
+   287 00000281 E8(00000000)            call scanf
+   288 00000286 F2440F102424            movsd xmm12, [rsp]
+   289 0000028C 58                      pop rax
+   290 0000028D 58                      pop rax
+   291                                  
+   292                                  ;Ask for average speed from Long Beach to Fullerton
+   293 0000028E B800000000              mov rax, 0
+   294 00000293 48BF-                   mov rdi, speed_prompt
+   294 00000295 [7B01000000000000] 
+   295 0000029D E8(00000000)            call printf
+   296                                  
+   297                                  ;Input average speed from Long Beach to Fullerton
+   298 000002A2 48BF-                   mov rdi, format
+   298 000002A4 [B201000000000000] 
+   299 000002AC 6AF7                    push qword -9
+   300 000002AE 6AF7                    push qword -9
+   301 000002B0 4889E6                  mov rsi, rsp
+   302 000002B3 E8(00000000)            call scanf
+   303 000002B8 F2440F102C24            movsd xmm13, [rsp]
+   304 000002BE 58                      pop rax
+   305 000002BF 58                      pop rax
+   306                                  
+   307                                  ;Output Distance from Long Beach to Fullerton
+   308 000002C0 B801000000              mov rax, 1
+   309 000002C5 48BF-                   mov rdi, trip_output_test
+   309 000002C7 [B601000000000000] 
+   310 000002CF 48BE-                   mov rsi, format
+   310 000002D1 [B201000000000000] 
+   311 000002D9 F2410F10C4              movsd xmm0, xmm12
+   312 000002DE E8(00000000)            call printf
+   313                                  
+   314                                  ;Output Speed from Long Beach to Fullerton
+   315 000002E3 B801000000              mov rax, 1
+   316 000002E8 48BF-                   mov rdi, trip_speed_test
+   316 000002EA [CB01000000000000] 
+   317 000002F2 48BE-                   mov rsi, format
+   317 000002F4 [B201000000000000] 
+   318 000002FC F2410F10C5              movsd xmm0, xmm13
+   319 00000301 E8(00000000)            call printf
+   320                                  
+   321                                  
+   322                                  
+   323                                  
+   324                                  
+   325                                  
+   326                                  ;SUBJECT TO CHANGE
+   327 00000306 6A00                    push qword 0
+   328 00000308 F2440F113C24            movsd [rsp], xmm15
+   329                                  
+   330                                  ;Restore the values to non-GPRs
+   331 0000030E B807000000              mov rax,7
+   332 00000313 BA00000000              mov rdx,0
+   333 00000318 0FAE2C25[00000000]      xrstor [backup_storage_area]
+   334                                  
+   335 00000320 F20F100424              movsd xmm0, [rsp]
+   336 00000325 58                      pop rax
+   337                                  
+   338                                  ;Restore the GPRs
+   339 00000326 9D                      popf
+   340 00000327 415F                    pop r15
+   341 00000329 415E                    pop r14
+   342 0000032B 415D                    pop r13
+   343 0000032D 415C                    pop r12
+   344 0000032F 415B                    pop r11
+   345 00000331 415A                    pop r10
+   346 00000333 4159                    pop r9
+   347 00000335 4158                    pop r8
+   348 00000337 5E                      pop rsi
+   349 00000338 5F                      pop rdi
+   350 00000339 5A                      pop rdx
+   351 0000033A 59                      pop rcx
+   352 0000033B 5B                      pop rbx
+   353 0000033C 5D                      pop rbp   ;Restore rbp to the base of the activation record of the caller program
+   354 0000033D C3                      ret
+   355                                  ;End of the function helloworld ====================================================================
+   356                                  
+   357                                  ;REMEMBER TO CHANGE COMMENTS

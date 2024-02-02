@@ -1,3 +1,9 @@
+; REMEMBER TO CHANGE COMMENTS
+
+
+
+
+
 ;****************************************************************************************************************************
 ;Program name: "Begin Assembly".  This program serves as a model for new programmers of X86 programming language.  This     *
 ;shows the standard layout of a function written in X86 assembly.  The program is a live example of how to complie,         *
@@ -55,16 +61,31 @@ extern stdin
 
 extern strlen
 
-global helloworld
+extern scanf
+
+global average
 
 name_string_size equ 48
+
+title_string_size equ 48
 
 segment .data
 ;This section (or segment) is for declaring initialized arrays
 
-welcome db "The function 'hello world' written in x86 assembly has begun", 10, 0
-prompt_for_name db "Please enter your first name, last name, and other names if available: ",0
-friendly_message db "Welcome to assembly programming %s.  May you enjoy it as much as Kathleen Booth did.",10,0
+name_prompt db "Please enter your first and last names: ", 0
+title_prompt db "Please enter your title such as Lieutenant, Chief, Mr, Ms, Influencer, Chairman, Freshman,", 10, "Foreman, Project Leader, etc: ", 0
+thank_you_p1 db "Thank you %s", 0
+thank_you_p2 db " %s", 10, 10, 0
+fullerton_prompt db "Enter the number of miles traveled from Fullerton to Santa Ana: ", 0
+santa_ana_prompt db "Enter the number of miles traveled from Santa Ana to Long Beach: ", 0
+long_beach_prompt db "Enter the number of miles traveled from Long Beach to Fullerton: ", 0
+speed_prompt db "Enter your average speed during that leg of the trip: ", 0
+format db "%lf", 0
+
+;TESTING
+trip_output_test db 10, "Traveled miles: %lf", 0
+trip_speed_test db 10, "Speed Traveled: %lf", 10, 10, 0
+
 
 segment .bss
 ;This section (or segment) is for declaring empty arrays
@@ -74,9 +95,11 @@ backup_storage_area resb 832
 
 user_name resb name_string_size
 
+user_title resb title_string_size
+
 segment .text
 
-helloworld:
+average:
 
 ;Back up the GPRs (General Purpose Registers)
 push rbp
@@ -101,14 +124,9 @@ mov rax,7
 mov rdx,0
 xsave [backup_storage_area]
 
-;Output a welcome for the user
+;Output prompt for first and last name
 mov rax, 0
-mov rdi, welcome
-call printf
-
-;Output instruction for the user
-mov rax, 0
-mov rdi, prompt_for_name
+mov rdi, name_prompt
 call printf
 
 ;Input user names
@@ -124,26 +142,198 @@ mov rdi, user_name
 call strlen
 mov [user_name+rax-1], byte 0
 
-;Say something nice to the user of this program.
-mov rax,0
-mov rdi,friendly_message
+;Output prompt for user's title
+mov rax, 0
+mov rdi, title_prompt
+call printf
+
+;Input user title
+mov rax, 0
+mov rdi, user_title
+mov rsi, title_string_size
+mov rdx, [stdin]
+call fgets
+
+;Remove newline
+mov rax, 0
+mov rdi, user_title
+call strlen
+mov [user_title+rax-1], byte 0
+
+;Say thank you part 1
+mov rax, 0
+mov rdi, thank_you_p1
+mov rsi, user_title
+call printf
+
+;Say thank you part 2
+mov rax, 0
+mov rdi, thank_you_p2
 mov rsi, user_name
 call printf
 
-;Count the characters in the user's name
-xor rax,rax
-mov rdi, user_name
-call strlen
-mov r15,rax
-;r15 holds the number of characters
+
+
+
+
+;Ask for number of miles from Fullerton to Santa Ana
+mov rax, 0
+mov rdi, fullerton_prompt
+call printf
+
+;Input number of miles from Fullerton to Santa Ana
+mov rdi, format
+push qword -9
+push qword -9
+mov rsi, rsp
+call scanf
+movsd xmm8, [rsp]
+pop rax
+pop rax
+
+;Ask for average speed from Fullerton to Santa Ana
+mov rax, 0
+mov rdi, speed_prompt
+call printf
+
+;Input average speed from Fullerton to Santa Ana
+mov rdi, format
+push qword -9
+push qword -9
+mov rsi, rsp
+call scanf
+movsd xmm9, [rsp]
+pop rax
+pop rax
+
+;Output Distance from Fullerton to Santa Ana
+mov rax, 1
+mov rdi, trip_output_test
+mov rsi, format
+movsd xmm0, xmm8
+call printf
+
+;Output Speed from Fullerton to Santa Ana
+mov rax, 1
+mov rdi, trip_speed_test
+mov rsi, format
+movsd xmm0, xmm9
+call printf
+
+
+
+
+
+
+;Ask for number of miles from Santa Ana to Long Beach
+mov rax, 0
+mov rdi, santa_ana_prompt
+call printf
+
+;Input number of miles from Santa Ana to Long Beach
+mov rdi, format
+push qword -9
+push qword -9
+mov rsi, rsp
+call scanf
+movsd xmm10, [rsp]
+pop rax
+pop rax
+
+;Ask for average speed from Santa Ana to Long Beach
+mov rax, 0
+mov rdi, speed_prompt
+call printf
+
+;Input average speed from Santa Ana to Long Beach
+mov rdi, format
+push qword -9
+push qword -9
+mov rsi, rsp
+call scanf
+movsd xmm11, [rsp]
+pop rax
+pop rax
+
+;Output Distance from Santa Ana to Long Beach
+mov rax, 1
+mov rdi, trip_output_test
+mov rsi, format
+movsd xmm0, xmm10
+call printf
+
+;Output Speed from Santa Ana to Long Beach
+mov rax, 1
+mov rdi, trip_speed_test
+mov rsi, format
+movsd xmm0, xmm11
+call printf
+
+
+
+
+
+
+;Ask for number of miles from Long Beach to Fullerton
+mov rax, 0
+mov rdi, long_beach_prompt
+call printf
+
+;Input number of miles from Long Beach to Fullerton
+mov rdi, format
+push qword -9
+push qword -9
+mov rsi, rsp
+call scanf
+movsd xmm12, [rsp]
+pop rax
+pop rax
+
+;Ask for average speed from Long Beach to Fullerton
+mov rax, 0
+mov rdi, speed_prompt
+call printf
+
+;Input average speed from Long Beach to Fullerton
+mov rdi, format
+push qword -9
+push qword -9
+mov rsi, rsp
+call scanf
+movsd xmm13, [rsp]
+pop rax
+pop rax
+
+;Output Distance from Long Beach to Fullerton
+mov rax, 1
+mov rdi, trip_output_test
+mov rsi, format
+movsd xmm0, xmm12
+call printf
+
+;Output Speed from Long Beach to Fullerton
+mov rax, 1
+mov rdi, trip_speed_test
+mov rsi, format
+movsd xmm0, xmm13
+call printf
+
+
+
+
+
+
+;SUBJECT TO CHANGE
+push qword 0
+movsd [rsp], xmm15
 
 ;Restore the values to non-GPRs
 mov rax,7
 mov rdx,0
 xrstor [backup_storage_area]
 
-;Send back the number of characters
-mov rax,r15
+movsd xmm0, [rsp]
+pop rax
 
 ;Restore the GPRs
 popf
@@ -164,3 +354,4 @@ pop rbp   ;Restore rbp to the base of the activation record of the caller progra
 ret
 ;End of the function helloworld ====================================================================
 
+;REMEMBER TO CHANGE COMMENTS

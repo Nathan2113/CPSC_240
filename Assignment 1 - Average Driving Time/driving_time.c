@@ -38,15 +38,14 @@
 //#include <string.h>
 //#include <stdlib.h>
 
-extern unsigned long helloworld();
+extern unsigned long average();
 
 int main(int argc, const char * argv[])
-{printf("This is the beginning of the journey to Assembly Happiness\n");
- unsigned long count = 0;
- printf("The main function will now call the assembly function.\n");
- count = helloworld();
- printf("The main function received the number %lu and will keep it for a while.\n",count);
- printf("I hope you enjoyed your first lesson in assembly programming.  Have a nice day.\n");
- printf("Main will send a zero to the OS as a sign of successful execution.\n");
+{printf("Welcome to Driving Time maintained by Nathan Warner\n");
+ unsigned long averageSpeed = 0;
+ averageSpeed = average();
+ printf("\nThe driver has received this number %lu and will keep it for future use.\n",averageSpeed);
+ printf("Have a great day\n\n");
+ printf("A zero will be sent to the operating system as a signal of a successful execution\n");
 }
 
