@@ -82,8 +82,6 @@ process_message db "The inputted data are being processed", 10, 10, 0
 total_distance db "The total distance traveled is %1.1lf miles.", 10, 0
 trip_time db "The time of trip is %1.8lf", 10, 0
 average_speed db "The average speed during the trip is %1.8lf mph.", 10, 0
-val dq 3.0
-
 
 
 
@@ -186,7 +184,7 @@ push qword -9
 push qword -9
 mov rsi, rsp
 call scanf
-movsd xmm8, [rsp]
+movsd xmm10, [rsp]
 pop rax
 pop rax
 
@@ -202,7 +200,7 @@ push qword -9
 push qword -9
 mov rsi, rsp
 call scanf
-movsd xmm9, [rsp]
+movsd xmm11, [rsp]
 pop rax
 pop rax
 
@@ -219,7 +217,7 @@ push qword -9
 push qword -9
 mov rsi, rsp
 call scanf
-movsd xmm10, [rsp]
+movsd xmm12, [rsp]
 pop rax
 pop rax
 
@@ -236,7 +234,7 @@ push qword -9
 push qword -9
 mov rsi, rsp
 call scanf
-movsd xmm11, [rsp]
+movsd xmm13, [rsp]
 pop rax
 pop rax
 
@@ -253,7 +251,7 @@ push qword -9
 push qword -9
 mov rsi, rsp
 call scanf
-movsd xmm12, [rsp]
+movsd xmm14, [rsp]
 pop rax
 pop rax
 
@@ -270,29 +268,51 @@ push qword -9
 push qword -9
 mov rsi, rsp
 call scanf
-movsd xmm13, [rsp]
+movsd xmm15, [rsp]
 pop rax
 pop rax
 
 
 
 ;Get total distance traveled
-movsd xmm14, xmm8
-addsd xmm14, xmm10
-addsd xmm14, xmm12
-
-
-;Get average speed
-movsd xmm15, xmm9
-addsd xmm15, xmm11
-addsd xmm15, xmm13
-movsd xmm7, qword [val]
-divsd xmm15, xmm7
+movsd xmm7, xmm10
+addsd xmm7, xmm12
+addsd xmm7, xmm14
 
 
 ;Get total time
-movsd xmm9, xmm14
-divsd xmm9, xmm15
+;Get first trip time
+movsd xmm0, xmm10
+divsd xmm0, xmm11
+
+;Get second trip time
+movsd xmm1, xmm12
+divsd xmm1, xmm13
+
+;Get third trip time
+movsd xmm2, xmm14
+divsd xmm2, xmm15
+
+;Add them together
+addsd xmm0, xmm1
+addsd xmm0, xmm2
+
+
+
+;Get average speed
+movsd xmm3, xmm7
+divsd xmm3, xmm0
+
+
+
+
+;Store output values in registers xmm13-xmm15
+;Total Distance
+movsd xmm13, xmm7
+;Average Speed
+movsd xmm14, xmm3
+;Total time
+movsd xmm15, xmm0
 
 
 ;Output to let user know that data is being processed
@@ -305,7 +325,7 @@ call printf
 mov rax, 1
 mov rdi, total_distance
 mov rsi, format
-movsd xmm0, xmm14
+movsd xmm0, xmm13
 call printf
 
 
@@ -314,7 +334,7 @@ call printf
 mov rax, 1
 mov rdi, trip_time
 mov rsi, format
-movsd xmm0, xmm9
+movsd xmm0, xmm15
 call printf
 
 
@@ -323,14 +343,14 @@ call printf
 mov rax, 1
 mov rdi, average_speed
 mov rsi, format
-movsd xmm0, xmm15
+movsd xmm0, xmm14
 call printf
 
 
 
-;Back up value in xmm15 before restoring registers
+;Back up value in xmm14 before restoring registers
 push qword 0
-movsd [rsp], xmm15
+movsd [rsp], xmm14
 
 
 ;Restore the values to non-GPRs

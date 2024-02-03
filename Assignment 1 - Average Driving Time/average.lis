@@ -260,7 +260,7 @@
    186 00000128 6AF7                    push qword -9
    187 0000012A 4889E6                  mov rsi, rsp
    188 0000012D E8(00000000)            call scanf
-   189 00000132 F2440F100424            movsd xmm8, [rsp]
+   189 00000132 F2440F101424            movsd xmm10, [rsp]
    190 00000138 58                      pop rax
    191 00000139 58                      pop rax
    192                                  
@@ -278,7 +278,7 @@
    202 0000015A 6AF7                    push qword -9
    203 0000015C 4889E6                  mov rsi, rsp
    204 0000015F E8(00000000)            call scanf
-   205 00000164 F2440F100C24            movsd xmm9, [rsp]
+   205 00000164 F2440F101C24            movsd xmm11, [rsp]
    206 0000016A 58                      pop rax
    207 0000016B 58                      pop rax
    208                                  
@@ -297,7 +297,7 @@
    219 0000018C 6AF7                    push qword -9
    220 0000018E 4889E6                  mov rsi, rsp
    221 00000191 E8(00000000)            call scanf
-   222 00000196 F2440F101424            movsd xmm10, [rsp]
+   222 00000196 F2440F102424            movsd xmm12, [rsp]
    223 0000019C 58                      pop rax
    224 0000019D 58                      pop rax
    225                                  
@@ -316,7 +316,7 @@
    236 000001BE 6AF7                    push qword -9
    237 000001C0 4889E6                  mov rsi, rsp
    238 000001C3 E8(00000000)            call scanf
-   239 000001C8 F2440F101C24            movsd xmm11, [rsp]
+   239 000001C8 F2440F102C24            movsd xmm13, [rsp]
    240 000001CE 58                      pop rax
    241 000001CF 58                      pop rax
    242                                  
@@ -335,7 +335,7 @@
    253 000001F0 6AF7                    push qword -9
    254 000001F2 4889E6                  mov rsi, rsp
    255 000001F5 E8(00000000)            call scanf
-   256 000001FA F2440F102424            movsd xmm12, [rsp]
+   256 000001FA F2440F103424            movsd xmm14, [rsp]
    257 00000200 58                      pop rax
    258 00000201 58                      pop rax
    259                                  
@@ -354,102 +354,145 @@
    270 00000222 6AF7                    push qword -9
    271 00000224 4889E6                  mov rsi, rsp
    272 00000227 E8(00000000)            call scanf
-   273 0000022C F2440F102C24            movsd xmm13, [rsp]
+   273 0000022C F2440F103C24            movsd xmm15, [rsp]
    274 00000232 58                      pop rax
    275 00000233 58                      pop rax
    276                                  
    277                                  
    278                                  
    279                                  ;Get total distance traveled
-   280 00000234 F2450F10F0              movsd xmm14, xmm8
-   281 00000239 F2450F58F2              addsd xmm14, xmm10
-   282 0000023E F2450F58F4              addsd xmm14, xmm12
-   283                                  
-   284                                  
-   285                                  ;Get average speed
-   286 00000243 F2450F10F9              movsd xmm15, xmm9
-   287 00000248 F2450F58FB              addsd xmm15, xmm11
-   288 0000024D F2450F58FD              addsd xmm15, xmm13
-   289 00000252 F20F103C25-             movsd xmm7, qword [val]
-   289 00000257 [5C020000]         
-   290 0000025B F2440F5EFF              divsd xmm15, xmm7
-   291                                  
+   280                                  ; movsd xmm14, xmm8
+   281                                  ; addsd xmm14, xmm10
+   282                                  ; addsd xmm14, xmm12
+   283 00000234 F2410F10FA              movsd xmm7, xmm10
+   284 00000239 F2410F58FC              addsd xmm7, xmm12
+   285 0000023E F2410F58FE              addsd xmm7, xmm14
+   286                                  
+   287                                  
+   288                                  ;Get total time
+   289                                  ;Get first trip time
+   290 00000243 F2410F10C2              movsd xmm0, xmm10
+   291 00000248 F2410F5EC3              divsd xmm0, xmm11
    292                                  
-   293                                  ;Get total time
-   294 00000260 F2450F10CE              movsd xmm9, xmm14
-   295 00000265 F2450F5ECF              divsd xmm9, xmm15
+   293                                  ;Get second trip time
+   294 0000024D F2410F10CC              movsd xmm1, xmm12
+   295 00000252 F2410F5ECD              divsd xmm1, xmm13
    296                                  
-   297                                  
-   298                                  ;Output to let user know that data is being processed
-   299 0000026A B800000000              mov rax, 0
-   300 0000026F 48BF-                   mov rdi, process_message
-   300 00000271 [B801000000000000] 
-   301 00000279 E8(00000000)            call printf
-   302                                  
-   303                                  
-   304                                  ;Output total distance traveled
-   305 0000027E B801000000              mov rax, 1
-   306 00000283 48BF-                   mov rdi, total_distance
-   306 00000285 [E001000000000000] 
-   307 0000028D 48BE-                   mov rsi, format
-   307 0000028F [B401000000000000] 
-   308 00000297 F2410F10C6              movsd xmm0, xmm14
-   309 0000029C E8(00000000)            call printf
+   297                                  ;Get third trip time
+   298 00000257 F2410F10D6              movsd xmm2, xmm14
+   299 0000025C F2410F5ED7              divsd xmm2, xmm15
+   300                                  
+   301                                  ;Add them together
+   302 00000261 F20F58C1                addsd xmm0, xmm1
+   303 00000265 F20F58C2                addsd xmm0, xmm2
+   304                                  
+   305                                  
+   306                                  
+   307                                  ;Get average speed
+   308 00000269 F20F10DF                movsd xmm3, xmm7
+   309 0000026D F20F5ED8                divsd xmm3, xmm0
    310                                  
    311                                  
-   312                                  
-   313                                  ;Output total time of trip
-   314 000002A1 B801000000              mov rax, 1
-   315 000002A6 48BF-                   mov rdi, trip_time
-   315 000002A8 [0E02000000000000] 
-   316 000002B0 48BE-                   mov rsi, format
-   316 000002B2 [B401000000000000] 
-   317 000002BA F2410F10C1              movsd xmm0, xmm9
-   318 000002BF E8(00000000)            call printf
-   319                                  
-   320                                  
-   321                                  
-   322                                  ;Output average speed
-   323 000002C4 B801000000              mov rax, 1
-   324 000002C9 48BF-                   mov rdi, average_speed
-   324 000002CB [2A02000000000000] 
-   325 000002D3 48BE-                   mov rsi, format
-   325 000002D5 [B401000000000000] 
-   326 000002DD F2410F10C7              movsd xmm0, xmm15
-   327 000002E2 E8(00000000)            call printf
-   328                                  
-   329                                  
-   330                                  
-   331                                  ;Back up value in xmm15 before restoring registers
-   332 000002E7 6A00                    push qword 0
-   333 000002E9 F2440F113C24            movsd [rsp], xmm15
-   334                                  
-   335                                  
-   336                                  ;Restore the values to non-GPRs
-   337 000002EF B807000000              mov rax, 7
-   338 000002F4 BA00000000              mov rdx, 0
-   339 000002F9 0FAE2C25[00000000]      xrstor [backup_storage_area]
+   312                                  ;Get total time
+   313                                  ; movsd xmm9, xmm14
+   314                                  ; divsd xmm9, xmm15
+   315                                  
+   316                                  ;movsd xmm9, xmm7
+   317                                  ;divsd xmm9, xmm8
+   318                                  
+   319                                  ;Get average speed
+   320                                  ; movsd xmm15, xmm9
+   321                                  ; addsd xmm15, xmm11
+   322                                  ; addsd xmm15, xmm13
+   323                                  ; movsd xmm7, qword [val]
+   324                                  ; divsd xmm15, xmm7
+   325                                  
+   326                                  ;movsd xmm8, xmm11
+   327                                  ;addsd xmm8, xmm13
+   328                                  ;addsd xmm8, xmm15
+   329                                  ;movsd xmm15, qword [val]
+   330                                  ;divsd xmm8, xmm15
+   331                                  
+   332                                  
+   333                                  ;Store output values in registers xmm13-xmm15
+   334                                  ;Total Distance
+   335 00000271 F2440F10EF              movsd xmm13, xmm7
+   336                                  ;Average Speed
+   337 00000276 F2440F10F3              movsd xmm14, xmm3
+   338                                  ;Total time
+   339 0000027B F2440F10F8              movsd xmm15, xmm0
    340                                  
    341                                  
-   342 00000301 F20F100424              movsd xmm0, [rsp]
-   343 00000306 58                      pop rax
-   344                                  
-   345                                  
-   346                                  ;Restore the GPRs
-   347 00000307 9D                      popf
-   348 00000308 415F                    pop r15
-   349 0000030A 415E                    pop r14
-   350 0000030C 415D                    pop r13
-   351 0000030E 415C                    pop r12
-   352 00000310 415B                    pop r11
-   353 00000312 415A                    pop r10
-   354 00000314 4159                    pop r9
-   355 00000316 4158                    pop r8
-   356 00000318 5E                      pop rsi
-   357 00000319 5F                      pop rdi
-   358 0000031A 5A                      pop rdx
-   359 0000031B 59                      pop rcx
-   360 0000031C 5B                      pop rbx
-   361 0000031D 5D                      pop rbp   ;Restore rbp to the base of the activation record of the caller program
-   362 0000031E C3                      ret
-   363                                  ;End of the function average.asm ====================================================================
+   342                                  ;Output to let user know that data is being processed
+   343 00000280 B800000000              mov rax, 0
+   344 00000285 48BF-                   mov rdi, process_message
+   344 00000287 [B801000000000000] 
+   345 0000028F E8(00000000)            call printf
+   346                                  
+   347                                  
+   348                                  ;Output total distance traveled
+   349 00000294 B801000000              mov rax, 1
+   350 00000299 48BF-                   mov rdi, total_distance
+   350 0000029B [E001000000000000] 
+   351 000002A3 48BE-                   mov rsi, format
+   351 000002A5 [B401000000000000] 
+   352 000002AD F2410F10C5              movsd xmm0, xmm13
+   353 000002B2 E8(00000000)            call printf
+   354                                  
+   355                                  
+   356                                  
+   357                                  ;Output total time of trip
+   358 000002B7 B801000000              mov rax, 1
+   359 000002BC 48BF-                   mov rdi, trip_time
+   359 000002BE [0E02000000000000] 
+   360 000002C6 48BE-                   mov rsi, format
+   360 000002C8 [B401000000000000] 
+   361 000002D0 F2410F10C7              movsd xmm0, xmm15
+   362 000002D5 E8(00000000)            call printf
+   363                                  
+   364                                  
+   365                                  
+   366                                  ;Output average speed
+   367 000002DA B801000000              mov rax, 1
+   368 000002DF 48BF-                   mov rdi, average_speed
+   368 000002E1 [2A02000000000000] 
+   369 000002E9 48BE-                   mov rsi, format
+   369 000002EB [B401000000000000] 
+   370 000002F3 F2410F10C6              movsd xmm0, xmm14
+   371 000002F8 E8(00000000)            call printf
+   372                                  
+   373                                  
+   374                                  
+   375                                  ;Back up value in xmm14 before restoring registers
+   376 000002FD 6A00                    push qword 0
+   377 000002FF F2440F113424            movsd [rsp], xmm14
+   378                                  
+   379                                  
+   380                                  ;Restore the values to non-GPRs
+   381 00000305 B807000000              mov rax, 7
+   382 0000030A BA00000000              mov rdx, 0
+   383 0000030F 0FAE2C25[00000000]      xrstor [backup_storage_area]
+   384                                  
+   385                                  
+   386 00000317 F20F100424              movsd xmm0, [rsp]
+   387 0000031C 58                      pop rax
+   388                                  
+   389                                  
+   390                                  ;Restore the GPRs
+   391 0000031D 9D                      popf
+   392 0000031E 415F                    pop r15
+   393 00000320 415E                    pop r14
+   394 00000322 415D                    pop r13
+   395 00000324 415C                    pop r12
+   396 00000326 415B                    pop r11
+   397 00000328 415A                    pop r10
+   398 0000032A 4159                    pop r9
+   399 0000032C 4158                    pop r8
+   400 0000032E 5E                      pop rsi
+   401 0000032F 5F                      pop rdi
+   402 00000330 5A                      pop rdx
+   403 00000331 59                      pop rcx
+   404 00000332 5B                      pop rbx
+   405 00000333 5D                      pop rbp   ;Restore rbp to the base of the activation record of the caller program
+   406 00000334 C3                      ret
+   407                                  ;End of the function average.asm ====================================================================
