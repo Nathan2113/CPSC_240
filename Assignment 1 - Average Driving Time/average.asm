@@ -1,13 +1,9 @@
-; REMEMBER TO CHANGE COMMENTS
-
-
-
-
-
 ;****************************************************************************************************************************
-;Program name: "Begin Assembly".  This program serves as a model for new programmers of X86 programming language.  This     *
-;shows the standard layout of a function written in X86 assembly.  The program is a live example of how to complie,         *
-;assembly, link, and execute a program containing source code written in X86.  Copyright (C) 2024  Floyd Holliday.          *
+;Program name: "Driving Time". This program will take in the user's full name, their title, and the distances they have     *
+;traveled from Fullerton -> Santa Ana, Santa Ana -> Long Beach, and Long Beach -> Fullerton, as well as their average       *
+;speed for each trip. Once the program has the total distance traveled and the average speed of the entire trip, the        *
+;program will calculate the total time of the trip, then the assembly file will send the average speed back to the driver
+;function                                                                                                                   *
 ;                                                                                                                           *
 ;This program is free software: you can redistribute it and/or modify it under the terms of the GNU General Public License  *
 ;version 3 as published by the Free Software Foundation.  This program is distributed in the hope that it will be useful,   *
@@ -21,29 +17,30 @@
 
 ;========1=========2=========3=========4=========5=========6=========7=========8=========9=========0=========1=========2=========3**
 ;Author information
-;  Author name: Floyd Holliday
-;  Author email: holliday@fullerton.edu
+;  Author name: Nathan Warner
+;  Author email: nwarner4@csu.fullerton.edu
 ;
 ;Program information
-;  Program name: Begin Assembly
+;  Program name: Driving Time
 ;  Programming languages: One module in C, one in X86, and one in bash.
-;  Date program began: 2024-Jan-5
-;  Date of last update: 2024-Apr-22
-;  Files in this program: beginhere.c, helloworld.asm, r.sh.  At a future date rg.sh may be added.
+;  Date program began: 2024-Jan-30
+;  Date of last update: 2024-Feb-2
+;  Files in this program: driving_time.c, average.asm, r.sh.
 ;  Testing: Alpha testing completed.  All functions are correct.
 ;  Status: Ready for release to customers
 ;
 ;Purpose
-;  This program is a starting point for those learning to program in x86 assembly. 
+;  This program will take in total distance traveled and average speed and find the total time of the trip,
+;  as well as sending the average speed of the entirety of the trip back to the driver
 ;
 ;This file:
-;  File name: helloword.asm
+;  File name: average.asm
 ;  Language: X86-64
 ;  Max page width: 124 columns
-;  Assemble (standard): nasm -l hello.lis -o hello.o helloworld.asm
-;  Assemble (debug): nasm -g dwarf -l hello.lis -o hello.o helloworld.asm
+;  Assemble (standard): nasm -l average.lis -o average.o average.asm
+;  Assemble (debug): nasm -g dwarf -l average.lis -o average.o average.asm
 ;  Optimal print specification: Landscape, 7 points, monospace, 8½x11 paper
-;  Prototype of this function: unsigned long helloword();
+;  Prototype of this function: double average();
 ; 
 ;
 ;
@@ -75,16 +72,19 @@ segment .data
 name_prompt db "Please enter your first and last names: ", 0
 title_prompt db "Please enter your title such as Lieutenant, Chief, Mr, Ms, Influencer, Chairman, Freshman,", 10, "Foreman, Project Leader, etc: ", 0
 thank_you_p1 db "Thank you %s", 0
-thank_you_p2 db " %s", 10, 10, 0
-fullerton_prompt db "Enter the number of miles traveled from Fullerton to Santa Ana: ", 0
-santa_ana_prompt db "Enter the number of miles traveled from Santa Ana to Long Beach: ", 0
-long_beach_prompt db "Enter the number of miles traveled from Long Beach to Fullerton: ", 0
+thank_you_p2 db " %s", 10, 0
+fullerton_prompt db 10, "Enter the number of miles traveled from Fullerton to Santa Ana: ", 0
+santa_ana_prompt db 10, "Enter the number of miles traveled from Santa Ana to Long Beach: ", 0
+long_beach_prompt db 10, "Enter the number of miles traveled from Long Beach to Fullerton: ", 0
 speed_prompt db "Enter your average speed during that leg of the trip: ", 0
 format db "%lf", 0
+process_message db "The inputted data are being processed", 10, 10, 0
+total_distance db "The total distance traveled is %1.1lf miles.", 10, 0
+trip_time db "The time of trip is %1.8lf", 10, 0
+average_speed db "The average speed during the trip is %1.8lf mph.", 10, 0
+val dq 3.0
 
-;TESTING
-trip_output_test db 10, "Traveled miles: %lf", 0
-trip_speed_test db 10, "Speed Traveled: %lf", 10, 10, 0
+
 
 
 segment .bss
@@ -175,7 +175,6 @@ call printf
 
 
 
-
 ;Ask for number of miles from Fullerton to Santa Ana
 mov rax, 0
 mov rdi, fullerton_prompt
@@ -191,6 +190,7 @@ movsd xmm8, [rsp]
 pop rax
 pop rax
 
+
 ;Ask for average speed from Fullerton to Santa Ana
 mov rax, 0
 mov rdi, speed_prompt
@@ -205,23 +205,6 @@ call scanf
 movsd xmm9, [rsp]
 pop rax
 pop rax
-
-;Output Distance from Fullerton to Santa Ana
-mov rax, 1
-mov rdi, trip_output_test
-mov rsi, format
-movsd xmm0, xmm8
-call printf
-
-;Output Speed from Fullerton to Santa Ana
-mov rax, 1
-mov rdi, trip_speed_test
-mov rsi, format
-movsd xmm0, xmm9
-call printf
-
-
-
 
 
 
@@ -240,6 +223,8 @@ movsd xmm10, [rsp]
 pop rax
 pop rax
 
+
+
 ;Ask for average speed from Santa Ana to Long Beach
 mov rax, 0
 mov rdi, speed_prompt
@@ -254,23 +239,6 @@ call scanf
 movsd xmm11, [rsp]
 pop rax
 pop rax
-
-;Output Distance from Santa Ana to Long Beach
-mov rax, 1
-mov rdi, trip_output_test
-mov rsi, format
-movsd xmm0, xmm10
-call printf
-
-;Output Speed from Santa Ana to Long Beach
-mov rax, 1
-mov rdi, trip_speed_test
-mov rsi, format
-movsd xmm0, xmm11
-call printf
-
-
-
 
 
 
@@ -289,6 +257,8 @@ movsd xmm12, [rsp]
 pop rax
 pop rax
 
+
+
 ;Ask for average speed from Long Beach to Fullerton
 mov rax, 0
 mov rdi, speed_prompt
@@ -304,36 +274,74 @@ movsd xmm13, [rsp]
 pop rax
 pop rax
 
-;Output Distance from Long Beach to Fullerton
-mov rax, 1
-mov rdi, trip_output_test
-mov rsi, format
-movsd xmm0, xmm12
+
+
+;Get total distance traveled
+movsd xmm14, xmm8
+addsd xmm14, xmm10
+addsd xmm14, xmm12
+
+
+;Get average speed
+movsd xmm15, xmm9
+addsd xmm15, xmm11
+addsd xmm15, xmm13
+movsd xmm7, qword [val]
+divsd xmm15, xmm7
+
+
+;Get total time
+movsd xmm9, xmm14
+divsd xmm9, xmm15
+
+
+;Output to let user know that data is being processed
+mov rax, 0
+mov rdi, process_message
 call printf
 
-;Output Speed from Long Beach to Fullerton
+
+;Output total distance traveled
 mov rax, 1
-mov rdi, trip_speed_test
+mov rdi, total_distance
 mov rsi, format
-movsd xmm0, xmm13
+movsd xmm0, xmm14
 call printf
 
 
 
+;Output total time of trip
+mov rax, 1
+mov rdi, trip_time
+mov rsi, format
+movsd xmm0, xmm9
+call printf
 
 
 
-;SUBJECT TO CHANGE
+;Output average speed
+mov rax, 1
+mov rdi, average_speed
+mov rsi, format
+movsd xmm0, xmm15
+call printf
+
+
+
+;Back up value in xmm15 before restoring registers
 push qword 0
 movsd [rsp], xmm15
 
+
 ;Restore the values to non-GPRs
-mov rax,7
-mov rdx,0
+mov rax, 7
+mov rdx, 0
 xrstor [backup_storage_area]
+
 
 movsd xmm0, [rsp]
 pop rax
+
 
 ;Restore the GPRs
 popf
@@ -352,6 +360,4 @@ pop rcx
 pop rbx
 pop rbp   ;Restore rbp to the base of the activation record of the caller program
 ret
-;End of the function helloworld ====================================================================
-
-;REMEMBER TO CHANGE COMMENTS
+;End of the function average.asm ====================================================================
