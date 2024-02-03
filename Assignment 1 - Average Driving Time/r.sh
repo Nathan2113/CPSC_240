@@ -5,7 +5,6 @@
 #This file is the script file that accompanies the "Driving Time" program.
 
 #Delete some un-needed files
-pwd
 rm *.o
 rm *.out
 
