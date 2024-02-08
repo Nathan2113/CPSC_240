@@ -1,0 +1,475 @@
+     1                                  ;****************************************************************************************************************************
+     2                                  ;Program name: "Driving Time". This program will take in the user's full name, their title, and the distances they have     *
+     3                                  ;traveled from Fullerton -> Santa Ana, Santa Ana -> Long Beach, and Long Beach -> Fullerton, as well as their average       *
+     4                                  ;speed for each trip. Once the program has the total distance traveled and the average speed of the entire trip, the        *
+     5                                  ;program will calculate the total time of the trip, then the assembly file will send the average speed back to the driver
+     6                                  ;function                                                                                                                   *
+     7                                  ;                                                                                                                           *
+     8                                  ;This program is free software: you can redistribute it and/or modify it under the terms of the GNU General Public License  *
+     9                                  ;version 3 as published by the Free Software Foundation.  This program is distributed in the hope that it will be useful,   *
+    10                                  ;but WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See   *
+    11                                  ;the GNU General Public License for more details A copy of the GNU General Public License v3 is available here:             *
+    12                                  ;<https://www.gnu.org/licenses/>.                                                                                           *
+    13                                  ;****************************************************************************************************************************
+    14                                  
+    15                                  
+    16                                  
+    17                                  
+    18                                  ;========1=========2=========3=========4=========5=========6=========7=========8=========9=========0=========1=========2=========3**
+    19                                  ;Author information
+    20                                  ;  Author name: Nathan Warner
+    21                                  ;  CWID: 884688250
+    22                                  ;  Author email: nwarner4@csu.fullerton.edu
+    23                                  ;
+    24                                  ;Program information
+    25                                  ;  Program name: Driving Time
+    26                                  ;  Programming languages: One module in C, one in X86, and one in bash.
+    27                                  ;  Date program began: 2024-Jan-30
+    28                                  ;  Date of last update: 2024-Feb-2
+    29                                  ;  Files in this program: driving_time.c, average.asm, r.sh.
+    30                                  ;  Testing: Alpha testing completed.  All functions are correct.
+    31                                  ;  Status: Ready for release to customers
+    32                                  ;
+    33                                  ;Purpose
+    34                                  ;  This program will take in total distance traveled and average speed and find the total time of the trip,
+    35                                  ;  as well as sending the average speed of the entirety of the trip back to the driver
+    36                                  ;
+    37                                  ;This file:
+    38                                  ;  File name: average.asm
+    39                                  ;  Language: X86-64
+    40                                  ;  Max page width: 124 columns
+    41                                  ;  Assemble (standard): nasm -l average.lis -o average.o average.asm
+    42                                  ;  Assemble (debug): nasm -g dwarf -l average.lis -o average.o average.asm
+    43                                  ;  Optimal print specification: Landscape, 7 points, monospace, 8½x11 paper
+    44                                  ;  Prototype of this function: double average();
+    45                                  ; 
+    46                                  ;
+    47                                  ;
+    48                                  ;
+    49                                  ;========1=========2=========3=========4=========5=========6=========7=========8=========9=========0=========1=========2=========3**
+    50                                  
+    51                                  ;Declaration section.  The section has no name other than "Declaration section".  Declare here everything that does
+    52                                  ;not have its own place of declaration
+    53                                  
+    54                                  extern printf
+    55                                  
+    56                                  extern fgets
+    57                                  
+    58                                  extern stdin
+    59                                  
+    60                                  extern strlen
+    61                                  
+    62                                  extern scanf
+    63                                  
+    64                                  global average
+    65                                  
+    66                                  name_string_size equ 48
+    67                                  
+    68                                  title_string_size equ 48
+    69                                  
+    70                                  segment .data
+    71                                  ;This section (or segment) is for declaring initialized arrays
+    72                                  
+    73 00000000 506C6561736520656E-     name_prompt db "Please enter your first and last names: ", 0
+    73 00000009 74657220796F757220-
+    73 00000012 666972737420616E64-
+    73 0000001B 206C617374206E616D-
+    73 00000024 65733A2000         
+    74 00000029 506C6561736520656E-     title_prompt db "Please enter your title such as Lieutenant, Chief, Mr, Ms, Influencer, Chairman, Freshman,", 10, "Foreman, Project Leader, etc: ", 0
+    74 00000032 74657220796F757220-
+    74 0000003B 7469746C6520737563-
+    74 00000044 68206173204C696575-
+    74 0000004D 74656E616E742C2043-
+    74 00000056 686965662C204D722C-
+    74 0000005F 204D732C20496E666C-
+    74 00000068 75656E6365722C2043-
+    74 00000071 686169726D616E2C20-
+    74 0000007A 46726573686D616E2C-
+    74 00000083 0A466F72656D616E2C-
+    74 0000008C 2050726F6A65637420-
+    74 00000095 4C65616465722C2065-
+    74 0000009E 74633A2000         
+    75 000000A3 5468616E6B20796F75-     thank_you_p1 db "Thank you %s", 0
+    75 000000AC 20257300           
+    76 000000B0 2025730A00              thank_you_p2 db " %s", 10, 0
+    77 000000B5 0A456E746572207468-     fullerton_prompt db 10, "Enter the number of miles traveled from Fullerton to Santa Ana: ", 0
+    77 000000BE 65206E756D62657220-
+    77 000000C7 6F66206D696C657320-
+    77 000000D0 74726176656C656420-
+    77 000000D9 66726F6D2046756C6C-
+    77 000000E2 6572746F6E20746F20-
+    77 000000EB 53616E746120416E61-
+    77 000000F4 3A2000             
+    78 000000F7 0A456E746572207468-     santa_ana_prompt db 10, "Enter the number of miles traveled from Santa Ana to Long Beach: ", 0
+    78 00000100 65206E756D62657220-
+    78 00000109 6F66206D696C657320-
+    78 00000112 74726176656C656420-
+    78 0000011B 66726F6D2053616E74-
+    78 00000124 6120416E6120746F20-
+    78 0000012D 4C6F6E672042656163-
+    78 00000136 683A2000           
+    79 0000013A 0A456E746572207468-     long_beach_prompt db 10, "Enter the number of miles traveled from Long Beach to Fullerton: ", 0
+    79 00000143 65206E756D62657220-
+    79 0000014C 6F66206D696C657320-
+    79 00000155 74726176656C656420-
+    79 0000015E 66726F6D204C6F6E67-
+    79 00000167 20426561636820746F-
+    79 00000170 2046756C6C6572746F-
+    79 00000179 6E3A2000           
+    80 0000017D 456E74657220796F75-     speed_prompt db "Enter your average speed during that leg of the trip: ", 0
+    80 00000186 722061766572616765-
+    80 0000018F 207370656564206475-
+    80 00000198 72696E672074686174-
+    80 000001A1 206C6567206F662074-
+    80 000001AA 686520747269703A20-
+    80 000001B3 00                 
+    81 000001B4 256C6600                format db "%lf", 0
+    82 000001B8 54686520696E707574-     process_message db "The inputted data are being processed", 10, 10, 0
+    82 000001C1 746564206461746120-
+    82 000001CA 617265206265696E67-
+    82 000001D3 2070726F6365737365-
+    82 000001DC 640A0A00           
+    83 000001E0 54686520746F74616C-     total_distance db "The total distance traveled is %1.1lf miles.", 10, 0
+    83 000001E9 2064697374616E6365-
+    83 000001F2 2074726176656C6564-
+    83 000001FB 2069732025312E316C-
+    83 00000204 66206D696C65732E0A-
+    83 0000020D 00                 
+    84 0000020E 5468652074696D6520-     trip_time db "The time of trip is %1.8lf", 10, 0
+    84 00000217 6F6620747269702069-
+    84 00000220 732025312E386C660A-
+    84 00000229 00                 
+    85 0000022A 546865206176657261-     average_speed db "The average speed during the trip is %1.8lf mph.", 10, 0
+    85 00000233 676520737065656420-
+    85 0000023C 647572696E67207468-
+    85 00000245 652074726970206973-
+    85 0000024E 2025312E386C66206D-
+    85 00000257 70682E0A00         
+    86                                  
+    87                                  
+    88                                  
+    89                                  segment .bss
+    90                                  ;This section (or segment) is for declaring empty arrays
+    91                                  
+    92                                  align 64
+    93 00000000 <res 340h>              backup_storage_area resb 832
+    94                                  
+    95 00000340 <res 30h>               user_name resb name_string_size
+    96                                  
+    97 00000370 <res 30h>               user_title resb title_string_size
+    98                                  
+    99                                  segment .text
+   100                                  
+   101                                  average:
+   102                                  
+   103                                  ;Back up the GPRs (General Purpose Registers)
+   104 00000000 55                      push rbp
+   105 00000001 4889E5                  mov rbp, rsp
+   106 00000004 53                      push rbx
+   107 00000005 51                      push rcx
+   108 00000006 52                      push rdx
+   109 00000007 57                      push rdi
+   110 00000008 56                      push rsi
+   111 00000009 4150                    push r8
+   112 0000000B 4151                    push r9
+   113 0000000D 4152                    push r10
+   114 0000000F 4153                    push r11
+   115 00000011 4154                    push r12
+   116 00000013 4155                    push r13
+   117 00000015 4156                    push r14
+   118 00000017 4157                    push r15
+   119 00000019 9C                      pushf
+   120                                  
+   121                                  ;Backup the registers other than the GPRs
+   122 0000001A B807000000              mov rax,7
+   123 0000001F BA00000000              mov rdx,0
+   124 00000024 0FAE2425[00000000]      xsave [backup_storage_area]
+   125                                  
+   126                                  ;Output prompt for first and last name
+   127 0000002C B800000000              mov rax, 0
+   128 00000031 48BF-                   mov rdi, name_prompt
+   128 00000033 [0000000000000000] 
+   129 0000003B E8(00000000)            call printf
+   130                                  
+   131                                  ;Input user names
+   132 00000040 B800000000              mov rax, 0
+   133 00000045 48BF-                   mov rdi, user_name
+   133 00000047 [4003000000000000] 
+   134 0000004F BE30000000              mov rsi, name_string_size
+   135 00000054 488B1425[00000000]      mov rdx, [stdin]
+   136 0000005C E8(00000000)            call fgets
+   137                                  
+   138                                  ;Remove newline
+   139 00000061 B800000000              mov rax, 0
+   140 00000066 48BF-                   mov rdi, user_name
+   140 00000068 [4003000000000000] 
+   141 00000070 E8(00000000)            call strlen
+   142 00000075 C680[3F030000]00        mov [user_name+rax-1], byte 0
+   143                                  
+   144                                  ;Output prompt for user's title
+   145 0000007C B800000000              mov rax, 0
+   146 00000081 48BF-                   mov rdi, title_prompt
+   146 00000083 [2900000000000000] 
+   147 0000008B E8(00000000)            call printf
+   148                                  
+   149                                  ;Input user title
+   150 00000090 B800000000              mov rax, 0
+   151 00000095 48BF-                   mov rdi, user_title
+   151 00000097 [7003000000000000] 
+   152 0000009F BE30000000              mov rsi, title_string_size
+   153 000000A4 488B1425[00000000]      mov rdx, [stdin]
+   154 000000AC E8(00000000)            call fgets
+   155                                  
+   156                                  ;Remove newline
+   157 000000B1 B800000000              mov rax, 0
+   158 000000B6 48BF-                   mov rdi, user_title
+   158 000000B8 [7003000000000000] 
+   159 000000C0 E8(00000000)            call strlen
+   160 000000C5 C680[6F030000]00        mov [user_title+rax-1], byte 0
+   161                                  
+   162                                  ;Say thank you part 1
+   163 000000CC B800000000              mov rax, 0
+   164 000000D1 48BF-                   mov rdi, thank_you_p1
+   164 000000D3 [A300000000000000] 
+   165 000000DB 48BE-                   mov rsi, user_title
+   165 000000DD [7003000000000000] 
+   166 000000E5 E8(00000000)            call printf
+   167                                  
+   168                                  ;Say thank you part 2
+   169 000000EA B800000000              mov rax, 0
+   170 000000EF 48BF-                   mov rdi, thank_you_p2
+   170 000000F1 [B000000000000000] 
+   171 000000F9 48BE-                   mov rsi, user_name
+   171 000000FB [4003000000000000] 
+   172 00000103 E8(00000000)            call printf
+   173                                  
+   174                                  
+   175                                  
+   176                                  
+   177                                  ;Ask for number of miles from Fullerton to Santa Ana
+   178 00000108 B800000000              mov rax, 0
+   179 0000010D 48BF-                   mov rdi, fullerton_prompt
+   179 0000010F [B500000000000000] 
+   180 00000117 E8(00000000)            call printf
+   181                                  
+   182                                  ;Input number of miles from Fullerton to Santa Ana
+   183 0000011C 48BF-                   mov rdi, format
+   183 0000011E [B401000000000000] 
+   184 00000126 6AF7                    push qword -9
+   185 00000128 6AF7                    push qword -9
+   186 0000012A 4889E6                  mov rsi, rsp
+   187 0000012D E8(00000000)            call scanf
+   188 00000132 F2440F101424            movsd xmm10, [rsp]
+   189 00000138 58                      pop rax
+   190 00000139 58                      pop rax
+   191                                  
+   192                                  
+   193                                  ;Ask for average speed from Fullerton to Santa Ana
+   194 0000013A B800000000              mov rax, 0
+   195 0000013F 48BF-                   mov rdi, speed_prompt
+   195 00000141 [7D01000000000000] 
+   196 00000149 E8(00000000)            call printf
+   197                                  
+   198                                  ;Input average speed from Fullerton to Santa Ana
+   199 0000014E 48BF-                   mov rdi, format
+   199 00000150 [B401000000000000] 
+   200 00000158 6AF7                    push qword -9
+   201 0000015A 6AF7                    push qword -9
+   202 0000015C 4889E6                  mov rsi, rsp
+   203 0000015F E8(00000000)            call scanf
+   204 00000164 F2440F101C24            movsd xmm11, [rsp]
+   205 0000016A 58                      pop rax
+   206 0000016B 58                      pop rax
+   207                                  
+   208                                  
+   209                                  
+   210                                  ;Ask for number of miles from Santa Ana to Long Beach
+   211 0000016C B800000000              mov rax, 0
+   212 00000171 48BF-                   mov rdi, santa_ana_prompt
+   212 00000173 [F700000000000000] 
+   213 0000017B E8(00000000)            call printf
+   214                                  
+   215                                  ;Input number of miles from Santa Ana to Long Beach
+   216 00000180 48BF-                   mov rdi, format
+   216 00000182 [B401000000000000] 
+   217 0000018A 6AF7                    push qword -9
+   218 0000018C 6AF7                    push qword -9
+   219 0000018E 4889E6                  mov rsi, rsp
+   220 00000191 E8(00000000)            call scanf
+   221 00000196 F2440F102424            movsd xmm12, [rsp]
+   222 0000019C 58                      pop rax
+   223 0000019D 58                      pop rax
+   224                                  
+   225                                  
+   226                                  
+   227                                  ;Ask for average speed from Santa Ana to Long Beach
+   228 0000019E B800000000              mov rax, 0
+   229 000001A3 48BF-                   mov rdi, speed_prompt
+   229 000001A5 [7D01000000000000] 
+   230 000001AD E8(00000000)            call printf
+   231                                  
+   232                                  ;Input average speed from Santa Ana to Long Beach
+   233 000001B2 48BF-                   mov rdi, format
+   233 000001B4 [B401000000000000] 
+   234 000001BC 6AF7                    push qword -9
+   235 000001BE 6AF7                    push qword -9
+   236 000001C0 4889E6                  mov rsi, rsp
+   237 000001C3 E8(00000000)            call scanf
+   238 000001C8 F2440F102C24            movsd xmm13, [rsp]
+   239 000001CE 58                      pop rax
+   240 000001CF 58                      pop rax
+   241                                  
+   242                                  
+   243                                  
+   244                                  ;Ask for number of miles from Long Beach to Fullerton
+   245 000001D0 B800000000              mov rax, 0
+   246 000001D5 48BF-                   mov rdi, long_beach_prompt
+   246 000001D7 [3A01000000000000] 
+   247 000001DF E8(00000000)            call printf
+   248                                  
+   249                                  ;Input number of miles from Long Beach to Fullerton
+   250 000001E4 48BF-                   mov rdi, format
+   250 000001E6 [B401000000000000] 
+   251 000001EE 6AF7                    push qword -9
+   252 000001F0 6AF7                    push qword -9
+   253 000001F2 4889E6                  mov rsi, rsp
+   254 000001F5 E8(00000000)            call scanf
+   255 000001FA F2440F103424            movsd xmm14, [rsp]
+   256 00000200 58                      pop rax
+   257 00000201 58                      pop rax
+   258                                  
+   259                                  
+   260                                  
+   261                                  ;Ask for average speed from Long Beach to Fullerton
+   262 00000202 B800000000              mov rax, 0
+   263 00000207 48BF-                   mov rdi, speed_prompt
+   263 00000209 [7D01000000000000] 
+   264 00000211 E8(00000000)            call printf
+   265                                  
+   266                                  ;Input average speed from Long Beach to Fullerton
+   267 00000216 48BF-                   mov rdi, format
+   267 00000218 [B401000000000000] 
+   268 00000220 6AF7                    push qword -9
+   269 00000222 6AF7                    push qword -9
+   270 00000224 4889E6                  mov rsi, rsp
+   271 00000227 E8(00000000)            call scanf
+   272 0000022C F2440F103C24            movsd xmm15, [rsp]
+   273 00000232 58                      pop rax
+   274 00000233 58                      pop rax
+   275                                  
+   276                                  
+   277                                  
+   278                                  ;Get total distance traveled
+   279 00000234 F2410F10FA              movsd xmm7, xmm10
+   280 00000239 F2410F58FC              addsd xmm7, xmm12
+   281 0000023E F2410F58FE              addsd xmm7, xmm14
+   282                                  
+   283                                  
+   284                                  ;Get total time
+   285                                  ;Get first trip time
+   286 00000243 F2410F10C2              movsd xmm0, xmm10
+   287 00000248 F2410F5EC3              divsd xmm0, xmm11
+   288                                  
+   289                                  ;Get second trip time
+   290 0000024D F2410F10CC              movsd xmm1, xmm12
+   291 00000252 F2410F5ECD              divsd xmm1, xmm13
+   292                                  
+   293                                  ;Get third trip time
+   294 00000257 F2410F10D6              movsd xmm2, xmm14
+   295 0000025C F2410F5ED7              divsd xmm2, xmm15
+   296                                  
+   297                                  ;Add them together
+   298 00000261 F20F58C1                addsd xmm0, xmm1
+   299 00000265 F20F58C2                addsd xmm0, xmm2
+   300                                  
+   301                                  
+   302                                  
+   303                                  ;Get average speed
+   304 00000269 F20F10DF                movsd xmm3, xmm7
+   305 0000026D F20F5ED8                divsd xmm3, xmm0
+   306                                  
+   307                                  
+   308                                  
+   309                                  
+   310                                  ;Store output values in registers xmm13-xmm15
+   311                                  ;Total Distance
+   312 00000271 F2440F10EF              movsd xmm13, xmm7
+   313                                  ;Average Speed
+   314 00000276 F2440F10F3              movsd xmm14, xmm3
+   315                                  ;Total time
+   316 0000027B F2440F10F8              movsd xmm15, xmm0
+   317                                  
+   318                                  
+   319                                  ;Output to let user know that data is being processed
+   320 00000280 B800000000              mov rax, 0
+   321 00000285 48BF-                   mov rdi, process_message
+   321 00000287 [B801000000000000] 
+   322 0000028F E8(00000000)            call printf
+   323                                  
+   324                                  
+   325                                  ;Output total distance traveled
+   326 00000294 B801000000              mov rax, 1
+   327 00000299 48BF-                   mov rdi, total_distance
+   327 0000029B [E001000000000000] 
+   328 000002A3 48BE-                   mov rsi, format
+   328 000002A5 [B401000000000000] 
+   329 000002AD F2410F10C5              movsd xmm0, xmm13
+   330 000002B2 E8(00000000)            call printf
+   331                                  
+   332                                  
+   333                                  
+   334                                  ;Output total time of trip
+   335 000002B7 B801000000              mov rax, 1
+   336 000002BC 48BF-                   mov rdi, trip_time
+   336 000002BE [0E02000000000000] 
+   337 000002C6 48BE-                   mov rsi, format
+   337 000002C8 [B401000000000000] 
+   338 000002D0 F2410F10C7              movsd xmm0, xmm15
+   339 000002D5 E8(00000000)            call printf
+   340                                  
+   341                                  
+   342                                  
+   343                                  ;Output average speed
+   344 000002DA B801000000              mov rax, 1
+   345 000002DF 48BF-                   mov rdi, average_speed
+   345 000002E1 [2A02000000000000] 
+   346 000002E9 48BE-                   mov rsi, format
+   346 000002EB [B401000000000000] 
+   347 000002F3 F2410F10C6              movsd xmm0, xmm14
+   348 000002F8 E8(00000000)            call printf
+   349                                  
+   350                                  
+   351                                  
+   352                                  ;Back up value in xmm14 before restoring registers
+   353 000002FD 6A00                    push qword 0
+   354 000002FF F2440F113424            movsd [rsp], xmm14
+   355                                  
+   356                                  
+   357                                  ;Restore the values to non-GPRs
+   358 00000305 B807000000              mov rax, 7
+   359 0000030A BA00000000              mov rdx, 0
+   360 0000030F 0FAE2C25[00000000]      xrstor [backup_storage_area]
+   361                                  
+   362                                  
+   363 00000317 F20F100424              movsd xmm0, [rsp]
+   364 0000031C 58                      pop rax
+   365                                  
+   366                                  
+   367                                  ;Restore the GPRs
+   368 0000031D 9D                      popf
+   369 0000031E 415F                    pop r15
+   370 00000320 415E                    pop r14
+   371 00000322 415D                    pop r13
+   372 00000324 415C                    pop r12
+   373 00000326 415B                    pop r11
+   374 00000328 415A                    pop r10
+   375 0000032A 4159                    pop r9
+   376 0000032C 4158                    pop r8
+   377 0000032E 5E                      pop rsi
+   378 0000032F 5F                      pop rdi
+   379 00000330 5A                      pop rdx
+   380 00000331 59                      pop rcx
+   381 00000332 5B                      pop rbx
+   382 00000333 5D                      pop rbp   ;Restore rbp to the base of the activation record of the caller program
+   383 00000334 C3                      ret
+   384                                  ;End of the function average.asm ====================================================================
