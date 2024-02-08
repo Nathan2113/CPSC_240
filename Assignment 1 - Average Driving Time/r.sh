@@ -2,6 +2,7 @@
 
 #Program name "Driving Time"
 #Author: Nathan Warner
+#CWID: 884688250
 #This file is the script file that accompanies the "Driving Time" program.
 
 #Delete some un-needed files
