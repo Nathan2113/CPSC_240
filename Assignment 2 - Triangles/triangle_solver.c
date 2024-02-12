@@ -1,9 +1,7 @@
+// Change Comments
+
 // ****************************************************************************************************************************
-// Program name: "Driving Time". This program will take in the user's full name, their title, and the distances they have     *
-// traveled from Fullerton -> Santa Ana, Santa Ana -> Long Beach, and Long Beach -> Fullerton, as well as their average       *
-// speed for each trip. Once the program has the total distance traveled and the average speed of the entire trip, the        *
-// program will calculate the total time of the trip, then the assembly file will send the average speed back to the driver
-// function                                                                                                                   *
+// Program name: "Amazing Triangles"                                                                                                         *
 //                                                                                                                            *
 // This program is free software: you can redistribute it and/or modify it under the terms of the GNU General Public License  *
 // version 3 as published by the Free Software Foundation.  This program is distributed in the hope that it will be useful,   *
@@ -51,14 +49,14 @@
 //#include <string.h>
 //#include <stdlib.h>
 
-extern double average();
+extern double triangle_SAS();
 
 int main(int argc, const char * argv[])
-{printf("Welcome to Driving Time maintained by Nathan Warner\n");
- double averageSpeed = 0;
- averageSpeed = average();
- printf("\nThe driver has received this number %1.8lf and will keep it for future use.\n",averageSpeed);
- printf("Have a great day\n\n");
- printf("A zero will be sent to the operating system as a signal of a successful execution\n");
+{printf("Welcome to Amazing Triangles programmed by Nathan Warner on February 11, 2024.\n");
+ double thirdLength = 0;
+ thirdLength = triangle_SAS();
+ printf("\nThe driver has received this number %1.8lf and will simply keep it.\n\n",thirdLength);
+ printf("An integer zero will now be sent to the operating system. Bye\n");
 }
 
+// Change Comments

@@ -1,3 +1,5 @@
+;Change Comments
+
 ;****************************************************************************************************************************
 ;Program name: "Driving Time". This program will take in the user's full name, their title, and the distances they have     *
 ;traveled from Fullerton -> Santa Ana, Santa Ana -> Long Beach, and Long Beach -> Fullerton, as well as their average       *
@@ -60,7 +62,7 @@ extern strlen
 
 extern scanf
 
-global average
+global triangle_SAS
 
 name_string_size equ 48
 
@@ -97,7 +99,7 @@ user_title resb title_string_size
 
 segment .text
 
-average:
+triangle_SAS:
 
 ;Back up the GPRs (General Purpose Registers)
 push rbp
@@ -381,3 +383,5 @@ pop rbx
 pop rbp   ;Restore rbp to the base of the activation record of the caller program
 ret
 ;End of the function average.asm ====================================================================
+
+;Change Comments

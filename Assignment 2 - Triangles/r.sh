@@ -1,18 +1,18 @@
 #/bin/bash
 
-#Program name "Driving Time"
+#Program name "Amazing Triangles"
 #Author: Nathan Warner
-#This file is the script file that accompanies the "Driving Time" program.
+#This file is the script file that accompanies the "Amazing Triangles" program.
 
 #Delete some un-needed files
 rm *.o
 rm *.out
 
-nasm -f elf64 -l average.lis -o average.o average.asm
+nasm -f elf64 -l triangle.lis -o triangle.o triangle.asm
 
-gcc  -m64 -Wall -no-pie -o driving_time.o -std=c2x -c driving_time.c
+gcc  -m64 -Wall -no-pie -o triangle_solver.o -std=c2x -c triangle_solver.c
 
-gcc -m64 -no-pie -o driving_time.out average.o driving_time.o -std=c2x -Wall -z noexecstack
+gcc -m64 -no-pie -o triangle_solver.out triangle.o triangle_solver.o -std=c2x -Wall -z noexecstack
 
-chmod +x driving_time.out
-./driving_time.out
+chmod +x triangle_solver.out
+./triangle_solver.out
