@@ -62,6 +62,8 @@ extern strlen
 
 extern scanf
 
+extern cos
+
 global triangle_SAS
 
 name_string_size equ 48
@@ -71,20 +73,16 @@ title_string_size equ 48
 segment .data
 ;This section (or segment) is for declaring initialized arrays
 
-name_prompt db "Please enter your first and last names: ", 0
-title_prompt db "Please enter your title such as Lieutenant, Chief, Mr, Ms, Influencer, Chairman, Freshman,", 10, "Foreman, Project Leader, etc: ", 0
-thank_you_p1 db "Thank you %s", 0
-thank_you_p2 db " %s", 10, 0
-fullerton_prompt db 10, "Enter the number of miles traveled from Fullerton to Santa Ana: ", 0
-santa_ana_prompt db 10, "Enter the number of miles traveled from Santa Ana to Long Beach: ", 0
-long_beach_prompt db 10, "Enter the number of miles traveled from Long Beach to Fullerton: ", 0
-speed_prompt db "Enter your average speed during that leg of the trip: ", 0
+name_prompt db "Please enter your name: ", 0
+title_prompt db "Please enter your title (Sergeant, Chief, CEO, President, Teacher, etc): ", 0
+good_morning_msg db 10, "Good morning %s %s. We take care of all your triangles.", 10, 0
+first_side_prompt db 10, "Please enter the length of the first side: ", 0
+second_side_prompt db 10, "Please enter the length of the second side: ", 0
+angle_prompt db 10, "Please enter the angle in degrees: ", 0
 format db "%lf", 0
-process_message db "The inputted data are being processed", 10, 10, 0
-total_distance db "The total distance traveled is %1.1lf miles.", 10, 0
-trip_time db "The time of trip is %1.8lf", 10, 0
-average_speed db "The average speed during the trip is %1.8lf mph.", 10, 0
-
+output_values_test db 10, "First side: %1.6lf, Second side: %1.6lf, Angle size: %1.3lf", 0
+output_third_length db 10, 10, "The length of the third side is %1.6lf", 10, 0
+length_send_message db 10, "The length will be sent to the driver program", 10, 10, 0
 
 
 segment .bss
@@ -160,194 +158,104 @@ mov rdi, user_title
 call strlen
 mov [user_title+rax-1], byte 0
 
-;Say thank you part 1
+
+
+;Say good morning to the user
 mov rax, 0
-mov rdi, thank_you_p1
+mov rdi, good_morning_msg
 mov rsi, user_title
+mov rdx, user_name
 call printf
 
-;Say thank you part 2
+
+
+
+; Ask for length of first side
 mov rax, 0
-mov rdi, thank_you_p2
-mov rsi, user_name
+mov rdi, first_side_prompt
 call printf
 
+;Input length of first side
+mov rdi, format
+push qword -9
+push qword -9
+mov rsi, rsp
+call scanf
+movsd xmm8, [rsp]
+pop r9
+pop r8
 
 
 
-;Ask for number of miles from Fullerton to Santa Ana
+;Ask for length of second side
 mov rax, 0
-mov rdi, fullerton_prompt
+mov rdi, second_side_prompt
 call printf
 
-;Input number of miles from Fullerton to Santa Ana
+;Input length of second side
+mov rdi, format
+push qword -9
+push qword -9
+mov rsi, rsp
+call scanf
+movsd xmm9, [rsp]
+pop r9
+pop r8
+
+
+;Ask for size of the angle
+mov rax, 0
+mov rdi, angle_prompt
+call printf
+
+;Input size of angle
 mov rdi, format
 push qword -9
 push qword -9
 mov rsi, rsp
 call scanf
 movsd xmm10, [rsp]
-pop rax
-pop rax
+pop r9
+pop r8
 
 
-;Ask for average speed from Fullerton to Santa Ana
-mov rax, 0
-mov rdi, speed_prompt
-call printf
-
-;Input average speed from Fullerton to Santa Ana
-mov rdi, format
-push qword -9
-push qword -9
-mov rsi, rsp
-call scanf
-movsd xmm11, [rsp]
-pop rax
-pop rax
-
-
-
-;Ask for number of miles from Santa Ana to Long Beach
-mov rax, 0
-mov rdi, santa_ana_prompt
-call printf
-
-;Input number of miles from Santa Ana to Long Beach
-mov rdi, format
-push qword -9
-push qword -9
-mov rsi, rsp
-call scanf
-movsd xmm12, [rsp]
-pop rax
-pop rax
-
-
-
-;Ask for average speed from Santa Ana to Long Beach
-mov rax, 0
-mov rdi, speed_prompt
-call printf
-
-;Input average speed from Santa Ana to Long Beach
-mov rdi, format
-push qword -9
-push qword -9
-mov rsi, rsp
-call scanf
-movsd xmm13, [rsp]
-pop rax
-pop rax
-
-
-
-;Ask for number of miles from Long Beach to Fullerton
-mov rax, 0
-mov rdi, long_beach_prompt
-call printf
-
-;Input number of miles from Long Beach to Fullerton
-mov rdi, format
-push qword -9
-push qword -9
-mov rsi, rsp
-call scanf
-movsd xmm14, [rsp]
-pop rax
-pop rax
-
-
-
-;Ask for average speed from Long Beach to Fullerton
-mov rax, 0
-mov rdi, speed_prompt
-call printf
-
-;Input average speed from Long Beach to Fullerton
-mov rdi, format
-push qword -9
-push qword -9
-mov rsi, rsp
-call scanf
-movsd xmm15, [rsp]
-pop rax
-pop rax
-
-
-
-;Get total distance traveled
-movsd xmm7, xmm10
-addsd xmm7, xmm12
-addsd xmm7, xmm14
-
-
-;Get total time
-;Get first trip time
-movsd xmm0, xmm10
-divsd xmm0, xmm11
-
-;Get second trip time
-movsd xmm1, xmm12
-divsd xmm1, xmm13
-
-;Get third trip time
-movsd xmm2, xmm14
-divsd xmm2, xmm15
-
-;Add them together
-addsd xmm0, xmm1
-addsd xmm0, xmm2
-
-
-
-;Get average speed
-movsd xmm3, xmm7
-divsd xmm3, xmm0
-
-
-
-
-;Store output values in registers xmm13-xmm15
-;Total Distance
-movsd xmm13, xmm7
-;Average Speed
-movsd xmm14, xmm3
-;Total time
-movsd xmm15, xmm0
-
-
-;Output to let user know that data is being processed
-mov rax, 0
-mov rdi, process_message
-call printf
-
-
-;Output total distance traveled
+;TEST OUTPUT ALL VALUES
+; SEG FAULT - Check average code
 mov rax, 1
-mov rdi, total_distance
+mov rdi, output_values_test
 mov rsi, format
-movsd xmm0, xmm13
+movsd xmm0, xmm8
+movsd xmm1, xmm9
+movsd xmm2, xmm10
 call printf
 
 
+;Calculate the length of the third side, answer should come out to 9.01971
+;Formula for SAS Triangles: a^2 = b^2 + c^2 - 2bc(cosA)
+;The following registers and their respective values they hold:
+;b = xmm8
+;c = xmm9
+;A = xmm10
+;a = xmm15 (value of third side being calculated)
 
-;Output total time of trip
+
+
+
+;Output length of third side
 mov rax, 1
-mov rdi, trip_time
+mov rdi, output_third_length
 mov rsi, format
-movsd xmm0, xmm15
+movsd xmm3, xmm11
 call printf
 
 
 
-;Output average speed
+;Output confirmation that the third length is being sent to driver
 mov rax, 1
-mov rdi, average_speed
+mov rdi, length_send_message
 mov rsi, format
-movsd xmm0, xmm14
+movsd xmm0, xmm3
 call printf
-
 
 
 ;Back up value in xmm14 before restoring registers
