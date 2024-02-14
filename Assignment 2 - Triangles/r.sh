@@ -12,7 +12,8 @@ nasm -f elf64 -l triangle.lis -o triangle.o triangle.asm
 
 gcc  -m64 -Wall -no-pie -o triangle_solver.o -std=c2x -c triangle_solver.c
 
-gcc -m64 -no-pie -o triangle_solver.out triangle.o triangle_solver.o -std=c2x -Wall -z noexecstack
+#may need to add -lm
+gcc -m64 -no-pie -o triangle_solver.out triangle.o triangle_solver.o -std=c2x -Wall -z noexecstack -lm
 
 chmod +x triangle_solver.out
 ./triangle_solver.out
