@@ -73,8 +73,8 @@ false equ 0
 segment .data
 ;This section (or segment) is for declaring initialized arrays
 
-name_prompt db "Please enter your name: ", 0
-title_prompt db "Please enter your title (Sergeant, Chief, CEO, President, Teacher, etc): ", 0
+name_prompt db 10, "Please enter your name: ", 0
+title_prompt db 10, "Please enter your title (Sergeant, Chief, CEO, President, Teacher, etc): ", 0
 good_morning_msg db 10, "Good morning %s %s. We take care of all your triangles.", 10, 10, 0
 first_side_prompt db "Please enter the length of the first side: ", 0
 second_side_prompt db "Please enter the length of the second side: ", 0
@@ -196,7 +196,7 @@ get_first_side:
     call strlen
     mov [rsp + rax - 1], byte 0
 
-    ;Check if input is a float
+    ;Check if input is a postive float
     mov rax, 0
     mov rdi, rsp
     call isfloat
@@ -207,9 +207,15 @@ get_first_side:
     mov rax, 0
     mov rdi, rsp
     call atof
-    movsd xmm8, xmm0
+    movsd xmm10, xmm0
+
+    ;Adds 1 to r15, which enables the program to jump to get_second_side after invalid inputs
     add r15, 1
+
+    ;Fixes the stack
     add rsp, 4096
+
+    jmp get_second_side
 
 
 
@@ -245,9 +251,15 @@ get_second_side:
     mov rax, 0
     mov rdi, rsp
     call atof
-    movsd xmm9, xmm0
+    movsd xmm11, xmm0
+
+    ;Adds 1 to r15, which enables the program to jump to get_second_side after invalid inputs
     add r15, 1
+
+    ;Fixes the stack
     add rsp, 4096
+
+    jmp get_angle
 
 
 
@@ -283,9 +295,16 @@ get_angle:
     mov rax, 0
     mov rdi, rsp
     call atof
-    movsd xmm10, xmm0
+    movsd xmm12, xmm0
+
+    ;Adds 1 to r15, which enables the program to jump to get_second_side after invalid inputs
     add r15, 1
+
+    ;Fixes stack
     add rsp, 4096
+
+    ;Jumps to exit
+    jmp exit
 
 
 
@@ -326,10 +345,14 @@ exit:
     mov rdi, thank_you_message
     mov rsi, user_name
     mov rcx, format
-    movsd xmm0, xmm8
-    movsd xmm1, xmm9
-    movsd xmm2, xmm10
+    movsd xmm0, xmm10
+    movsd xmm1, xmm11
+    movsd xmm2, xmm12
     call printf
+
+    movsd xmm8, xmm10
+    movsd xmm9, xmm11
+    movsd xmm10, xmm12
 
 
 

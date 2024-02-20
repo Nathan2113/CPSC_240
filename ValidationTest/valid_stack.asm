@@ -98,19 +98,12 @@ get_input:
     call    strlen
     mov     [rsp + rax - 1], byte 0
 
-    ;Check if input is a float
+    ;Check if input is a positive float
     mov     rax, 0
     mov     rdi, rsp
     call    isfloat
     cmp     rax, false
     je      bad_input
-
-    ;Check if the input is positive
-    mov rax, 0
-    mov rdi, rsp
-    call isdigit
-    cmp rax, false
-    je bad_input
 
     ; Convert the input from string to float
     mov     rax, 0
