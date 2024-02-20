@@ -1,3 +1,5 @@
+#Change comments (put all dev info)
+
 #/bin/bash
 
 #Program name "Amazing Triangles"
@@ -17,3 +19,5 @@ gcc -m64 -no-pie -o triangle_solver.out triangle.o triangle_solver.o -std=c2x -W
 
 chmod +x triangle_solver.out
 ./triangle_solver.out
+
+#Change comments (put all dev info)

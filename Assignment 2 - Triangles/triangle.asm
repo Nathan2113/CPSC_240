@@ -183,8 +183,7 @@ call printf
 
 
 
-
-; Ask for length of first side
+;Ask for length of first side
 mov rax, 0
 mov rdi, first_side_prompt
 call printf

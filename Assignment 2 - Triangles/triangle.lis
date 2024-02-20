@@ -270,244 +270,243 @@
    183                                  
    184                                  
    185                                  
-   186                                  
-   187                                  ; Ask for length of first side
-   188 000000F4 B800000000              mov rax, 0
-   189 000000F9 48BF-                   mov rdi, first_side_prompt
-   189 000000FB [9D00000000000000] 
-   190 00000103 E8(00000000)            call printf
-   191                                  
-   192                                  ;Input length of first side
-   193 00000108 48BF-                   mov rdi, format
-   193 0000010A [1B01000000000000] 
-   194 00000112 6AF7                    push qword -9
-   195 00000114 6AF7                    push qword -9
-   196 00000116 4889E6                  mov rsi, rsp
-   197 00000119 E8(00000000)            call scanf
-   198 0000011E F2440F100424            movsd xmm8, [rsp]
-   199 00000124 4159                    pop r9
-   200 00000126 4158                    pop r8
+   186                                  ;Ask for length of first side
+   187 000000F4 B800000000              mov rax, 0
+   188 000000F9 48BF-                   mov rdi, first_side_prompt
+   188 000000FB [9D00000000000000] 
+   189 00000103 E8(00000000)            call printf
+   190                                  
+   191                                  ;Input length of first side
+   192 00000108 48BF-                   mov rdi, format
+   192 0000010A [1B01000000000000] 
+   193 00000112 6AF7                    push qword -9
+   194 00000114 6AF7                    push qword -9
+   195 00000116 4889E6                  mov rsi, rsp
+   196 00000119 E8(00000000)            call scanf
+   197 0000011E F2440F100424            movsd xmm8, [rsp]
+   198 00000124 4159                    pop r9
+   199 00000126 4158                    pop r8
+   200                                  
    201                                  
    202                                  
-   203                                  
-   204                                  ;Ask for length of second side
-   205 00000128 B800000000              mov rax, 0
-   206 0000012D 48BF-                   mov rdi, second_side_prompt
-   206 0000012F [CA00000000000000] 
-   207 00000137 E8(00000000)            call printf
-   208                                  
-   209                                  ;Input length of second side
-   210 0000013C 48BF-                   mov rdi, format
-   210 0000013E [1B01000000000000] 
-   211 00000146 6AF7                    push qword -9
-   212 00000148 6AF7                    push qword -9
-   213 0000014A 4889E6                  mov rsi, rsp
-   214 0000014D E8(00000000)            call scanf
-   215 00000152 F2440F100C24            movsd xmm9, [rsp]
-   216 00000158 4159                    pop r9
-   217 0000015A 4158                    pop r8
+   203                                  ;Ask for length of second side
+   204 00000128 B800000000              mov rax, 0
+   205 0000012D 48BF-                   mov rdi, second_side_prompt
+   205 0000012F [CA00000000000000] 
+   206 00000137 E8(00000000)            call printf
+   207                                  
+   208                                  ;Input length of second side
+   209 0000013C 48BF-                   mov rdi, format
+   209 0000013E [1B01000000000000] 
+   210 00000146 6AF7                    push qword -9
+   211 00000148 6AF7                    push qword -9
+   212 0000014A 4889E6                  mov rsi, rsp
+   213 0000014D E8(00000000)            call scanf
+   214 00000152 F2440F100C24            movsd xmm9, [rsp]
+   215 00000158 4159                    pop r9
+   216 0000015A 4158                    pop r8
+   217                                  
    218                                  
-   219                                  
-   220                                  ;Ask for size of the angle
-   221 0000015C B800000000              mov rax, 0
-   222 00000161 48BF-                   mov rdi, angle_prompt
-   222 00000163 [F700000000000000] 
-   223 0000016B E8(00000000)            call printf
-   224                                  
-   225                                  ;Input size of angle
-   226 00000170 48BF-                   mov rdi, format
-   226 00000172 [1B01000000000000] 
-   227 0000017A 6AF7                    push qword -9
-   228 0000017C 6AF7                    push qword -9
-   229 0000017E 4889E6                  mov rsi, rsp
-   230 00000181 E8(00000000)            call scanf
-   231 00000186 F2440F101424            movsd xmm10, [rsp]
-   232 0000018C 4159                    pop r9
-   233 0000018E 4158                    pop r8
+   219                                  ;Ask for size of the angle
+   220 0000015C B800000000              mov rax, 0
+   221 00000161 48BF-                   mov rdi, angle_prompt
+   221 00000163 [F700000000000000] 
+   222 0000016B E8(00000000)            call printf
+   223                                  
+   224                                  ;Input size of angle
+   225 00000170 48BF-                   mov rdi, format
+   225 00000172 [1B01000000000000] 
+   226 0000017A 6AF7                    push qword -9
+   227 0000017C 6AF7                    push qword -9
+   228 0000017E 4889E6                  mov rsi, rsp
+   229 00000181 E8(00000000)            call scanf
+   230 00000186 F2440F101424            movsd xmm10, [rsp]
+   231 0000018C 4159                    pop r9
+   232 0000018E 4158                    pop r8
+   233                                  
    234                                  
    235                                  
-   236                                  
-   237                                  ;Calculate the length of the third side, answer should come out to 9.01971
-   238                                  ;Formula for SAS Triangles: a^2 = b^2 + c^2 - 2bc(cosA)
-   239                                  ;The following registers and their respective values they hold:
-   240                                  ;b = xmm8
-   241                                  ;c = xmm9
-   242                                  ;A = xmm10
-   243                                  ;b^2 = xmm11
-   244                                  ;c^2 = xmm12
-   245                                  ;2 = xmm13
-   246                                  ;2*b*c = xmm13 (values will be multiplied into xmm13, which already holds 2)
-   247                                  ;cos(A) = xmm14
-   248                                  ;a = xmm15 (value of third side being calculated)
-   249                                  ;xmm11 will hold the cosine of the angle
+   236                                  ;Calculate the length of the third side, answer should come out to 9.01971
+   237                                  ;Formula for SAS Triangles: a^2 = b^2 + c^2 - 2bc(cosA)
+   238                                  ;The following registers and their respective values they hold:
+   239                                  ;b = xmm8
+   240                                  ;c = xmm9
+   241                                  ;A = xmm10
+   242                                  ;b^2 = xmm11
+   243                                  ;c^2 = xmm12
+   244                                  ;2 = xmm13
+   245                                  ;2*b*c = xmm13 (values will be multiplied into xmm13, which already holds 2)
+   246                                  ;cos(A) = xmm14
+   247                                  ;a = xmm15 (value of third side being calculated)
+   248                                  ;xmm11 will hold the cosine of the angle
+   249                                  
    250                                  
    251                                  
    252                                  
-   253                                  
-   254                                  ;Square value of b (xmm8) and store value in xmm11
-   255 00000190 F2450F10D8              movsd xmm11, xmm8
-   256 00000195 F2450F59DB              mulsd xmm11, xmm11
-   257                                  
-   258                                  ; ;Output square value
-   259                                  ; mov rax, 1
-   260                                  ; mov rdi, square_val_test
-   261                                  ; mov rsi, format
-   262                                  ; movsd xmm0, xmm11
-   263                                  ; call printf
+   253                                  ;Square value of b (xmm8) and store value in xmm11
+   254 00000190 F2450F10D8              movsd xmm11, xmm8
+   255 00000195 F2450F59DB              mulsd xmm11, xmm11
+   256                                  
+   257                                  ; ;Output square value
+   258                                  ; mov rax, 1
+   259                                  ; mov rdi, square_val_test
+   260                                  ; mov rsi, format
+   261                                  ; movsd xmm0, xmm11
+   262                                  ; call printf
+   263                                  
    264                                  
    265                                  
-   266                                  
-   267                                  ;Square value of c (xmm9) and store value in xmm12
-   268 0000019A F2450F10E1              movsd xmm12, xmm9
-   269 0000019F F2450F59E4              mulsd xmm12, xmm12
-   270                                  
-   271                                  ; ;Output square value
-   272                                  ; mov rax, 1
-   273                                  ; mov rdi, square_val_test
-   274                                  ; mov rsi, format
-   275                                  ; movsd xmm0, xmm12
-   276                                  ; call printf
+   266                                  ;Square value of c (xmm9) and store value in xmm12
+   267 0000019A F2450F10E1              movsd xmm12, xmm9
+   268 0000019F F2450F59E4              mulsd xmm12, xmm12
+   269                                  
+   270                                  ; ;Output square value
+   271                                  ; mov rax, 1
+   272                                  ; mov rdi, square_val_test
+   273                                  ; mov rsi, format
+   274                                  ; movsd xmm0, xmm12
+   275                                  ; call printf
+   276                                  
    277                                  
-   278                                  
-   279                                  ;Add b^2 and c^2 (xmm8 + xmm9) and store result in xmm11
-   280 000001A4 F2450F58DC              addsd xmm11, xmm12
-   281                                  
-   282                                  ; ;Output result of b^2 + c^2
-   283                                  ; mov rax, 1
-   284                                  ; mov rdi, test_addition_result
-   285                                  ; mov rsi, format
-   286                                  ; movsd xmm0, xmm11
-   287                                  ; call printf
+   278                                  ;Add b^2 and c^2 (xmm8 + xmm9) and store result in xmm11
+   279 000001A4 F2450F58DC              addsd xmm11, xmm12
+   280                                  
+   281                                  ; ;Output result of b^2 + c^2
+   282                                  ; mov rax, 1
+   283                                  ; mov rdi, test_addition_result
+   284                                  ; mov rsi, format
+   285                                  ; movsd xmm0, xmm11
+   286                                  ; call printf
+   287                                  
    288                                  
    289                                  
-   290                                  
-   291                                  ;Block of code for 2*b*c
-   292                                  ;2 will be stored in xmm13
-   293                                  ;Product of 2*b*c
-   294 000001A9 F2440F102C25-           movsd xmm13, qword [val]
-   294 000001AF [25030000]         
-   295 000001B3 F2450F59E8              mulsd xmm13, xmm8
-   296 000001B8 F2450F59E9              mulsd xmm13, xmm9
-   297                                  
-   298                                  ; ;Output result of 2*b*c
-   299                                  ; mov rax, 1
-   300                                  ; mov rdi, test_mult_result
-   301                                  ; mov rsi, format
-   302                                  ; movsd xmm0, xmm13
-   303                                  ; call printf
+   290                                  ;Block of code for 2*b*c
+   291                                  ;2 will be stored in xmm13
+   292                                  ;Product of 2*b*c
+   293 000001A9 F2440F102C25-           movsd xmm13, qword [val]
+   293 000001AF [25030000]         
+   294 000001B3 F2450F59E8              mulsd xmm13, xmm8
+   295 000001B8 F2450F59E9              mulsd xmm13, xmm9
+   296                                  
+   297                                  ; ;Output result of 2*b*c
+   298                                  ; mov rax, 1
+   299                                  ; mov rdi, test_mult_result
+   300                                  ; mov rsi, format
+   301                                  ; movsd xmm0, xmm13
+   302                                  ; call printf
+   303                                  
    304                                  
-   305                                  
-   306                                  ;Convert degrees to radians before calling cosine
-   307 000001BD F2440F100425-           movsd xmm8, qword [angle_180]
-   307 000001C3 [2D030000]         
-   308 000001C7 F2440F100C25-           movsd xmm9, qword [pi]
-   308 000001CD [35030000]         
-   309 000001D1 F2450F5EC8              divsd xmm9, xmm8
-   310 000001D6 F2450F59D1              mulsd xmm10, xmm9
-   311                                  
-   312                                  ;Cosine function
-   313 000001DB B801000000              mov rax, 1
-   314 000001E0 F2410F10C2              movsd xmm0, xmm10
-   315 000001E5 E8(00000000)            call cos
-   316 000001EA F2440F10F0              movsd xmm14, xmm0
+   305                                  ;Convert degrees to radians before calling cosine
+   306 000001BD F2440F100425-           movsd xmm8, qword [angle_180]
+   306 000001C3 [2D030000]         
+   307 000001C7 F2440F100C25-           movsd xmm9, qword [pi]
+   307 000001CD [35030000]         
+   308 000001D1 F2450F5EC8              divsd xmm9, xmm8
+   309 000001D6 F2450F59D1              mulsd xmm10, xmm9
+   310                                  
+   311                                  ;Cosine function
+   312 000001DB B801000000              mov rax, 1
+   313 000001E0 F2410F10C2              movsd xmm0, xmm10
+   314 000001E5 E8(00000000)            call cos
+   315 000001EA F2440F10F0              movsd xmm14, xmm0
+   316                                  
    317                                  
-   318                                  
-   319                                  ; ;Output result of cosine function
-   320                                  ; mov rax, 1
-   321                                  ; mov rdi, cosine_test
-   322                                  ; mov rsi, format
-   323                                  ; movsd xmm0, xmm14
-   324                                  ; call printf
+   318                                  ; ;Output result of cosine function
+   319                                  ; mov rax, 1
+   320                                  ; mov rdi, cosine_test
+   321                                  ; mov rsi, format
+   322                                  ; movsd xmm0, xmm14
+   323                                  ; call printf
+   324                                  
    325                                  
    326                                  
-   327                                  
-   328                                  ;Multiply (2*b*c) * cos(A)
-   329 000001EF F2450F59F5              mulsd xmm14, xmm13
+   327                                  ;Multiply (2*b*c) * cos(A)
+   328 000001EF F2450F59F5              mulsd xmm14, xmm13
+   329                                  
    330                                  
-   331                                  
-   332                                  ; ;Output value of b^2 + c^2
-   333                                  ; mov rax, 1
-   334                                  ; mov rdi, part_1_output_test
-   335                                  ; mov rsi, format
-   336                                  ; movsd xmm0, xmm11
-   337                                  ; call printf
-   338                                  
-   339                                  ; ;Output value of 2bc(cosA)
-   340                                  ; mov rax, 1
-   341                                  ; mov rdi, part_2_output_test
-   342                                  ; mov rsi, format
-   343                                  ; movsd xmm0, xmm14
-   344                                  ; call printf
+   331                                  ; ;Output value of b^2 + c^2
+   332                                  ; mov rax, 1
+   333                                  ; mov rdi, part_1_output_test
+   334                                  ; mov rsi, format
+   335                                  ; movsd xmm0, xmm11
+   336                                  ; call printf
+   337                                  
+   338                                  ; ;Output value of 2bc(cosA)
+   339                                  ; mov rax, 1
+   340                                  ; mov rdi, part_2_output_test
+   341                                  ; mov rsi, format
+   342                                  ; movsd xmm0, xmm14
+   343                                  ; call printf
+   344                                  
    345                                  
-   346                                  
-   347                                  ;Subtract b^2 + c^2 - 2bc(cosA) (xmm11 - xmm14)
-   348 000001F4 F2450F5CDE              subsd xmm11, xmm14
-   349                                  
-   350                                  ; ;Output the value of the subtraction
-   351                                  ; mov rax, 1
-   352                                  ; mov rdi, subtraction_val_test
-   353                                  ; mov rsi, format
-   354                                  ; movsd xmm0, xmm11
-   355                                  ; call printf
-   356                                  
-   357                                  ;Move the difference into xmm15 and square root the value
-   358 000001F9 F2450F10FB              movsd xmm15, xmm11
-   359 000001FE F2450F51FF              sqrtsd xmm15, xmm15
+   346                                  ;Subtract b^2 + c^2 - 2bc(cosA) (xmm11 - xmm14)
+   347 000001F4 F2450F5CDE              subsd xmm11, xmm14
+   348                                  
+   349                                  ; ;Output the value of the subtraction
+   350                                  ; mov rax, 1
+   351                                  ; mov rdi, subtraction_val_test
+   352                                  ; mov rsi, format
+   353                                  ; movsd xmm0, xmm11
+   354                                  ; call printf
+   355                                  
+   356                                  ;Move the difference into xmm15 and square root the value
+   357 000001F9 F2450F10FB              movsd xmm15, xmm11
+   358 000001FE F2450F51FF              sqrtsd xmm15, xmm15
+   359                                  
    360                                  
-   361                                  
-   362                                  ;Output length of third side
-   363 00000203 B801000000              mov rax, 1
-   364 00000208 48BF-                   mov rdi, output_third_length
-   364 0000020A [5C01000000000000] 
-   365 00000212 48BE-                   mov rsi, format
-   365 00000214 [1B01000000000000] 
-   366 0000021C F2410F10C7              movsd xmm0, xmm15
-   367 00000221 E8(00000000)            call printf
+   361                                  ;Output length of third side
+   362 00000203 B801000000              mov rax, 1
+   363 00000208 48BF-                   mov rdi, output_third_length
+   363 0000020A [5C01000000000000] 
+   364 00000212 48BE-                   mov rsi, format
+   364 00000214 [1B01000000000000] 
+   365 0000021C F2410F10C7              movsd xmm0, xmm15
+   366 00000221 E8(00000000)            call printf
+   367                                  
    368                                  
    369                                  
-   370                                  
-   371                                  ;Output confirmation that the third length is being sent to driver
-   372 00000226 B801000000              mov rax, 1
-   373 0000022B 48BF-                   mov rdi, length_send_message
-   373 0000022D [8501000000000000] 
-   374 00000235 48BE-                   mov rsi, format
-   374 00000237 [1B01000000000000] 
-   375 0000023F F2410F10C7              movsd xmm0, xmm15
-   376 00000244 E8(00000000)            call printf
+   370                                  ;Output confirmation that the third length is being sent to driver
+   371 00000226 B801000000              mov rax, 1
+   372 0000022B 48BF-                   mov rdi, length_send_message
+   372 0000022D [8501000000000000] 
+   373 00000235 48BE-                   mov rsi, format
+   373 00000237 [1B01000000000000] 
+   374 0000023F F2410F10C7              movsd xmm0, xmm15
+   375 00000244 E8(00000000)            call printf
+   376                                  
    377                                  
-   378                                  
-   379                                  ;Back up value in xmm14 before restoring registers
-   380 00000249 6A00                    push qword 0
-   381 0000024B F2440F113C24            movsd [rsp], xmm15
+   378                                  ;Back up value in xmm14 before restoring registers
+   379 00000249 6A00                    push qword 0
+   380 0000024B F2440F113C24            movsd [rsp], xmm15
+   381                                  
    382                                  
-   383                                  
-   384                                  ;Restore the values to non-GPRs
-   385 00000251 B807000000              mov rax, 7
-   386 00000256 BA00000000              mov rdx, 0
-   387 0000025B 0FAE2C25[00000000]      xrstor [backup_storage_area]
+   383                                  ;Restore the values to non-GPRs
+   384 00000251 B807000000              mov rax, 7
+   385 00000256 BA00000000              mov rdx, 0
+   386 0000025B 0FAE2C25[00000000]      xrstor [backup_storage_area]
+   387                                  
    388                                  
-   389                                  
-   390 00000263 F20F100424              movsd xmm0, [rsp]
-   391 00000268 58                      pop rax
+   389 00000263 F20F100424              movsd xmm0, [rsp]
+   390 00000268 58                      pop rax
+   391                                  
    392                                  
-   393                                  
-   394                                  ;Restore the GPRs
-   395 00000269 9D                      popf
-   396 0000026A 415F                    pop r15
-   397 0000026C 415E                    pop r14
-   398 0000026E 415D                    pop r13
-   399 00000270 415C                    pop r12
-   400 00000272 415B                    pop r11
-   401 00000274 415A                    pop r10
-   402 00000276 4159                    pop r9
-   403 00000278 4158                    pop r8
-   404 0000027A 5E                      pop rsi
-   405 0000027B 5F                      pop rdi
-   406 0000027C 5A                      pop rdx
-   407 0000027D 59                      pop rcx
-   408 0000027E 5B                      pop rbx
-   409 0000027F 5D                      pop rbp   ;Restore rbp to the base of the activation record of the caller program
-   410 00000280 C3                      ret
-   411                                  ;End of the function average.asm ====================================================================
-   412                                  
-   413                                  ;Change Comments
+   393                                  ;Restore the GPRs
+   394 00000269 9D                      popf
+   395 0000026A 415F                    pop r15
+   396 0000026C 415E                    pop r14
+   397 0000026E 415D                    pop r13
+   398 00000270 415C                    pop r12
+   399 00000272 415B                    pop r11
+   400 00000274 415A                    pop r10
+   401 00000276 4159                    pop r9
+   402 00000278 4158                    pop r8
+   403 0000027A 5E                      pop rsi
+   404 0000027B 5F                      pop rdi
+   405 0000027C 5A                      pop rdx
+   406 0000027D 59                      pop rcx
+   407 0000027E 5B                      pop rbx
+   408 0000027F 5D                      pop rbp   ;Restore rbp to the base of the activation record of the caller program
+   409 00000280 C3                      ret
+   410                                  ;End of the function average.asm ====================================================================
+   411                                  
+   412                                  ;Change Comments
