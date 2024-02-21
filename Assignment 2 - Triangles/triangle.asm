@@ -475,3 +475,4 @@ exit:
 
 ;Change Comments
 ;Show what string variables are printing to screen
+;ADD TICS
