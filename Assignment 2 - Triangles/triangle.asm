@@ -85,6 +85,8 @@ output_third_length db 10, "The length of the third side is %1.6lf", 10, 0
 length_send_message db 10, "The length will be sent to the driver program", 10, 0
 print_bad_input db "Invalid input. Try again", 10, 0
 thank_you_message db 10, "Thank you %s. You entered %1.6lf %1.6lf and %1.6lf", 10, 0
+starting_time db 10, "The starting time on the clock is %lu tics", 10, 0
+ending_time db 10, "The final time on the system clock is %lu tics", 10, 0
 
 two dq 2.0
 angle_180 dq 180.0
@@ -127,6 +129,20 @@ triangle_SAS:
     mov rax,7
     mov rdx,0
     xsave [backup_storage_area]
+
+
+    ;Get the starting time on the system clock
+    cpuid
+    rdtsc
+    shl rdx, 32
+    add rdx, rax
+    mov r12, rax
+
+    ;Output starting time on system clock
+    mov rax, 0
+    mov rdi, starting_time
+    mov rsi, r12
+    call printf
 
     ;Output prompt for first and last name
     mov rax, 0
@@ -438,6 +454,19 @@ exit:
     movsd xmm0, xmm15
     call printf
 
+
+    ;Get the ending time on the system clock
+    cpuid
+    rdtsc
+    shl rdx, 32
+    add rdx, rax
+    mov r12, rax
+
+    ;Output ending time on system clock
+    mov rax, 0
+    mov rdi, ending_time
+    mov rsi, r12
+    call printf
 
     ;Back up value in xmm14 before restoring registers
     push qword 0
