@@ -1,11 +1,12 @@
 ;Change Comments
 
 ;****************************************************************************************************************************
-;Program name: "Driving Time". This program will take in the user's full name, their title, and the distances they have     *
-;traveled from Fullerton -> Santa Ana, Santa Ana -> Long Beach, and Long Beach -> Fullerton, as well as their average       *
-;speed for each trip. Once the program has the total distance traveled and the average speed of the entire trip, the        *
-;program will calculate the total time of the trip, then the assembly file will send the average speed back to the driver
-;function                                                                                                                   *
+;Program name: "Amazing Triangles" - This program will take first welcome the user the the program, and then output the     *
+;system clock to the console. After this initial output for the user, the program will then prompt the user for their       *
+;full name, as well as their title (i.e. Dean, Vice-president, etc.). Once the user has entered their name and title, the   *
+;program will tell them good morning, and that this program will take care of their triangles. After, the program will      *
+;prompt the user for the sides of the triangle and its angle (this program solves SAS triangles). If the user inputs an     *
+;invalid input (negative number, non-float number, or )                                                                                                        
 ;                                                                                                                           *
 ;This program is free software: you can redistribute it and/or modify it under the terms of the GNU General Public License  *
 ;version 3 as published by the Free Software Foundation.  This program is distributed in the hope that it will be useful,   *
@@ -140,13 +141,13 @@ triangle_SAS:
 
     ;Output starting time on system clock
     mov rax, 0
-    mov rdi, starting_time
+    mov rdi, starting_time ;"The starting time on the clock is %lu tics"
     mov rsi, r12
     call printf
 
     ;Output prompt for first and last name
     mov rax, 0
-    mov rdi, name_prompt
+    mov rdi, name_prompt ;"Please enter your name: "
     call printf
 
     ;Input user names
@@ -184,7 +185,7 @@ triangle_SAS:
 
     ;Say good morning to the user
     mov rax, 0
-    mov rdi, good_morning_msg
+    mov rdi, good_morning_msg ;"Good morning %s %s. We take care of all your triangles."
     mov rsi, user_title
     mov rdx, user_name
     call printf
@@ -194,7 +195,7 @@ triangle_SAS:
 get_first_side:
     ;Ask for length of first side
     mov rax, 0
-    mov rdi, first_side_prompt
+    mov rdi, first_side_prompt ;"Please enter the length of the first side: "
     call printf
 
 
@@ -238,7 +239,7 @@ get_first_side:
 get_second_side:
     ;Ask for length of second side
     mov rax, 0
-    mov rdi, second_side_prompt
+    mov rdi, second_side_prompt ;"Please enter the length of the second side: "
     call printf
 
 
@@ -282,7 +283,7 @@ get_second_side:
 get_angle:
     ;Ask for size of the angle
     mov rax, 0
-    mov rdi, angle_prompt
+    mov rdi, angle_prompt ;"Please enter the angle in degrees: "
     call printf
 
 
@@ -340,7 +341,7 @@ bad_input:
 
     ;Tell the user their input is invalid and have them enter another input
     mov rax, 0
-    mov rdi, print_bad_input
+    mov rdi, print_bad_input ;"Invalid input. Try again"
     call printf
 
     cmp r15, 0
@@ -358,7 +359,7 @@ bad_input:
 exit:
     ;Output thank you message along with values the user entered
     mov rax, 3
-    mov rdi, thank_you_message
+    mov rdi, thank_you_message ;"Thank you %s. You entered %1.6lf %1.6lf and %1.6lf"
     mov rsi, user_name
     mov rcx, format
     movsd xmm0, xmm10
@@ -440,7 +441,7 @@ exit:
 
     ;Output length of third side
     mov rax, 1
-    mov rdi, output_third_length
+    mov rdi, output_third_length ;"The length of the third side is %1.6lf"
     mov rsi, format
     movsd xmm0, xmm15
     call printf
@@ -449,7 +450,7 @@ exit:
 
     ;Output confirmation that the third length is being sent to driver
     mov rax, 1
-    mov rdi, length_send_message
+    mov rdi, length_send_message ;"The length will be sent to the driver program"
     mov rsi, format
     movsd xmm0, xmm15
     call printf
@@ -464,7 +465,7 @@ exit:
 
     ;Output ending time on system clock
     mov rax, 0
-    mov rdi, ending_time
+    mov rdi, ending_time ;"The final time on the system clock is %lu tics"
     mov rsi, r12
     call printf
 
