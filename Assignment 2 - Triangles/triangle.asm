@@ -1,12 +1,16 @@
-;Change Comments
-
 ;****************************************************************************************************************************
 ;Program name: "Amazing Triangles" - This program will take first welcome the user the the program, and then output the     *
-;system clock to the console. After this initial output for the user, the program will then prompt the user for their       *
+;system clock (tics) to the console. After this initial output for the user, the program will then prompt the user for their*
 ;full name, as well as their title (i.e. Dean, Vice-president, etc.). Once the user has entered their name and title, the   *
 ;program will tell them good morning, and that this program will take care of their triangles. After, the program will      *
 ;prompt the user for the sides of the triangle and its angle (this program solves SAS triangles). If the user inputs an     *
-;invalid input (negative number, non-float number, or )                                                                                                        
+;invalid input (negative number, non-float number, or an input that is not a number such as 2.2.3+A), the program will      *
+;let the user know that their input is invalid and will then prompt them for another input. After 3 valid inputs are        *
+;entered (2 sides and 1 angle), the program will output a thank you message/confirmation of the user's inputted values.     *
+;Now that the program has 3 valid inputs, it will use the formula for solving SAS triangles to find the third side, and     *
+;will output said answer, as well as letting the user know that the length of the third side will be sent to the driver.    *
+;Before this value is sent, the program will output the new system clock (tics). Once back in the driver, it will let the   *
+;user know that it has received the value of the third side, and that a zero will be sent to the operating system.          *                                                                                                      
 ;                                                                                                                           *
 ;This program is free software: you can redistribute it and/or modify it under the terms of the GNU General Public License  *
 ;version 3 as published by the Free Software Foundation.  This program is distributed in the hope that it will be useful,   *
@@ -24,26 +28,26 @@
 ;  Author email: nwarner4@csu.fullerton.edu
 ;
 ;Program information
-;  Program name: Driving Time
+;  Program name: Amazing Triangles
 ;  Programming languages: One module in C, one in X86, and one in bash.
-;  Date program began: 2024-Jan-30
-;  Date of last update: 2024-Feb-2
+;  Date program began: 2024-Feb-11
+;  Date of last update: 2024-Feb-19
 ;  Files in this program: driving_time.c, average.asm, r.sh.
 ;  Testing: Alpha testing completed.  All functions are correct.
 ;  Status: Ready for release to customers
 ;
 ;Purpose
-;  This program will take in total distance traveled and average speed and find the total time of the trip,
-;  as well as sending the average speed of the entirety of the trip back to the driver
+;  This program will take in two sides and an angle of a triangle, and will output the length of the
+;   thrd side to the console, as well as sending the value to the driver.
 ;
 ;This file:
-;  File name: average.asm
+;  File name: triangle.asm
 ;  Language: X86-64
 ;  Max page width: 124 columns
 ;  Assemble (standard): nasm -l average.lis -o average.o average.asm
 ;  Assemble (debug): nasm -g dwarf -l average.lis -o average.o average.asm
 ;  Optimal print specification: Landscape, 7 points, monospace, 8½x11 paper
-;  Prototype of this function: double average();
+;  Prototype of this function: double triangle_SAS();
 ; 
 ;
 ;
@@ -88,6 +92,7 @@ print_bad_input db "Invalid input. Try again", 10, 0
 thank_you_message db 10, "Thank you %s. You entered %1.6lf %1.6lf and %1.6lf", 10, 0
 starting_time db 10, "The starting time on the clock is %lu tics", 10, 0
 ending_time db 10, "The final time on the system clock is %lu tics", 10, 0
+good_bye_msg db 10, "Have a good day %s %s.", 10, 0
 
 two dq 2.0
 angle_180 dq 180.0
@@ -153,7 +158,7 @@ triangle_SAS:
     ;Input user names
     mov rax, 0
     mov rdi, user_name
-    mov rsi, name_string_size
+    mov rsi, name_string_size ;48
     mov rdx, [stdin]
     call fgets
 
@@ -163,15 +168,15 @@ triangle_SAS:
     call strlen
     mov [user_name+rax-1], byte 0
 
-    ;Output prompt for user's title
+    ;Ask user for their title
     mov rax, 0
-    mov rdi, title_prompt
+    mov rdi, title_prompt ;"Please enter your title (Sergeant, Chief, CEO, President, Teacher, etc): "
     call printf
 
     ;Input user title
     mov rax, 0
     mov rdi, user_title
-    mov rsi, title_string_size
+    mov rsi, title_string_size ;48
     mov rdx, [stdin]
     call fgets
 
@@ -344,6 +349,7 @@ bad_input:
     mov rdi, print_bad_input ;"Invalid input. Try again"
     call printf
 
+    ;Jump back to correct input block depending on value of r15
     cmp r15, 0
     je get_first_side
 
@@ -353,7 +359,6 @@ bad_input:
     cmp r15, 2
     je get_angle
 
-    ;Jump back to correct input block depending on value of r15
 
 
 exit:
@@ -367,6 +372,7 @@ exit:
     movsd xmm2, xmm12
     call printf
 
+    ;Moves values for sides and angles to lower registers for use on the next block
     movsd xmm8, xmm10
     movsd xmm9, xmm11
     movsd xmm10, xmm12
@@ -463,11 +469,21 @@ exit:
     add rdx, rax
     mov r12, rax
 
+
     ;Output ending time on system clock
     mov rax, 0
     mov rdi, ending_time ;"The final time on the system clock is %lu tics"
     mov rsi, r12
     call printf
+
+
+    ;Output a goodbye message for the user
+    mov rax, 0
+    mov rdi, good_bye_msg ;"Have a good day %s %s."
+    mov rsi, user_title
+    mov rdx, user_name
+    call printf
+
 
     ;Back up value in xmm14 before restoring registers
     push qword 0
@@ -501,7 +517,4 @@ exit:
     pop rbx
     pop rbp   ;Restore rbp to the base of the activation record of the caller program
     ret
-;End of the function average.asm ====================================================================
-
-;Change Comments
-;Show what string variables are printing to screen
+;End of the function triangle.asm ====================================================================
