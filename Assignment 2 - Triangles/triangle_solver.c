@@ -60,9 +60,9 @@
 extern double triangle_SAS();
 
 int main(int argc, const char * argv[])
-{printf("Welcome to Amazing Triangles programmed by Nathan Warner on February 11, 2024.\n");
+{printf("\nWelcome to Amazing Triangles programmed by Nathan Warner on February 11, 2024.\n");
  double thirdLength = 0;
  thirdLength = triangle_SAS();
- printf("\nThe driver has received this number %1.8lf and will simply keep it.\n\n",thirdLength);
+ printf("\nThe driver has received this number %1.6lf and will simply keep it.\n\n",thirdLength);
  printf("An integer zero will now be sent to the operating system. Bye\n");
 }

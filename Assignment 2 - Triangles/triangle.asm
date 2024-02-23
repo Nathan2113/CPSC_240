@@ -88,7 +88,7 @@ format db "%lf", 0
 output_values_test db 10, "First side: %1.6lf, Second side: %1.6lf, Angle size: %1.3lf", 0
 output_third_length db 10, "The length of the third side is %1.6lf", 10, 0
 length_send_message db 10, "The length will be sent to the driver program", 10, 0
-print_bad_input db "Invalid input. Try again", 10, 0
+print_bad_input db "Invalid input. Try again: ", 0
 thank_you_message db 10, "Thank you %s. You entered %1.6lf %1.6lf and %1.6lf", 10, 0
 starting_time db 10, "The starting time on the clock is %lu tics", 10, 0
 ending_time db 10, "The final time on the system clock is %lu tics", 10, 0
@@ -275,7 +275,7 @@ get_second_side:
     call atof
     movsd xmm11, xmm0
 
-    ;Adds 1 to r15, which enables the program to jump to get_second_side after invalid inputs
+    ;Adds 1 to r15, which enables the program to jump to get_angle after invalid inputs
     add r15, 1
 
     ;Fixes the stack
@@ -319,8 +319,6 @@ get_angle:
     call atof
     movsd xmm12, xmm0
 
-    ;Adds 1 to r15, which enables the program to jump to get_second_side after invalid inputs
-    add r15, 1
 
     ;Fixes stack
     add rsp, 4096
@@ -342,6 +340,7 @@ bad_input:
 ;elseif(tracker == 2)
     ;jump to angle input
 
+    ;Fixes stack
     add rsp, 4096
 
     ;Tell the user their input is invalid and have them enter another input
@@ -349,17 +348,83 @@ bad_input:
     mov rdi, print_bad_input ;"Invalid input. Try again"
     call printf
 
+
+    ;Gets user input (for either angle or side)
+    mov rax, 0
+    sub rsp, 4096
+    mov rdi, rsp
+    mov rsi, 4096
+    mov rdx, [stdin]
+    call fgets
+
+    ;Remove newline
+    mov rax, 0
+    mov rdi, rsp
+    call strlen
+    mov [rsp + rax - 1], byte 0
+
+    ;Check if input is a postive float
+    mov rax, 0
+    mov rdi, rsp
+    call isfloat
+    cmp rax, false
+    je bad_input
+
     ;Jump back to correct input block depending on value of r15
     cmp r15, 0
-    je get_first_side
+    je first_side_bad
 
     cmp r15, 1
-    je get_second_side
+    je second_side_bad
 
     cmp r15, 2
-    je get_angle
+    je angle_bad
 
 
+;The following three blocks (first_side_bad, second_side_bad, and angle_bad) are used to 
+;take in another user input without outputting the whole prompt again
+first_side_bad:
+    ;Convert the input from string to float
+    mov rax, 0
+    mov rdi, rsp
+    call atof
+    movsd xmm10, xmm0
+
+    add r15, 1
+
+    ;Fixes stack
+    add rsp, 4096
+
+    jmp get_second_side
+
+
+
+second_side_bad:
+    ;Convert the input from string to float
+    mov rax, 0
+    mov rdi, rsp
+    call atof
+    movsd xmm11, xmm0
+
+    add r15, 1
+
+    ;Fixes stack
+    add rsp, 4096
+
+    jmp get_angle
+
+
+angle_bad:
+    ;Convert the input from string to float
+    mov rax, 0
+    mov rdi, rsp
+    call atof
+    movsd xmm12, xmm0
+
+    ;Fixes stack
+    add rsp, 4096
+
+    jmp exit
 
 exit:
     ;Output thank you message along with values the user entered
