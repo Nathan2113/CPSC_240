@@ -550,7 +550,7 @@ exit:
     call printf
 
 
-    ;Back up value in xmm14 before restoring registers
+    ;Back up value in xmm15 before restoring registers
     push qword 0
     movsd [rsp], xmm15
 
