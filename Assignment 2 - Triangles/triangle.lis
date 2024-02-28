@@ -638,7 +638,7 @@
    550 000004AA E8(00000000)                call printf
    551                                  
    552                                  
-   553                                      ;Back up value in xmm14 before restoring registers
+   553                                      ;Back up value in xmm15 before restoring registers
    554 000004AF 6A00                        push qword 0
    555 000004B1 F2440F113C24                movsd [rsp], xmm15
    556                                  
