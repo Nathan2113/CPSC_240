@@ -143,12 +143,12 @@ compute_variance:
 
     ;Output the program instructions
     mov rax, 0
-    mov rdi, prog_instruction ;"for the array enter a sequence of 64-bit floats separated by white space."
+    mov rdi, prog_instruction ;"For the array enter a sequence of 64-bit floats separated by white space."
     call printf
 
     ;Output the instruction to exit the prompt loop for inputting numbers into the array
     mov rax, 0
-    mov rdi, exit_instruction
+    mov rdi, exit_instruction ;After the last input press enter followed by Control+D"
     call printf
 
 
