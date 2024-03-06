@@ -62,11 +62,14 @@ nasm -f elf64 -l manager.lis -o manager.o manager.asm
 echo "Assemble the source file isfloat.asm"
 nasm -f elf64 -l isfloat.lis -o isfloat.o isfloat.asm
 
+echo "Assemble the source file input_array.asm"
+nasm -f elf64 -l input_array.lis -o input_array.o input_array.asm
+
 echo "Compile the source file main.c"
 gcc  -m64 -Wall -no-pie -o main.o -std=c2x -c main.c
 
 echo "Link the object modules to create an executable file"
-gcc -m64 -no-pie -o main.out isfloat.o manager.o main.o -std=c2x -Wall -z noexecstack -lm
+gcc -m64 -no-pie -o main.out isfloat.o manager.o input_array.o main.o -std=c2x -Wall -z noexecstack -lm
 
 echo "Execute the program"
 chmod +x main.out

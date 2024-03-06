@@ -57,12 +57,12 @@
 //#include <string.h>
 //#include <stdlib.h>
 
-extern double compute_variance();
+extern double manager();
 
 int main(int argc, const char * argv[])
 {printf("\nWelcome to Arrays fo floating point numbers.\nBrought to you by Nathan Warner\n");
  double variance = 0;
- variance = compute_variance();
+ variance = manager();
  printf("\nThe driver has received this number %1.10f and will keep it for future use.\n",variance);
  printf("Main will return 0 to the operating system. Bye.\n");
 }

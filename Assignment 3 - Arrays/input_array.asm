@@ -57,45 +57,26 @@
 ;Declaration section.  The section has no name other than "Declaration section".  Declare here everything that does
 ;not have its own place of declaration
 
-global manager
+global input_array
 
-extern printf
-; extern fgets
-extern stdin
-extern scanf
-extern input_array
 extern isfloat
-
-; name_string_size equ 48
-; title_string_size equ 48
-
-float_size equ 60
-true equ -1
-false equ 0
+extern atof
+extern printf
+extern scanf
 
 segment .data
-;This section (or segment) is for declaring initialized arrays
-
-program_desc db 10, "This program will manage your arrays of 64-bit floats", 10, 0
-prog_instruction db "For the array enter a sequence of 64-bit floats separated by white space.", 10, 0
-exit_instruction db "After the last input press enter followed by Control+D:", 10, 0
-numbers_received db "These numbers were received and placed into an array", 10, 0
-variance db "The variance of the inputted numbers is %1.6lf", 10, 0
-format db "%lf", 0
+    string_format db "%s", 0
+    user_invalid_input db "The last input was invalid and not entered into the array.", 10, 0
 
 
 segment .bss
-;This section (or segment) is for declaring empty arrays
-
 align 64
 backup_storage_area resb 832
-array resq 12 ;Array of 12 qwords, will be used to take in user inputs for floats, as well as computing the mean and variance
 
 
 segment .text
 
-manager:
-
+input_array:
     ;Back up the GPRs (General Purpose Registers)
     push rbp
     mov rbp, rsp
@@ -114,54 +95,68 @@ manager:
     push r15
     pushf
 
+
     ;Backup the registers other than the GPRs
     mov rax,7
     mov rdx,0
     xsave [backup_storage_area]
 
 
+    ;Setting up values for input_array execution
+    mov r13, rdi ;r13 is the array
+    mov r14, rsi ;r14 is the max number of values that can be in the array (12)
+    mov rcx, 0 ;rcx is the current index
 
-    ;Output the program description
+
+
+    sub rsp, 1024
+
+begin:
+    ;Ends the loop if the current array size is 12 (maxed out array)
+    cmp rcx, 12
+    je quit_loop
+
+    ;TRY FGETS INSTEAD OF SCANF
     mov rax, 0
-    mov rdi, program_desc ;"This program will manage your arrays of 64-bit numbers"
-    call printf
+    mov rdi, string_format ;"%s"
+    mov rsi, rsp
+    call scanf
 
-    ;Output the program instructions
+    cmp rax, -1
+    je quit_loop
+
+
+    ;Check user input with isfloat
     mov rax, 0
-    mov rdi, prog_instruction ;"For the array enter a sequence of 64-bit floats separated by white space."
-    call printf
-
-    ;Output the instruction to exit the prompt loop for inputting numbers into the array
-    mov rax, 0
-    mov rdi, exit_instruction ;After the last input press enter followed by Control+D"
-    call printf
-
+    mov rdi, rsp
+    call isfloat
+    cmp rax, 0
+    je invalid_input
 
     
-    ;Block to call input_array, which will take in floats from the user, as well as validating their inputs
+    ;Set up call to atof
     mov rax, 0
-    mov rdi, array
-    mov rsi, 12 ;array_size
-    call input_array
-    mov r13, rax ;input_array will return the number of values in the array, and r13 will hold that value
-    
+    mov rdi, rsp
+    call atof ;double atof(char *w)
+
+    ;copy number into the array
+    movsd [r13+rcx*8], xmm0 ;rcx is the index
+    inc rcx ;rcx++
+    jmp begin
 
 
-
-    ;Output letting the user know the numbers they input were received and placed into the array
+invalid_input:
     mov rax, 0
-    mov rdi, numbers_received ;"These numbers were receive and placed into an array"
+    mov rdi, user_invalid_input
     call printf
 
+    jmp begin
 
 
+quit_loop: ;No more looping - restore regs, but save rcx
+    add rsp, 1024 ;Fixes the stack
 
-    ;Output the variance of the array input by the user
-    mov rax, 1
-    mov rdi, variance ;The variance of the inputted numbers is %1.6lf"
-    mov rsi, format
-    movsd xmm0, xmm15
-    call printf
+
 
 
     ; ;Back up value in xmm15 before restoring registers
@@ -169,7 +164,7 @@ manager:
     ; movsd [rsp], xmm15
 
 
-    ;Restore the values to non-GPRs
+    ; Restore the values to non-GPRs
     mov rax, 7
     mov rdx, 0
     xrstor [backup_storage_area]
@@ -196,4 +191,4 @@ manager:
     pop rbx
     pop rbp   ;Restore rbp to the base of the activation record of the caller program
     ret
-;End of the function manager.asm ====================================================================
+;End of the function input_array.asm ====================================================================
