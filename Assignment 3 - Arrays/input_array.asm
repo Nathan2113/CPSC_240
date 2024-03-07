@@ -64,14 +64,15 @@ extern atof
 extern printf
 extern scanf
 
+
 segment .data
+;This section (or segment) is for declaring initialized arrays
     string_format db "%s", 0
     user_invalid_input db "The last input was invalid and not entered into the array.", 10, 0
 
-    ;TEST
-    rcx_final_val db "The final value of rcx is: %lu", 10, 0
 
 segment .bss
+;This section (or segment) is for declaring empty arrays
 align 64
 backup_storage_area resb 832
 
@@ -107,8 +108,7 @@ input_array:
     ;Setting up values for input_array execution
     mov r13, rdi ;r13 is the array
     mov r14, rsi ;r14 is the max number of values that can be in the array (12)
-    ; mov rcx, 0 ;rcx is the current index
-    mov r15, 0
+    mov r15, 0 ;r15 is the current index of the array
 
 
 
@@ -118,7 +118,6 @@ begin:
     sub rsp, 1024
 
     ;Ends the loop if the current array size is 12 (maxed out array)
-    ; cmp rcx, r14
     cmp r15, r14
     je quit_loop
 
@@ -139,8 +138,6 @@ begin:
     cmp rax, 0
     je invalid_input
 
-    add rsp, 1024 ;Fixes the stack
-
     
     ;Set up call to atof
     mov rax, 0
@@ -148,9 +145,10 @@ begin:
     call atof ;double atof(char *w)
 
     ;copy number into the array
-    movsd [r13+rcx*8], xmm0 ;rcx is the index
-    ; inc rcx ;rcx++
+    movsd [r13+r15*8], xmm0 ;r15 is the index
     inc r15
+
+    add rsp, 1024 ;Fixes the stack
     jmp begin
 
 
@@ -163,20 +161,8 @@ invalid_input:
     jmp begin
 
 
-quit_loop: ;No more looping - restore regs, but save rcx
+quit_loop: ;No more looping - restore regs, but save r15
     add rsp, 1024
-
-
-
-
-    ; ;Back up value in xmm15 before restoring registers
-    ; push qword 0
-    ; movsd [rsp], xmm15
-
-    mov rax, 0
-    mov rdi, rcx_final_val
-    mov rsi, r15
-    call printf
 
 
 
@@ -187,9 +173,6 @@ quit_loop: ;No more looping - restore regs, but save rcx
 
     mov rax, r15
 
-
-    ; movsd xmm0, [rsp]
-    ; pop rax
 
 
     ;Restore the GPRs

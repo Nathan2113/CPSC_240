@@ -68,8 +68,15 @@ nasm -f elf64 -l input_array.lis -o input_array.o input_array.asm
 echo "Compile the source file main.c"
 gcc  -m64 -Wall -no-pie -o main.o -std=c2x -c main.c
 
+echo "Compile the source file output_array.c"
+gcc  -m64 -Wall -no-pie -o output_array.o -std=c2x -c output_array.c
+
+echo "Compile the source file compute_variance.c++"
+# g++  -m64 -Wall -no-pie -o compute_variance.o -std=c++0x -cpp compute_variance.cpp
+g++  -m64 -Wall -no-pie compute_variance.cpp -o compute_variance.o
+
 echo "Link the object modules to create an executable file"
-gcc -m64 -no-pie -o main.out isfloat.o manager.o input_array.o main.o -std=c2x -Wall -z noexecstack -lm
+gcc -m64 -no-pie -o main.out isfloat.o manager.o input_array.o main.o output_array.o compute_variance.o -std=c2x -Wall -z noexecstack -lm
 
 echo "Execute the program"
 chmod +x main.out

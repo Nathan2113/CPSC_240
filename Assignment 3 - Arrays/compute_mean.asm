@@ -57,47 +57,24 @@
 ;Declaration section.  The section has no name other than "Declaration section".  Declare here everything that does
 ;not have its own place of declaration
 
-global manager
+global compute_mean
 
-extern printf
-extern stdin
-extern scanf
-extern input_array
-extern output_array
-extern isfloat
-extern compute_variance
-
-
-float_size equ 60
-true equ -1
-false equ 0
 
 segment .data
 ;This section (or segment) is for declaring initialized arrays
-
-program_desc db 10, "This program will manage your arrays of 64-bit floats", 10, 0
-prog_instruction db "For the array enter a sequence of 64-bit floats separated by white space.", 10, 0
-exit_instruction db "After the last input press enter followed by Control+D:", 10, 0
-numbers_received db "These numbers were received and placed into an array", 10, 0
-variance db "The variance of the inputted numbers is %1.6lf", 10, 0
-format db "%lf", 0
-
-;TESTING
-; array_test db 10, "The first index in the array is %1.6lf", 10, 0
+    ; string_format db "%s", 0
+    ; user_invalid_input db "The last input was invalid and not entered into the array.", 10, 0
 
 
 segment .bss
 ;This section (or segment) is for declaring empty arrays
-
 align 64
 backup_storage_area resb 832
-array resq 12 ;Array of 12 qwords, will be used to take in user inputs for floats, as well as computing the mean and variance
 
 
 segment .text
 
-manager:
-
+compute_mean:
     ;Back up the GPRs (General Purpose Registers)
     push rbp
     mov rbp, rsp
@@ -116,6 +93,7 @@ manager:
     push r15
     pushf
 
+
     ;Backup the registers other than the GPRs
     mov rax,7
     mov rdx,0
@@ -123,77 +101,18 @@ manager:
 
 
 
-    ;Output the program description
-    mov rax, 0
-    mov rdi, program_desc ;"This program will manage your arrays of 64-bit numbers"
-    call printf
 
-    ;Output the program instructions
-    mov rax, 0
-    mov rdi, prog_instruction ;"For the array enter a sequence of 64-bit floats separated by white space."
-    call printf
 
-    ;Output the instruction to exit the prompt loop for inputting numbers into the array
-    mov rax, 0
-    mov rdi, exit_instruction ;After the last input press enter followed by Control+D"
-    call printf
 
     
-    ;Block to call input_array, which will take in floats from the user, as well as validating their inputs
-    mov rax, 0
-    mov rdi, array
-    mov rsi, 12 ;array_size
-    call input_array
-    mov r13, rax ;input_array will return the number of values in the array, and r13 will hold that value
-    
 
-    ; ;ARRAY TEST
-    ; mov rax, 0
-    ; mov rdi, array_test
-    ; mov rsi, array
-    ; call printf
-
-    ;Output letting the user know the numbers they input were received and placed into the array
-    mov rax, 0
-    mov rdi, numbers_received ;"These numbers were receive and placed into an array"
-    call printf
-
-
-    ;Call output_array. Takes in a pointer to the array and the amount of elements in the array
-    mov rax, 0
-    mov rdi, array
-    mov rsi, r13
-    call output_array
-
-
-    ;TEST CALLING COMPUTE_VARIANCE
-    mov rax, 0
-    mov rdi, array
-    mov rsi, r13
-    call compute_variance
-
-
-    ; ;Output the variance of the array input by the user
-    ; mov rax, 1
-    ; mov rdi, variance ;The variance of the inputted numbers is %1.6lf"
-    ; mov rsi, format ;"%lf"
-    ; movsd xmm0, xmm15
-    ; call printf
-
-
-    ; ;Back up value in xmm15 before restoring registers
-    ; push qword 0
-    ; movsd [rsp], xmm15
-
-
-    ;Restore the values to non-GPRs
+    ; Restore the values to non-GPRs
     mov rax, 7
     mov rdx, 0
     xrstor [backup_storage_area]
 
+    mov rax, r15
 
-    ; movsd xmm0, [rsp]
-    ; pop rax
 
 
     ;Restore the GPRs
@@ -213,4 +132,4 @@ manager:
     pop rbx
     pop rbp   ;Restore rbp to the base of the activation record of the caller program
     ret
-;End of the function manager.asm ====================================================================
+;End of the function compute_mean.asm ====================================================================

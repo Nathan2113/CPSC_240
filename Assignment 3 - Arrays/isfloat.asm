@@ -91,7 +91,8 @@ xor r14, r14
 cmp byte [r13],'+'
 je increment_index
 cmp byte[r13],'-'
-je return_false
+; je return_false
+je increment_index
 jne continue_validation
 increment_index:
 inc r14
