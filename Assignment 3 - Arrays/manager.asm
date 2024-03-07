@@ -65,6 +65,7 @@ extern scanf
 extern input_array
 extern output_array
 extern isfloat
+extern compute_mean
 extern compute_variance
 
 
@@ -84,6 +85,7 @@ format db "%lf", 0
 
 ;TESTING
 ; array_test db 10, "The first index in the array is %1.6lf", 10, 0
+return_test db 10, "The return value is: %1.6lf", 10, 0
 
 
 segment .bss
@@ -166,11 +168,29 @@ manager:
     call output_array
 
 
-    ;TEST CALLING COMPUTE_VARIANCE
+
+
+    ;Call compute_mean. Takes in the array and array size, and will compute the mean of the array using assembly
     mov rax, 0
     mov rdi, array
     mov rsi, r13
-    call compute_variance
+    call compute_mean
+    movsd xmm14, xmm0
+
+
+    ;TEST RETURN VALUE
+    mov rax, 1
+    mov rdi, return_test
+    mov rsi, format
+    movsd xmm0, xmm14
+    call printf
+
+    ; ;Give values going into compute_variance
+    ; ;TEST CALLING COMPUTE_VARIANCE
+    ; mov rax, 0
+    ; mov rdi, array
+    ; mov rsi, r13
+    ; call compute_variance
 
 
     ; ;Output the variance of the array input by the user
@@ -181,9 +201,10 @@ manager:
     ; call printf
 
 
-    ; ;Back up value in xmm15 before restoring registers
-    ; push qword 0
-    ; movsd [rsp], xmm15
+    ;Back up value in xmm15 before restoring registers
+    push qword 0
+    movsd [rsp], xmm14
+
 
 
     ;Restore the values to non-GPRs
@@ -192,8 +213,9 @@ manager:
     xrstor [backup_storage_area]
 
 
-    ; movsd xmm0, [rsp]
-    ; pop rax
+    movsd xmm0, [rsp]
+    pop rax
+    
 
 
     ;Restore the GPRs

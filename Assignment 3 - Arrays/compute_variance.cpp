@@ -52,19 +52,24 @@
 
 
 
-#include <iostream>
+#include <stdio.h>
 #include <cmath>
-// #include <string.h>
+//#include <string.h>
 //#include <stdlib.h>
 
-extern double manager();
+extern "C" double compute_variance(double *arr, int size);
+// Put in mean after testing
+double compute_variance(double *arr, int size) {
+    double variance = 0;
+    double numerator = 0;
+    double mean = 0; // Take out after making compute_mean.asm  
+    double sum = 0; // Take out after making compute_mean.asm
 
-// double compute_variance(double *arr, double mean, int size);
-
-double compute_variance(double *arr, double mean, int size) {
-    // int sum = 0;
-    int variance = 0;
-    int numerator = 0;
+    // Find mean - WILL BE REPLACED WITH ASM FILE LATER
+    for (int i = 0; i < size; i++) {
+        sum += arr[i];
+    }
+    mean = sum / size;
 
 
     for(int i = 0; i < size; i++) {
@@ -73,7 +78,7 @@ double compute_variance(double *arr, double mean, int size) {
 
     variance = numerator/(size - 1);
 
-    std::cout << "The variance is: " << variance << '\n';
+    printf("The variance is: %1.10lf\n", variance);
 
     return variance;
 }

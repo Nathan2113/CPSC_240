@@ -1,0 +1,187 @@
+     1                                  ;****************************************************************************************************************************
+     2                                  ;Program name: "Amazing Triangles" - This program will take first welcome the user the the program, and then output the     *
+     3                                  ;system clock (tics) to the console. After this initial output for the user, the program will then prompt the user for their*
+     4                                  ;full name, as well as their title (i.e. Dean, Vice-president, etc.). Once the user has entered their name and title, the   *
+     5                                  ;program will tell them good morning, and that this program will take care of their triangles. After, the program will      *
+     6                                  ;prompt the user for the sides of the triangle and its angle (this program solves SAS triangles). If the user inputs an     *
+     7                                  ;invalid input (negative number, non-float number, or an input that is not a number such as 2.2.3+A), the program will      *
+     8                                  ;let the user know that their input is invalid and will then prompt them for another input. After 3 valid inputs are        *
+     9                                  ;entered (2 sides and 1 angle), the program will output a thank you message/confirmation of the user's inputted values.     *
+    10                                  ;Now that the program has 3 valid inputs, it will use the formula for solving SAS triangles to find the third side, and     *
+    11                                  ;will output said answer, as well as letting the user know that the length of the third side will be sent to the driver.    *
+    12                                  ;Before this value is sent, the program will output the new system clock (tics). Once back in the driver, it will let the   *
+    13                                  ;user know that it has received the value of the third side, and that a zero will be sent to the operating system.          *                                                                                                      
+    14                                  ;                                                                                                                           *
+    15                                  ;This program is free software: you can redistribute it and/or modify it under the terms of the GNU General Public License  *
+    16                                  ;version 3 as published by the Free Software Foundation.  This program is distributed in the hope that it will be useful,   *
+    17                                  ;but WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See   *
+    18                                  ;the GNU General Public License for more details A copy of the GNU General Public License v3 is available here:             *
+    19                                  ;<https://www.gnu.org/licenses/>.                                                                                           *
+    20                                  ;****************************************************************************************************************************
+    21                                  
+    22                                  
+    23                                  
+    24                                  
+    25                                  ;========1=========2=========3=========4=========5=========6=========7=========8=========9=========0=========1=========2=========3**
+    26                                  ;Author information
+    27                                  ;  Author name: Nathan Warner
+    28                                  ;  Author email: nwarner4@csu.fullerton.edu
+    29                                  ;
+    30                                  ;Program information
+    31                                  ;  Program name: Amazing Triangles
+    32                                  ;  Programming languages: One module in C, one in X86, and one in bash.
+    33                                  ;  Date program began: 2024-Feb-11
+    34                                  ;  Date of last update: 2024-Feb-19
+    35                                  ;  Files in this program: driving_time.c, average.asm, r.sh.
+    36                                  ;  Testing: Alpha testing completed.  All functions are correct.
+    37                                  ;  Status: Ready for release to customers
+    38                                  ;
+    39                                  ;Purpose
+    40                                  ;  This program will take in two sides and an angle of a triangle, and will output the length of the
+    41                                  ;   thrd side to the console, as well as sending the value to the driver.
+    42                                  ;
+    43                                  ;This file:
+    44                                  ;  File name: triangle.asm
+    45                                  ;  Language: X86-64
+    46                                  ;  Max page width: 124 columns
+    47                                  ;  Assemble (standard): nasm -l average.lis -o average.o average.asm
+    48                                  ;  Assemble (debug): nasm -g dwarf -l average.lis -o average.o average.asm
+    49                                  ;  Optimal print specification: Landscape, 7 points, monospace, 8½x11 paper
+    50                                  ;  Prototype of this function: double triangle_SAS();
+    51                                  ; 
+    52                                  ;
+    53                                  ;
+    54                                  ;
+    55                                  ;========1=========2=========3=========4=========5=========6=========7=========8=========9=========0=========1=========2=========3**
+    56                                  
+    57                                  ;Declaration section.  The section has no name other than "Declaration section".  Declare here everything that does
+    58                                  ;not have its own place of declaration
+    59                                  
+    60                                  global compute_mean
+    61                                  
+    62                                  extern printf
+    63                                  
+    64                                  segment .data
+    65                                  ;This section (or segment) is for declaring initialized arrays
+    66                                      ; string_format db "%s", 0
+    67                                      ; user_invalid_input db "The last input was invalid and not entered into the array.", 10, 0
+    68 00000000 0A5468652072657475-         return_value db 10, "The return value is: %1.6lf", 10, 0
+    68 00000009 726E2076616C756520-
+    68 00000012 69733A2025312E366C-
+    68 0000001B 660A00             
+    69 0000001E 256C6600                    format db "%lf", 0
+    70 00000022 0A5468652072657475-         return_value_reg db 10, "The return value is: %lu", 10, 0
+    70 0000002B 726E2076616C756520-
+    70 00000034 69733A20256C750A00 
+    71                                  
+    72                                      ;TESTING
+    73 0000003D 0000000000001840            three dq 6.0
+    74                                  
+    75                                  segment .bss
+    76                                  ;This section (or segment) is for declaring empty arrays
+    77                                  align 64
+    78 00000000 <res 340h>              backup_storage_area resb 832
+    79                                  
+    80                                  
+    81                                  segment .text
+    82                                  
+    83                                  compute_mean:
+    84                                      ;Back up the GPRs (General Purpose Registers)
+    85 00000000 55                          push rbp
+    86 00000001 4889E5                      mov rbp, rsp
+    87 00000004 53                          push rbx
+    88 00000005 51                          push rcx
+    89 00000006 52                          push rdx
+    90 00000007 57                          push rdi
+    91 00000008 56                          push rsi
+    92 00000009 4150                        push r8
+    93 0000000B 4151                        push r9
+    94 0000000D 4152                        push r10
+    95 0000000F 4153                        push r11
+    96 00000011 4154                        push r12
+    97 00000013 4155                        push r13
+    98 00000015 4156                        push r14
+    99 00000017 4157                        push r15
+   100 00000019 9C                          pushf
+   101                                  
+   102                                  
+   103                                      ;Backup the registers other than the GPRs
+   104 0000001A B807000000                  mov rax,7
+   105 0000001F BA00000000                  mov rdx,0
+   106 00000024 0FAE2425[00000000]          xsave [backup_storage_area]
+   107                                  
+   108                                  
+   109                                      ;Setting up values for compute_mean execution
+   110 0000002C 4989FD                      mov r13, rdi ;r13 is the array
+   111 0000002F 4989F6                      mov r14, rsi ;r14 is the size of the array
+   112 00000032 41BF00000000                mov r15, 0   ;r15 is the current index
+   113                                  
+   114 00000038 F2450F106D00                movsd xmm13, [r13]
+   115 0000003E F2450F1037                  movsd xmm14, [r15]
+   116                                  
+   117 00000043 B801000000                  mov rax, 1
+   118 00000048 48BF-                       mov rdi, return_value
+   118 0000004A [0000000000000000] 
+   119 00000052 48BE-                       mov rsi, format
+   119 00000054 [1E00000000000000] 
+   120 0000005C F2410F10C5                  movsd xmm0, xmm13
+   121 00000061 E8(00000000)                call printf
+   122                                  
+   123                                  
+   124                                  begin:
+   125                                      ;If the current index (r15) is equal to the size of the array (r14), then the loop terminates
+   126 00000066 4D39F7                      cmp r15, r14
+   127 00000069 740C                        je quit
+   128                                  
+   129 0000006B F2470F5864FD00              addsd xmm12, [r13+r15*8]
+   130 00000072 49FFC7                      inc r15
+   131 00000075 EBEF                        jmp begin
+   132                                      
+   133                                  quit:
+   134                                      ;Takes the sum of the array and divides it by the number of elements (mean)
+   135                                      ; divsd xmm12, qword [three]
+   136 00000077 F2450F5EE6                  divsd xmm12, xmm14
+   137                                      
+   138                                  
+   139                                  
+   140 0000007C B801000000                  mov rax, 1
+   141 00000081 48BF-                       mov rdi, return_value
+   141 00000083 [0000000000000000] 
+   142 0000008B 48BE-                       mov rsi, format
+   142 0000008D [1E00000000000000] 
+   143 00000095 F2410F10C4                  movsd xmm0, xmm12
+   144 0000009A E8(00000000)                call printf
+   145                                  
+   146                                  
+   147 0000009F 6A00                        push qword 0
+   148 000000A1 F2440F112424                movsd [rsp], xmm12
+   149                                  
+   150                                  
+   151                                      ; Restore the values to non-GPRs
+   152 000000A7 B807000000                  mov rax, 7
+   153 000000AC BA00000000                  mov rdx, 0
+   154 000000B1 0FAE2C25[00000000]          xrstor [backup_storage_area]
+   155                                  
+   156                                  
+   157 000000B9 F20F100424                  movsd xmm0, [rsp]
+   158 000000BE 58                          pop rax
+   159                                  
+   160                                  
+   161                                      ;Restore the GPRs
+   162 000000BF 9D                          popf
+   163 000000C0 415F                        pop r15
+   164 000000C2 415E                        pop r14
+   165 000000C4 415D                        pop r13
+   166 000000C6 415C                        pop r12
+   167 000000C8 415B                        pop r11
+   168 000000CA 415A                        pop r10
+   169 000000CC 4159                        pop r9
+   170 000000CE 4158                        pop r8
+   171 000000D0 5E                          pop rsi
+   172 000000D1 5F                          pop rdi
+   173 000000D2 5A                          pop rdx
+   174 000000D3 59                          pop rcx
+   175 000000D4 5B                          pop rbx
+   176 000000D5 5D                          pop rbp   ;Restore rbp to the base of the activation record of the caller program
+   177 000000D6 C3                          ret
+   178                                  ;End of the function compute_mean.asm ====================================================================

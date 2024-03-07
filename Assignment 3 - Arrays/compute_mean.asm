@@ -59,12 +59,18 @@
 
 global compute_mean
 
+extern printf
 
 segment .data
 ;This section (or segment) is for declaring initialized arrays
     ; string_format db "%s", 0
     ; user_invalid_input db "The last input was invalid and not entered into the array.", 10, 0
+    return_value db 10, "The return value is: %1.6lf", 10, 0
+    format db "%lf", 0
+    return_value_reg db 10, "The return value is: %lu", 10, 0
 
+    ;TESTING
+    three dq 6.0
 
 segment .bss
 ;This section (or segment) is for declaring empty arrays
@@ -100,19 +106,56 @@ compute_mean:
     xsave [backup_storage_area]
 
 
+    ;Setting up values for compute_mean execution
+    mov r13, rdi ;r13 is the array
+    mov r14, rsi ;r14 is the size of the array
+    mov r15, 0   ;r15 is the current index
+
+    movsd xmm13, [r13]
+    movsd xmm14, [r15]
+
+    mov rax, 1
+    mov rdi, return_value
+    mov rsi, format
+    movsd xmm0, xmm13
+    call printf
 
 
+begin:
+    ;If the current index (r15) is equal to the size of the array (r14), then the loop terminates
+    cmp r15, r14
+    je quit
 
-
+    addsd xmm12, [r13+r15*8]
+    inc r15
+    jmp begin
     
+quit:
+    ;Takes the sum of the array and divides it by the number of elements (mean)
+    ; divsd xmm12, qword [three]
+    divsd xmm12, xmm14
+    
+
+
+    mov rax, 1
+    mov rdi, return_value
+    mov rsi, format
+    movsd xmm0, xmm12
+    call printf
+
+
+    push qword 0
+    movsd [rsp], xmm12
+
 
     ; Restore the values to non-GPRs
     mov rax, 7
     mov rdx, 0
     xrstor [backup_storage_area]
 
-    mov rax, r15
 
+    movsd xmm0, [rsp]
+    pop rax
 
 
     ;Restore the GPRs
