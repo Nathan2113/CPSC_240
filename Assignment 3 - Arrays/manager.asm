@@ -83,6 +83,9 @@ numbers_received db "These numbers were received and placed into an array", 10, 
 variance db "The variance of the inputted numbers is %1.6lf", 10, 0
 format db "%lf", 0
 
+;TESTING
+current_index db 10, "The current index is: %lu", 10, 0
+
 
 segment .bss
 ;This section (or segment) is for declaring empty arrays
@@ -145,7 +148,11 @@ manager:
     call input_array
     mov r13, rax ;input_array will return the number of values in the array, and r13 will hold that value
     
-
+    ;TESTING INDEX
+    mov rax, 0
+    mov rdi, r13
+    mov rsi, current_index
+    call printf
 
 
     ;Output letting the user know the numbers they input were received and placed into the array
@@ -159,7 +166,7 @@ manager:
     ;Output the variance of the array input by the user
     mov rax, 1
     mov rdi, variance ;The variance of the inputted numbers is %1.6lf"
-    mov rsi, format
+    mov rsi, format ;"%lf"
     movsd xmm0, xmm15
     call printf
 

@@ -68,6 +68,8 @@ segment .data
     string_format db "%s", 0
     user_invalid_input db "The last input was invalid and not entered into the array.", 10, 0
 
+    ;TEST
+    rcx_final_val db "The final value of rcx is: %lu", 10, 0
 
 segment .bss
 align 64
@@ -105,23 +107,27 @@ input_array:
     ;Setting up values for input_array execution
     mov r13, rdi ;r13 is the array
     mov r14, rsi ;r14 is the max number of values that can be in the array (12)
-    mov rcx, 0 ;rcx is the current index
+    ; mov rcx, 0 ;rcx is the current index
+    mov r15, 0
 
 
 
-    sub rsp, 1024
+    
 
 begin:
+    sub rsp, 1024
+
     ;Ends the loop if the current array size is 12 (maxed out array)
-    cmp rcx, 12
+    ; cmp rcx, r14
+    cmp r15, r14
     je quit_loop
 
-    ;TRY FGETS INSTEAD OF SCANF
     mov rax, 0
     mov rdi, string_format ;"%s"
     mov rsi, rsp
     call scanf
 
+    cdqe
     cmp rax, -1
     je quit_loop
 
@@ -133,6 +139,8 @@ begin:
     cmp rax, 0
     je invalid_input
 
+    add rsp, 1024 ;Fixes the stack
+
     
     ;Set up call to atof
     mov rax, 0
@@ -141,11 +149,13 @@ begin:
 
     ;copy number into the array
     movsd [r13+rcx*8], xmm0 ;rcx is the index
-    inc rcx ;rcx++
+    ; inc rcx ;rcx++
+    inc r15
     jmp begin
 
 
 invalid_input:
+    add rsp, 1024 ;Fixes the stack
     mov rax, 0
     mov rdi, user_invalid_input
     call printf
@@ -154,7 +164,7 @@ invalid_input:
 
 
 quit_loop: ;No more looping - restore regs, but save rcx
-    add rsp, 1024 ;Fixes the stack
+    add rsp, 1024
 
 
 
@@ -163,11 +173,19 @@ quit_loop: ;No more looping - restore regs, but save rcx
     ; push qword 0
     ; movsd [rsp], xmm15
 
+    mov rax, 0
+    mov rdi, rcx_final_val
+    mov rsi, r15
+    call printf
+
+
 
     ; Restore the values to non-GPRs
     mov rax, 7
     mov rdx, 0
     xrstor [backup_storage_area]
+
+    mov rax, r15
 
 
     ; movsd xmm0, [rsp]
