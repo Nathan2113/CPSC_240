@@ -1,122 +1,122 @@
      1                                  ;****************************************************************************************************************************
-     2                                  ;Program name: "Amazing Triangles" - This program will take first welcome the user the the program, and then output the     *
-     3                                  ;system clock (tics) to the console. After this initial output for the user, the program will then prompt the user for their*
-     4                                  ;full name, as well as their title (i.e. Dean, Vice-president, etc.). Once the user has entered their name and title, the   *
-     5                                  ;program will tell them good morning, and that this program will take care of their triangles. After, the program will      *
-     6                                  ;prompt the user for the sides of the triangle and its angle (this program solves SAS triangles). If the user inputs an     *
-     7                                  ;invalid input (negative number, non-float number, or an input that is not a number such as 2.2.3+A), the program will      *
-     8                                  ;let the user know that their input is invalid and will then prompt them for another input. After 3 valid inputs are        *
-     9                                  ;entered (2 sides and 1 angle), the program will output a thank you message/confirmation of the user's inputted values.     *
-    10                                  ;Now that the program has 3 valid inputs, it will use the formula for solving SAS triangles to find the third side, and     *
-    11                                  ;will output said answer, as well as letting the user know that the length of the third side will be sent to the driver.    *
-    12                                  ;Before this value is sent, the program will output the new system clock (tics). Once back in the driver, it will let the   *
-    13                                  ;user know that it has received the value of the third side, and that a zero will be sent to the operating system.          *                                                                                                      
+     2                                  ;Program name: "Arrays" - This program will first welcome the user to the program, as well as outputting its developer.     *
+     3                                  ;After this initial message, the program will let the user know the directions of the program, which is as follows:         *
+     4                                  ;                                                                                                                           *
+     5                                  ;"This program will manage your arrays of 64-bit floats                                                                     *
+     6                                  ;For the array enter a sequence of 64-bit floats separated by white space.                                                  *
+     7                                  ;After the last input press enter followed by Control+D:"                                                                   *
+     8                                  ;                                                                                                                           *
+     9                                  ;The program will then take in user input, validating each input to make sure they are entering valid float numbers, and    *
+    10                                  ;this process is done through the input_array.asm file, using isfloat.asm to validate their inputs. If the user inputs an   *
+    11                                  ;invalid input, the program will let them know with the following message:                                                  *
+    12                                  ;                                                                                                                           *
+    13                                  ;"The last input was invalid and not entered into the array.""                                                              *
     14                                  ;                                                                                                                           *
-    15                                  ;This program is free software: you can redistribute it and/or modify it under the terms of the GNU General Public License  *
-    16                                  ;version 3 as published by the Free Software Foundation.  This program is distributed in the hope that it will be useful,   *
-    17                                  ;but WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See   *
-    18                                  ;the GNU General Public License for more details A copy of the GNU General Public License v3 is available here:             *
-    19                                  ;<https://www.gnu.org/licenses/>.                                                                                           *
-    20                                  ;****************************************************************************************************************************
-    21                                  
-    22                                  
-    23                                  
-    24                                  
-    25                                  ;========1=========2=========3=========4=========5=========6=========7=========8=========9=========0=========1=========2=========3**
-    26                                  ;Author information
-    27                                  ;  Author name: Nathan Warner
-    28                                  ;  Author email: nwarner4@csu.fullerton.edu
-    29                                  ;
-    30                                  ;Program information
-    31                                  ;  Program name: Amazing Triangles
-    32                                  ;  Programming languages: One module in C, one in X86, and one in bash.
-    33                                  ;  Date program began: 2024-Feb-11
-    34                                  ;  Date of last update: 2024-Feb-19
-    35                                  ;  Files in this program: driving_time.c, average.asm, r.sh.
-    36                                  ;  Testing: Alpha testing completed.  All functions are correct.
-    37                                  ;  Status: Ready for release to customers
-    38                                  ;
-    39                                  ;Purpose
-    40                                  ;  This program will take in two sides and an angle of a triangle, and will output the length of the
-    41                                  ;   thrd side to the console, as well as sending the value to the driver.
-    42                                  ;
-    43                                  ;This file:
-    44                                  ;  File name: triangle.asm
-    45                                  ;  Language: X86-64
-    46                                  ;  Max page width: 124 columns
-    47                                  ;  Assemble (standard): nasm -l average.lis -o average.o average.asm
-    48                                  ;  Assemble (debug): nasm -g dwarf -l average.lis -o average.o average.asm
-    49                                  ;  Optimal print specification: Landscape, 7 points, monospace, 8½x11 paper
-    50                                  ;  Prototype of this function: double triangle_SAS();
-    51                                  ; 
-    52                                  ;
-    53                                  ;
-    54                                  ;
-    55                                  ;========1=========2=========3=========4=========5=========6=========7=========8=========9=========0=========1=========2=========3**
-    56                                  
-    57                                  ;Declaration section.  The section has no name other than "Declaration section".  Declare here everything that does
-    58                                  ;not have its own place of declaration
-    59                                  
-    60                                  global input_array
+    15                                  ;Once the array has been fully entered, the program will output the entire array to the screen, which is done in the        *
+    16                                  ;output_array.c file using the C language. Once the array has been output, the program will then compute the mean of the    *
+    17                                  ;array using compute_mean.asm, and will then use the mean it found to compute the variance using compute_variance.cpp,      *
+    18                                  ;which uses C++. Once the variance has been found, the program will output the variance to the screen for the user, and     *
+    19                                  ;will then send the variance to main.c, where the program will let the user know that the variance will be kept for         *
+    20                                  ;future use, and that a 0 will be sent to the operating system.                                                             *
+    21                                  ;                                                                                                                           *
+    22                                  ;This program is free software: you can redistribute it and/or modify it under the terms of the GNU General Public License  *
+    23                                  ;version 3 as published by the Free Software Foundation.  This program is distributed in the hope that it will be useful,   *
+    24                                  ;but WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See   *
+    25                                  ;the GNU General Public License for more details A copy of the GNU General Public License v3 is available here:             *
+    26                                  ;<https://www.gnu.org/licenses/>.                                                                                           *
+    27                                  ;****************************************************************************************************************************
+    28                                  
+    29                                  
+    30                                  
+    31                                  
+    32                                  ;========1=========2=========3=========4=========5=========6=========7=========8=========9=========0=========1=========2=========3**
+    33                                  ;Author information
+    34                                  ;  Author name: Nathan Warner
+    35                                  ;  Author email: nwarner4@csu.fullerton.edu
+    36                                  ;
+    37                                  ;Program information
+    38                                  ;  Program name: Arrays
+    39                                  ;  Programming languages: Two modules in C, four modules in x86_64, one module in C++, and one module in bash
+    40                                  ;  Date program began: 2024-Mar-3
+    41                                  ;  Date of last update: 2024-Mar-7
+    42                                  ;  Files in this program: main.c, manager.asm, r.sh, output_array.c, compute_mean.asm, compute_variance.cpp, input_array.asm, isfloat.asm
+    43                                  ;  Testing: Alpha testing completed.  All functions are correct.
+    44                                  ;  Status: Ready for release to customers
+    45                                  ;
+    46                                  ;Purpose
+    47                                  ;  The program will take in an array of valid floating point numbers from the user, find the mean of the array, 
+    48                                  ;       and find the variance, which it will output to the screen and send to main.c
+    49                                  ;
+    50                                  ;This file:
+    51                                  ;  File name: input_array.asm
+    52                                  ;  Language: X86-64
+    53                                  ;  Max page width: 124 columns
+    54                                  ;  Assemble (standard): nasm -f elf64 -l input_array.lis -o input_array.o input_array.asm
+    55                                  ;  Optimal print specification: Landscape, 7 points, monospace, 8½x11 paper
+    56                                  ;  Prototype of this function: double input_array(double *array, int size);
+    57                                  ;========1=========2=========3=========4=========5=========6=========7=========8=========9=========0=========1=========2=========3**
+    58                                  
+    59                                  ;Declaration section.  The section has no name other than "Declaration section".  Declare here everything that does
+    60                                  ;not have its own place of declaration
     61                                  
-    62                                  extern isfloat
-    63                                  extern atof
-    64                                  extern printf
-    65                                  extern scanf
-    66                                  
-    67                                  
-    68                                  segment .data
-    69                                  ;This section (or segment) is for declaring initialized arrays
-    70 00000000 257300                      string_format db "%s", 0
-    71 00000003 546865206C61737420-         user_invalid_input db "The last input was invalid and not entered into the array.", 10, 0
-    71 0000000C 696E70757420776173-
-    71 00000015 20696E76616C696420-
-    71 0000001E 616E64206E6F742065-
-    71 00000027 6E746572656420696E-
-    71 00000030 746F20746865206172-
-    71 00000039 7261792E0A00       
-    72                                  
-    73                                  
-    74                                  segment .bss
-    75                                  ;This section (or segment) is for declaring empty arrays
-    76                                  align 64
-    77 00000000 <res 340h>              backup_storage_area resb 832
-    78                                  
-    79                                  
-    80                                  segment .text
+    62                                  global input_array
+    63                                  
+    64                                  extern isfloat
+    65                                  extern atof
+    66                                  extern printf
+    67                                  extern scanf
+    68                                  
+    69                                  
+    70                                  segment .data
+    71                                  ;This section (or segment) is for declaring initialized arrays
+    72 00000000 257300                      string_format db "%s", 0
+    73 00000003 546865206C61737420-         user_invalid_input db "The last input was invalid and not entered into the array.", 10, 0
+    73 0000000C 696E70757420776173-
+    73 00000015 20696E76616C696420-
+    73 0000001E 616E64206E6F742065-
+    73 00000027 6E746572656420696E-
+    73 00000030 746F20746865206172-
+    73 00000039 7261792E0A00       
+    74                                  
+    75                                  
+    76                                  segment .bss
+    77                                  ;This section (or segment) is for declaring empty arrays
+    78                                  align 64
+    79 00000000 <res 340h>              backup_storage_area resb 832
+    80                                  
     81                                  
-    82                                  input_array:
-    83                                      ;Back up the GPRs (General Purpose Registers)
-    84 00000000 55                          push rbp
-    85 00000001 4889E5                      mov rbp, rsp
-    86 00000004 53                          push rbx
-    87 00000005 51                          push rcx
-    88 00000006 52                          push rdx
-    89 00000007 57                          push rdi
-    90 00000008 56                          push rsi
-    91 00000009 4150                        push r8
-    92 0000000B 4151                        push r9
-    93 0000000D 4152                        push r10
-    94 0000000F 4153                        push r11
-    95 00000011 4154                        push r12
-    96 00000013 4155                        push r13
-    97 00000015 4156                        push r14
-    98 00000017 4157                        push r15
-    99 00000019 9C                          pushf
-   100                                  
-   101                                  
-   102                                      ;Backup the registers other than the GPRs
-   103 0000001A B807000000                  mov rax,7
-   104 0000001F BA00000000                  mov rdx,0
-   105 00000024 0FAE2425[00000000]          xsave [backup_storage_area]
-   106                                  
-   107                                  
-   108                                      ;Setting up values for input_array execution
-   109 0000002C 4989FD                      mov r13, rdi ;r13 is the array
-   110 0000002F 4989F6                      mov r14, rsi ;r14 is the max number of values that can be in the array (12)
-   111 00000032 41BF00000000                mov r15, 0 ;r15 is the current index of the array
-   112                                  
-   113                                  
+    82                                  segment .text
+    83                                  
+    84                                  input_array:
+    85                                      ;Back up the GPRs (General Purpose Registers)
+    86 00000000 55                          push rbp
+    87 00000001 4889E5                      mov rbp, rsp
+    88 00000004 53                          push rbx
+    89 00000005 51                          push rcx
+    90 00000006 52                          push rdx
+    91 00000007 57                          push rdi
+    92 00000008 56                          push rsi
+    93 00000009 4150                        push r8
+    94 0000000B 4151                        push r9
+    95 0000000D 4152                        push r10
+    96 0000000F 4153                        push r11
+    97 00000011 4154                        push r12
+    98 00000013 4155                        push r13
+    99 00000015 4156                        push r14
+   100 00000017 4157                        push r15
+   101 00000019 9C                          pushf
+   102                                  
+   103                                  
+   104                                      ;Backup the registers other than the GPRs
+   105 0000001A B807000000                  mov rax,7
+   106 0000001F BA00000000                  mov rdx,0
+   107 00000024 0FAE2425[00000000]          xsave [backup_storage_area]
+   108                                  
+   109                                  
+   110                                      ;Setting up values for input_array execution
+   111 0000002C 4989FD                      mov r13, rdi ;r13 is the array
+   112 0000002F 4989F6                      mov r14, rsi ;r14 is the max number of values that can be in the array (12)
+   113 00000032 41BF00000000                mov r15, 0 ;r15 is the current index of the array
    114                                  
    115                                      
    116                                  
