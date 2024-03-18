@@ -48,111 +48,109 @@
     48                                  ;       and find the variance, which it will output to the screen and send to main.c
     49                                  ;
     50                                  ;This file:
-    51                                  ;  File name: compute_mean.asm
+    51                                  ;  File name: manager.asm
     52                                  ;  Language: X86-64
     53                                  ;  Max page width: 124 columns
-    54                                  ;  Assemble (standard): nasm -f elf64 -l compute_mean.lis -o compute_mean.o compute_mean.asm
-    55                                  ;  Optimal print specification: Landscape, 7 points, monospace, 8½x11 paper
-    56                                  ;  Prototype of this function: double compute_mean(double *array, int size);
-    57                                  ;========1=========2=========3=========4=========5=========6=========7=========8=========9=========0=========1=========2=========3**
-    58                                  
-    59                                  ;Declaration section.  The section has no name other than "Declaration section".  Declare here everything that does
-    60                                  ;not have its own place of declaration
-    61                                  
-    62                                  global compute_mean
-    63                                  
-    64                                  extern printf
-    65                                  
-    66                                  segment .data
-    67                                  ;This section (or segment) is for declaring initialized arrays
-    68                                  ;empty
+    54                                  ;  Assemble (standard): nasm -f elf64 -l manager.lis -o manager.o manager.asm
+    55                                  ;  Assemble (debug): nasm -g dwarf -l manager.lis -o manager.o manager.asm
+    56                                  ;  Optimal print specification: Landscape, 7 points, monospace, 8½x11 paper
+    57                                  ;  Prototype of this function: double manager();
+    58                                  ;========1=========2=========3=========4=========5=========6=========7=========8=========9=========0=========1=========2=========3**
+    59                                  
+    60                                  ;Declaration section.  The section has no name other than "Declaration section".  Declare here everything that does
+    61                                  ;not have its own place of declaration
+    62                                  
+    63                                  global manager
+    64                                  
+    65                                  extern printf
+    66                                  
+    67                                  
+    68                                  float_size equ 60
     69                                  
-    70                                  segment .bss
-    71                                  ;This section (or segment) is for declaring empty arrays
-    72                                  align 64
-    73 00000000 <res 340h>              backup_storage_area resb 832
+    70                                  segment .data
+    71                                  ;This section (or segment) is for declaring initialized arrays
+    72                                  
+    73 00000000 0A546869732070726F-     program_desc db 10, "This program will manage your arrays of 64-bit floats", 10, 0
+    73 00000009 6772616D2077696C6C-
+    73 00000012 206D616E6167652079-
+    73 0000001B 6F7572206172726179-
+    73 00000024 73206F662036342D62-
+    73 0000002D 697420666C6F617473-
+    73 00000036 0A00               
     74                                  
     75                                  
-    76                                  segment .text
-    77                                  
-    78                                  compute_mean:
-    79                                      ;Back up the GPRs (General Purpose Registers)
-    80 00000000 55                          push rbp
-    81 00000001 4889E5                      mov rbp, rsp
-    82 00000004 53                          push rbx
-    83 00000005 51                          push rcx
-    84 00000006 52                          push rdx
-    85 00000007 57                          push rdi
-    86 00000008 56                          push rsi
-    87 00000009 4150                        push r8
-    88 0000000B 4151                        push r9
-    89 0000000D 4152                        push r10
-    90 0000000F 4153                        push r11
-    91 00000011 4154                        push r12
-    92 00000013 4155                        push r13
-    93 00000015 4156                        push r14
-    94 00000017 4157                        push r15
-    95 00000019 9C                          pushf
-    96                                  
-    97                                  
-    98                                      ;Backup the registers other than the GPRs
-    99 0000001A B807000000                  mov rax,7
-   100 0000001F BA00000000                  mov rdx,0
-   101 00000024 0FAE2425[00000000]          xsave [backup_storage_area]
-   102                                  
-   103                                  
-   104                                      ;Setting up values for compute_mean execution
-   105 0000002C 4989FD                      mov r13, rdi ;r13 is the array
-   106 0000002F 4989F6                      mov r14, rsi ;r14 is the size of the array
-   107 00000032 41BF00000000                mov r15, 0   ;r15 is the current index
-   108                                  
-   109 00000038 F2450F106D00                movsd xmm13, [r13]
-   110 0000003E F24D0F2AF6                  cvtsi2sd xmm14, r14 ;Converting size of the array to float and storing value in xmm14
+    76                                  segment .bss
+    77                                  ;This section (or segment) is for declaring empty arrays
+    78                                  
+    79                                  align 64
+    80 00000000 <res 340h>              backup_storage_area resb 832
+    81 00000340 <res 60h>               array resq 12 ;Array of 12 qwords, will be used to take in user inputs for floats, as well as computing the mean and variance
+    82                                  
+    83                                  
+    84                                  segment .text
+    85                                  
+    86                                  manager:
+    87                                  
+    88                                      ;Back up the GPRs (General Purpose Registers)
+    89 00000000 55                          push rbp
+    90 00000001 4889E5                      mov rbp, rsp
+    91 00000004 53                          push rbx
+    92 00000005 51                          push rcx
+    93 00000006 52                          push rdx
+    94 00000007 57                          push rdi
+    95 00000008 56                          push rsi
+    96 00000009 4150                        push r8
+    97 0000000B 4151                        push r9
+    98 0000000D 4152                        push r10
+    99 0000000F 4153                        push r11
+   100 00000011 4154                        push r12
+   101 00000013 4155                        push r13
+   102 00000015 4156                        push r14
+   103 00000017 4157                        push r15
+   104 00000019 9C                          pushf
+   105                                  
+   106                                      ;Backup the registers other than the GPRs
+   107 0000001A B807000000                  mov rax,7
+   108 0000001F BA00000000                  mov rdx,0
+   109 00000024 0FAE2425[00000000]          xsave [backup_storage_area]
+   110                                  
    111                                  
    112                                  
-   113                                  begin:
-   114                                      ;If the current index (r15) is equal to the size of the array (r14), then the loop terminates
-   115 00000043 4D39F7                      cmp r15, r14
-   116 00000046 740C                        je quit
-   117                                  
-   118 00000048 F2470F5864FD00              addsd xmm12, [r13+r15*8]
-   119 0000004F 49FFC7                      inc r15
-   120 00000052 EBEF                        jmp begin
-   121                                      
-   122                                  quit:
-   123                                      ;Takes the sum of the array and divides it by the number of elements (mean)
-   124 00000054 F2450F5EE6                  divsd xmm12, xmm14
-   125                                      
+   113                                  
+   114                                  
+   115                                  
+   116                                      ;Back up value in xmm15 (variance) before restoring registers
+   117 0000002C 6A00                        push qword 0
+   118 0000002E F2440F113C24                movsd [rsp], xmm15
+   119                                  
+   120                                  
+   121                                  
+   122                                      ;Restore the values to non-GPRs
+   123 00000034 B807000000                  mov rax, 7
+   124 00000039 BA00000000                  mov rdx, 0
+   125 0000003E 0FAE2C25[00000000]          xrstor [backup_storage_area]
    126                                  
-   127 00000059 6A00                        push qword 0
-   128 0000005B F2440F112424                movsd [rsp], xmm12
-   129                                  
-   130                                  
-   131                                      ; Restore the values to non-GPRs
-   132 00000061 B807000000                  mov rax, 7
-   133 00000066 BA00000000                  mov rdx, 0
-   134 0000006B 0FAE2C25[00000000]          xrstor [backup_storage_area]
-   135                                  
-   136                                  
-   137 00000073 F20F100424                  movsd xmm0, [rsp]
-   138 00000078 58                          pop rax
-   139                                  
-   140                                  
-   141                                      ;Restore the GPRs
-   142 00000079 9D                          popf
-   143 0000007A 415F                        pop r15
-   144 0000007C 415E                        pop r14
-   145 0000007E 415D                        pop r13
-   146 00000080 415C                        pop r12
-   147 00000082 415B                        pop r11
-   148 00000084 415A                        pop r10
-   149 00000086 4159                        pop r9
-   150 00000088 4158                        pop r8
-   151 0000008A 5E                          pop rsi
-   152 0000008B 5F                          pop rdi
-   153 0000008C 5A                          pop rdx
-   154 0000008D 59                          pop rcx
-   155 0000008E 5B                          pop rbx
-   156 0000008F 5D                          pop rbp   ;Restore rbp to the base of the activation record of the caller program
-   157 00000090 C3                          ret
-   158                                  ;End of the function compute_mean.asm ====================================================================
+   127                                  
+   128 00000046 F20F100424                  movsd xmm0, [rsp]
+   129 0000004B 58                          pop rax
+   130                                      
+   131                                  
+   132                                  
+   133                                      ;Restore the GPRs
+   134 0000004C 9D                          popf
+   135 0000004D 415F                        pop r15
+   136 0000004F 415E                        pop r14
+   137 00000051 415D                        pop r13
+   138 00000053 415C                        pop r12
+   139 00000055 415B                        pop r11
+   140 00000057 415A                        pop r10
+   141 00000059 4159                        pop r9
+   142 0000005B 4158                        pop r8
+   143 0000005D 5E                          pop rsi
+   144 0000005E 5F                          pop rdi
+   145 0000005F 5A                          pop rdx
+   146 00000060 59                          pop rcx
+   147 00000061 5B                          pop rbx
+   148 00000062 5D                          pop rbp   ;Restore rbp to the base of the activation record of the caller program
+   149 00000063 C3                          ret
+   150                                  ;End of the function manager.asm ====================================================================

@@ -63,13 +63,6 @@
 global manager
 
 extern printf
-extern stdin
-extern scanf
-extern input_array
-extern output_array
-extern isfloat
-extern compute_mean
-extern compute_variance
 
 
 float_size equ 60
@@ -78,11 +71,6 @@ segment .data
 ;This section (or segment) is for declaring initialized arrays
 
 program_desc db 10, "This program will manage your arrays of 64-bit floats", 10, 0
-prog_instruction db "For the array enter a sequence of 64-bit floats separated by white space.", 10, 0
-exit_instruction db "After the last input press enter followed by Control+D:", 10, 0
-numbers_received db 10, "These numbers were received and placed into an array", 10, 0
-variance db "The variance of the inputted numbers is %1.6lf", 10, 0
-format db "%lf", 0
 
 
 segment .bss
@@ -122,69 +110,7 @@ manager:
 
 
 
-    ;Output the program description
-    mov rax, 0
-    mov rdi, program_desc ;"This program will manage your arrays of 64-bit numbers"
-    call printf
 
-    ;Output the program instructions
-    mov rax, 0
-    mov rdi, prog_instruction ;"For the array enter a sequence of 64-bit floats separated by white space."
-    call printf
-
-    ;Output the instruction to exit the prompt loop for inputting numbers into the array
-    mov rax, 0
-    mov rdi, exit_instruction ;After the last input press enter followed by Control+D"
-    call printf
-
-    
-    ;Block to call input_array, which will take in floats from the user, as well as validating their inputs
-    mov rax, 0
-    mov rdi, array
-    mov rsi, 12 ;array_size
-    call input_array
-    mov r13, rax ;input_array will return the number of values in the array, and r13 will hold that value
-    
-
-
-    ;Output letting the user know the numbers they input were received and placed into the array
-    mov rax, 0
-    mov rdi, numbers_received ;"These numbers were receive and placed into an array"
-    call printf
-
-
-    ;Call output_array. Takes in a pointer to the array and the amount of elements in the array
-    mov rax, 0
-    mov rdi, array
-    mov rsi, r13        ;array size
-    call output_array
-
-
-
-    ;Call compute_mean. Takes in the array and array size, and will compute the mean of the array using assembly
-    mov rax, 0
-    mov rdi, array
-    mov rsi, r13        ;array size
-    call compute_mean
-    movsd xmm14, xmm0   ;moves value of mean to xmm14
-
-
-
-    ;Give values going into compute_variance. These values are: the array, the array size, and the mean of the array
-    mov rax, 0
-    mov rdi, array
-    mov rsi, r13            ;size of the array
-    movsd xmm0, xmm14       ;array's mean
-    call compute_variance
-    movsd xmm15, xmm0       ;moves variance to xmm15
-
-
-    ;Output the variance of the array input by the user
-    mov rax, 1
-    mov rdi, variance   ;The variance of the inputted numbers is %1.6lf"
-    mov rsi, format     ;"%lf"
-    movsd xmm0, xmm15   ;variance
-    call printf
 
 
     ;Back up value in xmm15 (variance) before restoring registers

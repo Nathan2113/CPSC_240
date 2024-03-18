@@ -62,7 +62,7 @@ This file:
 //#include <stdlib.h>
 
 extern "C" double compute_variance(double *arr, int size, double mean);
-// Put in mean after testing
+
 double compute_variance(double *arr, int size, double mean) {
     double variance = 0;
     double numerator = 0;

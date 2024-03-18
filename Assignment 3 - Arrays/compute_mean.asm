@@ -65,9 +65,7 @@ extern printf
 
 segment .data
 ;This section (or segment) is for declaring initialized arrays
-    return_value db 10, "The return value is: %1.6lf", 10, 0
-    format db "%lf", 0
-    return_value_reg db 10, "The return value is: %lu", 10, 0
+;empty
 
 segment .bss
 ;This section (or segment) is for declaring empty arrays

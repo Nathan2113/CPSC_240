@@ -73,195 +73,193 @@
     73                                  
     74                                  
     75                                  float_size equ 60
-    76                                  true equ -1
-    77                                  false equ 0
-    78                                  
-    79                                  segment .data
-    80                                  ;This section (or segment) is for declaring initialized arrays
-    81                                  
-    82 00000000 0A546869732070726F-     program_desc db 10, "This program will manage your arrays of 64-bit floats", 10, 0
-    82 00000009 6772616D2077696C6C-
-    82 00000012 206D616E6167652079-
-    82 0000001B 6F7572206172726179-
-    82 00000024 73206F662036342D62-
-    82 0000002D 697420666C6F617473-
-    82 00000036 0A00               
-    83 00000038 466F72207468652061-     prog_instruction db "For the array enter a sequence of 64-bit floats separated by white space.", 10, 0
-    83 00000041 7272617920656E7465-
-    83 0000004A 722061207365717565-
-    83 00000053 6E6365206F66203634-
-    83 0000005C 2D62697420666C6F61-
-    83 00000065 747320736570617261-
-    83 0000006E 746564206279207768-
-    83 00000077 697465207370616365-
-    83 00000080 2E0A00             
-    84 00000083 416674657220746865-     exit_instruction db "After the last input press enter followed by Control+D:", 10, 0
-    84 0000008C 206C61737420696E70-
-    84 00000095 757420707265737320-
-    84 0000009E 656E74657220666F6C-
-    84 000000A7 6C6F77656420627920-
-    84 000000B0 436F6E74726F6C2B44-
-    84 000000B9 3A0A00             
-    85 000000BC 0A5468657365206E75-     numbers_received db 10, "These numbers were received and placed into an array", 10, 0
-    85 000000C5 6D6265727320776572-
-    85 000000CE 652072656365697665-
-    85 000000D7 6420616E6420706C61-
-    85 000000E0 63656420696E746F20-
-    85 000000E9 616E2061727261790A-
-    85 000000F2 00                 
-    86 000000F3 546865207661726961-     variance db "The variance of the inputted numbers is %1.6lf", 10, 0
-    86 000000FC 6E6365206F66207468-
-    86 00000105 6520696E7075747465-
-    86 0000010E 64206E756D62657273-
-    86 00000117 2069732025312E366C-
-    86 00000120 660A00             
-    87 00000123 256C6600                format db "%lf", 0
-    88                                  
-    89                                  
-    90                                  segment .bss
-    91                                  ;This section (or segment) is for declaring empty arrays
-    92                                  
-    93                                  align 64
-    94 00000000 <res 340h>              backup_storage_area resb 832
-    95 00000340 <res 60h>               array resq 12 ;Array of 12 qwords, will be used to take in user inputs for floats, as well as computing the mean and variance
-    96                                  
+    76                                  
+    77                                  segment .data
+    78                                  ;This section (or segment) is for declaring initialized arrays
+    79                                  
+    80 00000000 0A546869732070726F-     program_desc db 10, "This program will manage your arrays of 64-bit floats", 10, 0
+    80 00000009 6772616D2077696C6C-
+    80 00000012 206D616E6167652079-
+    80 0000001B 6F7572206172726179-
+    80 00000024 73206F662036342D62-
+    80 0000002D 697420666C6F617473-
+    80 00000036 0A00               
+    81 00000038 466F72207468652061-     prog_instruction db "For the array enter a sequence of 64-bit floats separated by white space.", 10, 0
+    81 00000041 7272617920656E7465-
+    81 0000004A 722061207365717565-
+    81 00000053 6E6365206F66203634-
+    81 0000005C 2D62697420666C6F61-
+    81 00000065 747320736570617261-
+    81 0000006E 746564206279207768-
+    81 00000077 697465207370616365-
+    81 00000080 2E0A00             
+    82 00000083 416674657220746865-     exit_instruction db "After the last input press enter followed by Control+D:", 10, 0
+    82 0000008C 206C61737420696E70-
+    82 00000095 757420707265737320-
+    82 0000009E 656E74657220666F6C-
+    82 000000A7 6C6F77656420627920-
+    82 000000B0 436F6E74726F6C2B44-
+    82 000000B9 3A0A00             
+    83 000000BC 0A5468657365206E75-     numbers_received db 10, "These numbers were received and placed into an array", 10, 0
+    83 000000C5 6D6265727320776572-
+    83 000000CE 652072656365697665-
+    83 000000D7 6420616E6420706C61-
+    83 000000E0 63656420696E746F20-
+    83 000000E9 616E2061727261790A-
+    83 000000F2 00                 
+    84 000000F3 546865207661726961-     variance db "The variance of the inputted numbers is %1.6lf", 10, 0
+    84 000000FC 6E6365206F66207468-
+    84 00000105 6520696E7075747465-
+    84 0000010E 64206E756D62657273-
+    84 00000117 2069732025312E366C-
+    84 00000120 660A00             
+    85 00000123 256C6600                format db "%lf", 0
+    86                                  
+    87                                  
+    88                                  segment .bss
+    89                                  ;This section (or segment) is for declaring empty arrays
+    90                                  
+    91                                  align 64
+    92 00000000 <res 340h>              backup_storage_area resb 832
+    93 00000340 <res 60h>               array resq 12 ;Array of 12 qwords, will be used to take in user inputs for floats, as well as computing the mean and variance
+    94                                  
+    95                                  
+    96                                  segment .text
     97                                  
-    98                                  segment .text
+    98                                  manager:
     99                                  
-   100                                  manager:
-   101                                  
-   102                                      ;Back up the GPRs (General Purpose Registers)
-   103 00000000 55                          push rbp
-   104 00000001 4889E5                      mov rbp, rsp
-   105 00000004 53                          push rbx
-   106 00000005 51                          push rcx
-   107 00000006 52                          push rdx
-   108 00000007 57                          push rdi
-   109 00000008 56                          push rsi
-   110 00000009 4150                        push r8
-   111 0000000B 4151                        push r9
-   112 0000000D 4152                        push r10
-   113 0000000F 4153                        push r11
-   114 00000011 4154                        push r12
-   115 00000013 4155                        push r13
-   116 00000015 4156                        push r14
-   117 00000017 4157                        push r15
-   118 00000019 9C                          pushf
-   119                                  
-   120                                      ;Backup the registers other than the GPRs
-   121 0000001A B807000000                  mov rax,7
-   122 0000001F BA00000000                  mov rdx,0
-   123 00000024 0FAE2425[00000000]          xsave [backup_storage_area]
+   100                                      ;Back up the GPRs (General Purpose Registers)
+   101 00000000 55                          push rbp
+   102 00000001 4889E5                      mov rbp, rsp
+   103 00000004 53                          push rbx
+   104 00000005 51                          push rcx
+   105 00000006 52                          push rdx
+   106 00000007 57                          push rdi
+   107 00000008 56                          push rsi
+   108 00000009 4150                        push r8
+   109 0000000B 4151                        push r9
+   110 0000000D 4152                        push r10
+   111 0000000F 4153                        push r11
+   112 00000011 4154                        push r12
+   113 00000013 4155                        push r13
+   114 00000015 4156                        push r14
+   115 00000017 4157                        push r15
+   116 00000019 9C                          pushf
+   117                                  
+   118                                      ;Backup the registers other than the GPRs
+   119 0000001A B807000000                  mov rax,7
+   120 0000001F BA00000000                  mov rdx,0
+   121 00000024 0FAE2425[00000000]          xsave [backup_storage_area]
+   122                                  
+   123                                  
    124                                  
-   125                                  
-   126                                  
-   127                                      ;Output the program description
-   128 0000002C B800000000                  mov rax, 0
-   129 00000031 48BF-                       mov rdi, program_desc ;"This program will manage your arrays of 64-bit numbers"
-   129 00000033 [0000000000000000] 
-   130 0000003B E8(00000000)                call printf
-   131                                  
-   132                                      ;Output the program instructions
-   133 00000040 B800000000                  mov rax, 0
-   134 00000045 48BF-                       mov rdi, prog_instruction ;"For the array enter a sequence of 64-bit floats separated by white space."
-   134 00000047 [3800000000000000] 
-   135 0000004F E8(00000000)                call printf
-   136                                  
-   137                                      ;Output the instruction to exit the prompt loop for inputting numbers into the array
-   138 00000054 B800000000                  mov rax, 0
-   139 00000059 48BF-                       mov rdi, exit_instruction ;After the last input press enter followed by Control+D"
-   139 0000005B [8300000000000000] 
-   140 00000063 E8(00000000)                call printf
-   141                                  
-   142                                      
-   143                                      ;Block to call input_array, which will take in floats from the user, as well as validating their inputs
-   144 00000068 B800000000                  mov rax, 0
-   145 0000006D 48BF-                       mov rdi, array
-   145 0000006F [4003000000000000] 
-   146 00000077 BE0C000000                  mov rsi, 12 ;array_size
-   147 0000007C E8(00000000)                call input_array
-   148 00000081 4989C5                      mov r13, rax ;input_array will return the number of values in the array, and r13 will hold that value
-   149                                      
-   150                                  
-   151                                  
-   152                                      ;Output letting the user know the numbers they input were received and placed into the array
-   153 00000084 B800000000                  mov rax, 0
-   154 00000089 48BF-                       mov rdi, numbers_received ;"These numbers were receive and placed into an array"
-   154 0000008B [BC00000000000000] 
-   155 00000093 E8(00000000)                call printf
-   156                                  
-   157                                  
-   158                                      ;Call output_array. Takes in a pointer to the array and the amount of elements in the array
-   159 00000098 B800000000                  mov rax, 0
-   160 0000009D 48BF-                       mov rdi, array
-   160 0000009F [4003000000000000] 
-   161 000000A7 4C89EE                      mov rsi, r13        ;array size
-   162 000000AA E8(00000000)                call output_array
+   125                                      ;Output the program description
+   126 0000002C B800000000                  mov rax, 0
+   127 00000031 48BF-                       mov rdi, program_desc ;"This program will manage your arrays of 64-bit numbers"
+   127 00000033 [0000000000000000] 
+   128 0000003B E8(00000000)                call printf
+   129                                  
+   130                                      ;Output the program instructions
+   131 00000040 B800000000                  mov rax, 0
+   132 00000045 48BF-                       mov rdi, prog_instruction ;"For the array enter a sequence of 64-bit floats separated by white space."
+   132 00000047 [3800000000000000] 
+   133 0000004F E8(00000000)                call printf
+   134                                  
+   135                                      ;Output the instruction to exit the prompt loop for inputting numbers into the array
+   136 00000054 B800000000                  mov rax, 0
+   137 00000059 48BF-                       mov rdi, exit_instruction ;After the last input press enter followed by Control+D"
+   137 0000005B [8300000000000000] 
+   138 00000063 E8(00000000)                call printf
+   139                                  
+   140                                      
+   141                                      ;Block to call input_array, which will take in floats from the user, as well as validating their inputs
+   142 00000068 B800000000                  mov rax, 0
+   143 0000006D 48BF-                       mov rdi, array
+   143 0000006F [4003000000000000] 
+   144 00000077 BE0C000000                  mov rsi, 12 ;array_size
+   145 0000007C E8(00000000)                call input_array
+   146 00000081 4989C5                      mov r13, rax ;input_array will return the number of values in the array, and r13 will hold that value
+   147                                      
+   148                                  
+   149                                  
+   150                                      ;Output letting the user know the numbers they input were received and placed into the array
+   151 00000084 B800000000                  mov rax, 0
+   152 00000089 48BF-                       mov rdi, numbers_received ;"These numbers were receive and placed into an array"
+   152 0000008B [BC00000000000000] 
+   153 00000093 E8(00000000)                call printf
+   154                                  
+   155                                  
+   156                                      ;Call output_array. Takes in a pointer to the array and the amount of elements in the array
+   157 00000098 B800000000                  mov rax, 0
+   158 0000009D 48BF-                       mov rdi, array
+   158 0000009F [4003000000000000] 
+   159 000000A7 4C89EE                      mov rsi, r13        ;array size
+   160 000000AA E8(00000000)                call output_array
+   161                                  
+   162                                  
    163                                  
-   164                                  
-   165                                  
-   166                                      ;Call compute_mean. Takes in the array and array size, and will compute the mean of the array using assembly
-   167 000000AF B800000000                  mov rax, 0
-   168 000000B4 48BF-                       mov rdi, array
-   168 000000B6 [4003000000000000] 
-   169 000000BE 4C89EE                      mov rsi, r13        ;array size
-   170 000000C1 E8(00000000)                call compute_mean
-   171 000000C6 F2440F10F0                  movsd xmm14, xmm0   ;moves value of mean to xmm14
+   164                                      ;Call compute_mean. Takes in the array and array size, and will compute the mean of the array using assembly
+   165 000000AF B800000000                  mov rax, 0
+   166 000000B4 48BF-                       mov rdi, array
+   166 000000B6 [4003000000000000] 
+   167 000000BE 4C89EE                      mov rsi, r13        ;array size
+   168 000000C1 E8(00000000)                call compute_mean
+   169 000000C6 F2440F10F0                  movsd xmm14, xmm0   ;moves value of mean to xmm14
+   170                                  
+   171                                  
    172                                  
-   173                                  
-   174                                  
-   175                                      ;Give values going into compute_variance. These values are: the array, the array size, and the mean of the array
-   176 000000CB B800000000                  mov rax, 0
-   177 000000D0 48BF-                       mov rdi, array
-   177 000000D2 [4003000000000000] 
-   178 000000DA 4C89EE                      mov rsi, r13            ;size of the array
-   179 000000DD F2410F10C6                  movsd xmm0, xmm14       ;array's mean
-   180 000000E2 E8(00000000)                call compute_variance
-   181 000000E7 F2440F10F8                  movsd xmm15, xmm0       ;moves variance to xmm15
-   182                                  
-   183                                  
-   184                                      ;Output the variance of the array input by the user
-   185 000000EC B801000000                  mov rax, 1
-   186 000000F1 48BF-                       mov rdi, variance   ;The variance of the inputted numbers is %1.6lf"
-   186 000000F3 [F300000000000000] 
-   187 000000FB 48BE-                       mov rsi, format     ;"%lf"
-   187 000000FD [2301000000000000] 
-   188 00000105 F2410F10C7                  movsd xmm0, xmm15   ;variance
-   189 0000010A E8(00000000)                call printf
-   190                                  
-   191                                  
-   192                                      ;Back up value in xmm15 (variance) before restoring registers
-   193 0000010F 6A00                        push qword 0
-   194 00000111 F2440F113C24                movsd [rsp], xmm15
+   173                                      ;Give values going into compute_variance. These values are: the array, the array size, and the mean of the array
+   174 000000CB B800000000                  mov rax, 0
+   175 000000D0 48BF-                       mov rdi, array
+   175 000000D2 [4003000000000000] 
+   176 000000DA 4C89EE                      mov rsi, r13            ;size of the array
+   177 000000DD F2410F10C6                  movsd xmm0, xmm14       ;array's mean
+   178 000000E2 E8(00000000)                call compute_variance
+   179 000000E7 F2440F10F8                  movsd xmm15, xmm0       ;moves variance to xmm15
+   180                                  
+   181                                  
+   182                                      ;Output the variance of the array input by the user
+   183 000000EC B801000000                  mov rax, 1
+   184 000000F1 48BF-                       mov rdi, variance   ;The variance of the inputted numbers is %1.6lf"
+   184 000000F3 [F300000000000000] 
+   185 000000FB 48BE-                       mov rsi, format     ;"%lf"
+   185 000000FD [2301000000000000] 
+   186 00000105 F2410F10C7                  movsd xmm0, xmm15   ;variance
+   187 0000010A E8(00000000)                call printf
+   188                                  
+   189                                  
+   190                                      ;Back up value in xmm15 (variance) before restoring registers
+   191 0000010F 6A00                        push qword 0
+   192 00000111 F2440F113C24                movsd [rsp], xmm15
+   193                                  
+   194                                  
    195                                  
-   196                                  
-   197                                  
-   198                                      ;Restore the values to non-GPRs
-   199 00000117 B807000000                  mov rax, 7
-   200 0000011C BA00000000                  mov rdx, 0
-   201 00000121 0FAE2C25[00000000]          xrstor [backup_storage_area]
-   202                                  
-   203                                  
-   204 00000129 F20F100424                  movsd xmm0, [rsp]
-   205 0000012E 58                          pop rax
-   206                                      
-   207                                  
-   208                                  
-   209                                      ;Restore the GPRs
-   210 0000012F 9D                          popf
-   211 00000130 415F                        pop r15
-   212 00000132 415E                        pop r14
-   213 00000134 415D                        pop r13
-   214 00000136 415C                        pop r12
-   215 00000138 415B                        pop r11
-   216 0000013A 415A                        pop r10
-   217 0000013C 4159                        pop r9
-   218 0000013E 4158                        pop r8
-   219 00000140 5E                          pop rsi
-   220 00000141 5F                          pop rdi
-   221 00000142 5A                          pop rdx
-   222 00000143 59                          pop rcx
-   223 00000144 5B                          pop rbx
-   224 00000145 5D                          pop rbp   ;Restore rbp to the base of the activation record of the caller program
-   225 00000146 C3                          ret
-   226                                  ;End of the function manager.asm ====================================================================
+   196                                      ;Restore the values to non-GPRs
+   197 00000117 B807000000                  mov rax, 7
+   198 0000011C BA00000000                  mov rdx, 0
+   199 00000121 0FAE2C25[00000000]          xrstor [backup_storage_area]
+   200                                  
+   201                                  
+   202 00000129 F20F100424                  movsd xmm0, [rsp]
+   203 0000012E 58                          pop rax
+   204                                      
+   205                                  
+   206                                  
+   207                                      ;Restore the GPRs
+   208 0000012F 9D                          popf
+   209 00000130 415F                        pop r15
+   210 00000132 415E                        pop r14
+   211 00000134 415D                        pop r13
+   212 00000136 415C                        pop r12
+   213 00000138 415B                        pop r11
+   214 0000013A 415A                        pop r10
+   215 0000013C 4159                        pop r9
+   216 0000013E 4158                        pop r8
+   217 00000140 5E                          pop rsi
+   218 00000141 5F                          pop rdi
+   219 00000142 5A                          pop rdx
+   220 00000143 59                          pop rcx
+   221 00000144 5B                          pop rbx
+   222 00000145 5D                          pop rbp   ;Restore rbp to the base of the activation record of the caller program
+   223 00000146 C3                          ret
+   224                                  ;End of the function manager.asm ====================================================================
