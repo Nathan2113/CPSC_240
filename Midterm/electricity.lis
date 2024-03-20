@@ -11,126 +11,379 @@
     11                                  extern printf
     12                                  extern stdin
     13                                  extern scanf
-    14                                  
-    15                                  
-    16                                  float_size equ 60
-    17                                  
-    18                                  segment .data
-    19                                  ;This section (or segment) is for declaring initialized arrays
-    20                                  
-    21 00000000 0A546869732070726F-     program_desc db 10, "This program will manage your arrays of 64-bit floats", 10, 0
-    21 00000009 6772616D2077696C6C-
-    21 00000012 206D616E6167652079-
-    21 0000001B 6F7572206172726179-
-    21 00000024 73206F662036342D62-
-    21 0000002D 697420666C6F617473-
-    21 00000036 0A00               
-    22 00000038 466F72207468652061-     prog_instruction db "For the array enter a sequence of 64-bit floats separated by white space.", 10, 0
-    22 00000041 7272617920656E7465-
-    22 0000004A 722061207365717565-
-    22 00000053 6E6365206F66203634-
-    22 0000005C 2D62697420666C6F61-
-    22 00000065 747320736570617261-
-    22 0000006E 746564206279207768-
-    22 00000077 697465207370616365-
-    22 00000080 2E0A00             
-    23 00000083 416674657220746865-     exit_instruction db "After the last input press enter followed by Control+D:", 10, 0
-    23 0000008C 206C61737420696E70-
-    23 00000095 757420707265737320-
-    23 0000009E 656E74657220666F6C-
-    23 000000A7 6C6F77656420627920-
-    23 000000B0 436F6E74726F6C2B44-
-    23 000000B9 3A0A00             
-    24 000000BC 0A5468657365206E75-     numbers_received db 10, "These numbers were received and placed into an array", 10, 0
-    24 000000C5 6D6265727320776572-
-    24 000000CE 652072656365697665-
-    24 000000D7 6420616E6420706C61-
-    24 000000E0 63656420696E746F20-
-    24 000000E9 616E2061727261790A-
-    24 000000F2 00                 
-    25 000000F3 546865207661726961-     variance db "The variance of the inputted numbers is %1.6lf", 10, 0
-    25 000000FC 6E6365206F66207468-
-    25 00000105 6520696E7075747465-
-    25 0000010E 64206E756D62657273-
-    25 00000117 2069732025312E366C-
-    25 00000120 660A00             
-    26 00000123 256C6600                format db "%lf", 0
-    27                                  
-    28                                  
-    29                                  segment .bss
-    30                                  ;This section (or segment) is for declaring empty arrays
-    31                                  
-    32                                  align 64
-    33 00000000 <res 340h>              backup_storage_area resb 832
-    34 00000340 <res 60h>               array resq 12 ;Array of 12 qwords, will be used to take in user inputs for floats, as well as computing the mean and variance
+    14                                  extern current
+    15                                  extern atof
+    16                                  extern strlen
+    17                                  extern isfloat
+    18                                  extern fgets
+    19                                  
+    20                                  float_size equ 60
+    21                                  true equ -1
+    22                                  false equ 0
+    23                                  
+    24                                  segment .data
+    25                                  ;This section (or segment) is for declaring initialized arrays
+    26                                  
+    27                                  ; program_desc db 10, "This program will manage your arrays of 64-bit floats", 10, 0
+    28 00000000 506C6561736520656E-     electric_force_prompt db "Please enter the electric force in the circuit (volts): ", 0
+    28 00000009 746572207468652065-
+    28 00000012 6C6563747269632066-
+    28 0000001B 6F72636520696E2074-
+    28 00000024 686520636972637569-
+    28 0000002D 742028766F6C747329-
+    28 00000036 3A2000             
+    29 00000039 506C6561736520656E-     resistance_1_prompt db "Please enter the resistance in circuit number 1 (ohms): ", 0
+    29 00000042 746572207468652072-
+    29 0000004B 6573697374616E6365-
+    29 00000054 20696E206369726375-
+    29 0000005D 6974206E756D626572-
+    29 00000066 203120286F686D7329-
+    29 0000006F 3A2000             
+    30 00000072 506C6561736520656E-     resistance_2_prompt db "Please enter the resistance in circuit number 2 (ohms): ", 0
+    30 0000007B 746572207468652072-
+    30 00000084 6573697374616E6365-
+    30 0000008D 20696E206369726375-
+    30 00000096 6974206E756D626572-
+    30 0000009F 203220286F686D7329-
+    30 000000A8 3A2000             
+    31 000000AB 5468616E6B20796F75-     thank_you_message db "Thank you.", 10, 0
+    31 000000B4 2E0A00             
+    32 000000B7 256C6600                format db "%lf", 0
+    33 000000BB 496E76616C69642069-     print_bad_input db "Invalid input. Try again: ", 0
+    33 000000C4 6E7075742E20547279-
+    33 000000CD 20616761696E3A2000 
+    34                                  
     35                                  
-    36                                  
-    37                                  segment .text
+    36                                  segment .bss
+    37                                  ;This section (or segment) is for declaring empty arrays
     38                                  
-    39                                  electricity:
-    40                                  
-    41                                      ;Back up the GPRs (General Purpose Registers)
-    42 00000000 55                          push rbp
-    43 00000001 4889E5                      mov rbp, rsp
-    44 00000004 53                          push rbx
-    45 00000005 51                          push rcx
-    46 00000006 52                          push rdx
-    47 00000007 57                          push rdi
-    48 00000008 56                          push rsi
-    49 00000009 4150                        push r8
-    50 0000000B 4151                        push r9
-    51 0000000D 4152                        push r10
-    52 0000000F 4153                        push r11
-    53 00000011 4154                        push r12
-    54 00000013 4155                        push r13
-    55 00000015 4156                        push r14
-    56 00000017 4157                        push r15
-    57 00000019 9C                          pushf
-    58                                  
-    59                                      ;Backup the registers other than the GPRs
-    60 0000001A B807000000                  mov rax,7
-    61 0000001F BA00000000                  mov rdx,0
-    62 00000024 0FAE2425[00000000]          xsave [backup_storage_area]
-    63                                  
+    39                                  align 64
+    40 00000000 <res 340h>              backup_storage_area resb 832
+    41                                  
+    42                                  
+    43                                  segment .text
+    44                                  
+    45                                  electricity:
+    46                                  
+    47                                      ;Back up the GPRs (General Purpose Registers)
+    48 00000000 55                          push rbp
+    49 00000001 4889E5                      mov rbp, rsp
+    50 00000004 53                          push rbx
+    51 00000005 51                          push rcx
+    52 00000006 52                          push rdx
+    53 00000007 57                          push rdi
+    54 00000008 56                          push rsi
+    55 00000009 4150                        push r8
+    56 0000000B 4151                        push r9
+    57 0000000D 4152                        push r10
+    58 0000000F 4153                        push r11
+    59 00000011 4154                        push r12
+    60 00000013 4155                        push r13
+    61 00000015 4156                        push r14
+    62 00000017 4157                        push r15
+    63 00000019 9C                          pushf
     64                                  
-    65                                  
-    66                                  
-    67                                  
-    68                                      
+    65                                      ;Backup the registers other than the GPRs
+    66 0000001A B807000000                  mov rax,7
+    67 0000001F BA00000000                  mov rdx,0
+    68 00000024 0FAE2425[00000000]          xsave [backup_storage_area]
     69                                  
-    70                                  
-    71                                      ;Back up value in xmm15 before restoring registers
-    72 0000002C 6A00                        push qword 0
-    73 0000002E F2440F113C24                movsd [rsp], xmm15
+    70                                      ;The following values will be stored in the following registers
+    71                                      ;xmm10 -> volts
+    72                                      ;xmm11 -> resistance in circuit 1
+    73                                      ;xmm12 -> resistance in circuit 2
     74                                  
-    75                                  
+    75 0000002C 41BF00000000                mov r15, 0
     76                                  
-    77                                      ;Restore the values to non-GPRs
-    78 00000034 B807000000                  mov rax, 7
-    79 00000039 BA00000000                  mov rdx, 0
-    80 0000003E 0FAE2C25[00000000]          xrstor [backup_storage_area]
-    81                                  
+    77                                  get_electric_force:
+    78                                      ;Ask for electric force
+    79 00000032 B800000000                  mov rax, 0
+    80 00000037 48BF-                       mov rdi, electric_force_prompt
+    80 00000039 [0000000000000000] 
+    81 00000041 E8(00000000)                call printf
     82                                  
-    83 00000046 F20F100424                  movsd xmm0, [rsp]
-    84 0000004B 58                          pop rax
-    85                                      
-    86                                  
-    87                                  
-    88                                      ;Restore the GPRs
-    89 0000004C 9D                          popf
-    90 0000004D 415F                        pop r15
-    91 0000004F 415E                        pop r14
-    92 00000051 415D                        pop r13
-    93 00000053 415C                        pop r12
-    94 00000055 415B                        pop r11
-    95 00000057 415A                        pop r10
-    96 00000059 4159                        pop r9
-    97 0000005B 4158                        pop r8
-    98 0000005D 5E                          pop rsi
-    99 0000005E 5F                          pop rdi
-   100 0000005F 5A                          pop rdx
-   101 00000060 59                          pop rcx
-   102 00000061 5B                          pop rbx
-   103 00000062 5D                          pop rbp   ;Restore rbp to the base of the activation record of the caller program
-   104 00000063 C3                          ret
-   105                                  ;End of the function electricity.asm ====================================================================
+    83                                  
+    84                                      ;Gets user input for first side
+    85 00000046 B800000000                  mov rax, 0
+    86 0000004B 4881EC00100000              sub rsp, 4096
+    87 00000052 4889E7                      mov rdi, rsp
+    88 00000055 BE00100000                  mov rsi, 4096
+    89 0000005A 488B1425[00000000]          mov rdx, [stdin]
+    90 00000062 E8(00000000)                call fgets
+    91                                  
+    92                                      ;Remove newline
+    93 00000067 B800000000                  mov rax, 0
+    94 0000006C 4889E7                      mov rdi, rsp
+    95 0000006F E8(00000000)                call strlen
+    96 00000074 C64404FF00                  mov [rsp + rax - 1], byte 0
+    97                                  
+    98                                      ;Check if input is a postive float
+    99 00000079 B800000000                  mov rax, 0
+   100 0000007E 4889E7                      mov rdi, rsp
+   101 00000081 E8(00000000)                call isfloat
+   102 00000086 4883F800                    cmp rax, false
+   103 0000008A 0F8414010000                je bad_input
+   104                                  
+   105                                      ;Convert the input from string to float
+   106 00000090 B800000000                  mov rax, 0
+   107 00000095 4889E7                      mov rdi, rsp
+   108 00000098 E8(00000000)                call atof
+   109 0000009D F2440F10D0                  movsd xmm10, xmm0
+   110                                  
+   111                                      ;Adds 1 to r15, which enables the program to jump to get_resistance_1 after invalid inputs
+   112 000000A2 4983C701                    add r15, 1
+   113                                  
+   114                                      ;Fixes the stack
+   115 000000A6 4881C400100000              add rsp, 4096
+   116                                  
+   117 000000AD EB00                        jmp get_resistance_1
+   118                                  
+   119                                  
+   120                                  
+   121                                  get_resistance_1:
+   122                                      ;Ask for resistance 1
+   123 000000AF B800000000                  mov rax, 0
+   124 000000B4 48BF-                       mov rdi, resistance_1_prompt
+   124 000000B6 [3900000000000000] 
+   125 000000BE E8(00000000)                call printf
+   126                                  
+   127                                  
+   128                                      ;Gets user input for second side
+   129 000000C3 B800000000                  mov rax, 0
+   130 000000C8 4881EC00100000              sub rsp, 4096
+   131 000000CF 4889E7                      mov rdi, rsp
+   132 000000D2 BE00100000                  mov rsi, 4096
+   133 000000D7 488B1425[00000000]          mov rdx, [stdin]
+   134 000000DF E8(00000000)                call fgets
+   135                                  
+   136                                      ;Remove newline
+   137 000000E4 B800000000                  mov rax, 0
+   138 000000E9 4889E7                      mov rdi, rsp
+   139 000000EC E8(00000000)                call strlen
+   140 000000F1 C64404FF00                  mov [rsp + rax - 1], byte 0
+   141                                  
+   142                                      ;Check if input is a float
+   143 000000F6 B800000000                  mov rax, 0
+   144 000000FB 4889E7                      mov rdi, rsp
+   145 000000FE E8(00000000)                call isfloat
+   146 00000103 4883F800                    cmp rax, false
+   147 00000107 0F8497000000                je bad_input
+   148                                  
+   149                                      ;Convert the input from string to float
+   150 0000010D B800000000                  mov rax, 0
+   151 00000112 4889E7                      mov rdi, rsp
+   152 00000115 E8(00000000)                call atof
+   153 0000011A F2440F10D8                  movsd xmm11, xmm0
+   154                                  
+   155                                      ;Adds 1 to r15, which enables the program to jump to get_resistance_2 after invalid inputs
+   156 0000011F 4983C701                    add r15, 1
+   157                                  
+   158                                      ;Fixes the stack
+   159 00000123 4881C400100000              add rsp, 4096
+   160                                  
+   161 0000012A EB00                        jmp get_resistance_2
+   162                                  
+   163                                  
+   164                                  
+   165                                  get_resistance_2:
+   166                                      ;Ask for resistance 2
+   167 0000012C B800000000                  mov rax, 0
+   168 00000131 48BF-                       mov rdi, resistance_2_prompt
+   168 00000133 [7200000000000000] 
+   169 0000013B E8(00000000)                call printf
+   170                                  
+   171                                  
+   172                                      ;Gets user input for resistance 2
+   173 00000140 B800000000                  mov rax, 0
+   174 00000145 4881EC00100000              sub rsp, 4096
+   175 0000014C 4889E7                      mov rdi, rsp
+   176 0000014F BE00100000                  mov rsi, 4096
+   177 00000154 488B1425[00000000]          mov rdx, [stdin]
+   178 0000015C E8(00000000)                call fgets
+   179                                  
+   180                                      ;Remove newline
+   181 00000161 B800000000                  mov rax, 0
+   182 00000166 4889E7                      mov rdi, rsp
+   183 00000169 E8(00000000)                call strlen
+   184 0000016E C64404FF00                  mov [rsp + rax - 1], byte 0
+   185                                  
+   186                                      ;Check if input is a float
+   187 00000173 B800000000                  mov rax, 0
+   188 00000178 4889E7                      mov rdi, rsp
+   189 0000017B E8(00000000)                call isfloat
+   190 00000180 4883F800                    cmp rax, false
+   191 00000184 741E                        je bad_input
+   192                                  
+   193                                      ;Convert the input from string to float
+   194 00000186 B800000000                  mov rax, 0
+   195 0000018B 4889E7                      mov rdi, rsp
+   196 0000018E E8(00000000)                call atof
+   197 00000193 F2440F10E0                  movsd xmm12, xmm0
+   198                                  
+   199                                  
+   200                                      ;Fixes stack
+   201 00000198 4881C400100000              add rsp, 4096
+   202                                  
+   203                                      ;Jumps to exit
+   204 0000019F E9D2000000                  jmp exit
+   205                                  
+   206                                  
+   207                                  
+   208                                  bad_input:
+   209                                  ;bad_input will have a tracker for which input the user is on (electric force, resistance 1, resistance 2) and
+   210                                  ;depending on the number in the register (will use 0 for electric force, 1 for resistance 1, and 2 for resistance 2)
+   211                                  ;the program will jump to the correct code block
+   212                                  
+   213                                  ;if(tracker == 0)
+   214                                      ;jump to electric force input
+   215                                  ;elseif(tracker == 1)
+   216                                      ;jump to resistance 1 input
+   217                                  ;elseif(tracker == 2)
+   218                                      ;jump to resistance 2 input
+   219                                  
+   220                                      ;Fixes stack
+   221 000001A4 4881C400100000              add rsp, 4096
+   222                                  
+   223                                      ;Tell the user their input is invalid and have them enter another input
+   224 000001AB B800000000                  mov rax, 0
+   225 000001B0 48BF-                       mov rdi, print_bad_input ;"Invalid input. Try again"
+   225 000001B2 [BB00000000000000] 
+   226 000001BA E8(00000000)                call printf
+   227                                  
+   228                                  
+   229                                      ;Gets user input (for electric force or resistance)
+   230 000001BF B800000000                  mov rax, 0
+   231 000001C4 4881EC00100000              sub rsp, 4096
+   232 000001CB 4889E7                      mov rdi, rsp
+   233 000001CE BE00100000                  mov rsi, 4096
+   234 000001D3 488B1425[00000000]          mov rdx, [stdin]
+   235 000001DB E8(00000000)                call fgets
+   236                                  
+   237                                      ;Remove newline
+   238 000001E0 B800000000                  mov rax, 0
+   239 000001E5 4889E7                      mov rdi, rsp
+   240 000001E8 E8(00000000)                call strlen
+   241 000001ED C64404FF00                  mov [rsp + rax - 1], byte 0
+   242                                  
+   243                                      ;Check if input is a postive float
+   244 000001F2 B800000000                  mov rax, 0
+   245 000001F7 4889E7                      mov rdi, rsp
+   246 000001FA E8(00000000)                call isfloat
+   247 000001FF 4883F800                    cmp rax, false
+   248 00000203 749F                        je bad_input
+   249                                  
+   250                                      ;Jump back to correct input block depending on value of r15
+   251 00000205 4983FF00                    cmp r15, 0
+   252 00000209 740C                        je elec_force_bad
+   253                                  
+   254 0000020B 4983FF01                    cmp r15, 1
+   255 0000020F 7428                        je resistance_1_bad
+   256                                  
+   257 00000211 4983FF02                    cmp r15, 2
+   258 00000215 7444                        je resistance_2_bad
+   259                                  
+   260                                  
+   261                                  ;The following three blocks (elec_force_bad, resistance_1_bad, and resistance_2_bad) are used to 
+   262                                  ;take in another user input without outputting the whole prompt again
+   263                                  elec_force_bad:
+   264                                      ;Convert the input from string to float
+   265 00000217 B800000000                  mov rax, 0
+   266 0000021C 4889E7                      mov rdi, rsp
+   267 0000021F E8(00000000)                call atof
+   268 00000224 F2440F10D0                  movsd xmm10, xmm0
+   269                                  
+   270 00000229 4983C701                    add r15, 1
+   271                                  
+   272                                      ;Fixes stack
+   273 0000022D 4881C400100000              add rsp, 4096
+   274                                  
+   275 00000234 E976FEFFFF                  jmp get_resistance_1
+   276                                  
+   277                                  
+   278                                  
+   279                                  resistance_1_bad:
+   280                                      ;Convert the input from string to float
+   281 00000239 B800000000                  mov rax, 0
+   282 0000023E 4889E7                      mov rdi, rsp
+   283 00000241 E8(00000000)                call atof
+   284 00000246 F2440F10D8                  movsd xmm11, xmm0
+   285                                  
+   286 0000024B 4983C701                    add r15, 1
+   287                                  
+   288                                      ;Fixes stack
+   289 0000024F 4881C400100000              add rsp, 4096
+   290                                  
+   291 00000256 E9D1FEFFFF                  jmp get_resistance_2
+   292                                  
+   293                                  
+   294                                  resistance_2_bad:
+   295                                      ;Convert the input from string to float
+   296 0000025B B800000000                  mov rax, 0
+   297 00000260 4889E7                      mov rdi, rsp
+   298 00000263 E8(00000000)                call atof
+   299 00000268 F2440F10E0                  movsd xmm12, xmm0
+   300                                  
+   301                                      ;Fixes stack
+   302 0000026D 4881C400100000              add rsp, 4096
+   303                                  
+   304 00000274 EB00                        jmp exit
+   305                                  
+   306                                  exit:
+   307                                      ;Moves values for sides and angles to lower registers for use on the next block
+   308 00000276 F2450F10C2                  movsd xmm8, xmm10
+   309 0000027B F2450F10CB                  movsd xmm9, xmm11
+   310 00000280 F2450F10D4                  movsd xmm10, xmm12
+   311                                  
+   312                                  
+   313                                      ;Thank you message
+   314 00000285 B800000000                  mov rax, 0
+   315 0000028A 48BF-                       mov rdi, thank_you_message
+   315 0000028C [AB00000000000000] 
+   316 00000294 E8(00000000)                call printf
+   317                                  
+   318                                  
+   319                                  
+   320                                      ;Block to call current
+   321 00000299 B803000000                  mov rax, 3
+   322 0000029E F2410F10C0                  movsd xmm0, xmm8
+   323 000002A3 F2410F10C9                  movsd xmm1, xmm9
+   324 000002A8 F2410F10D2                  movsd xmm2, xmm10
+   325 000002AD E8(00000000)                call current
+   326 000002B2 F2440F10F0                  movsd xmm14, xmm0 ;moves value of total current to xmm14
+   327                                  
+   328                                  
+   329                                      ;Back up value in xmm14 before restoring registers
+   330 000002B7 6A00                        push qword 0
+   331 000002B9 F2440F113424                movsd [rsp], xmm14
+   332                                  
+   333                                  
+   334                                  
+   335                                      ;Restore the values to non-GPRs
+   336 000002BF B807000000                  mov rax, 7
+   337 000002C4 BA00000000                  mov rdx, 0
+   338 000002C9 0FAE2C25[00000000]          xrstor [backup_storage_area]
+   339                                  
+   340                                  
+   341 000002D1 F20F100424                  movsd xmm0, [rsp]
+   342 000002D6 58                          pop rax
+   343                                      
+   344                                  
+   345                                  
+   346                                      ;Restore the GPRs
+   347 000002D7 9D                          popf
+   348 000002D8 415F                        pop r15
+   349 000002DA 415E                        pop r14
+   350 000002DC 415D                        pop r13
+   351 000002DE 415C                        pop r12
+   352 000002E0 415B                        pop r11
+   353 000002E2 415A                        pop r10
+   354 000002E4 4159                        pop r9
+   355 000002E6 4158                        pop r8
+   356 000002E8 5E                          pop rsi
+   357 000002E9 5F                          pop rdi
+   358 000002EA 5A                          pop rdx
+   359 000002EB 59                          pop rcx
+   360 000002EC 5B                          pop rbx
+   361 000002ED 5D                          pop rbp   ;Restore rbp to the base of the activation record of the caller program
+   362 000002EE C3                          ret
+   363                                  ;End of the function electricity.asm ====================================================================

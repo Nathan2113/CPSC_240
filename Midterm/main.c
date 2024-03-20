@@ -12,11 +12,11 @@
 extern double electricity();
 
 int main(int argc, const char * argv[])
-{printf("\nWelcome to Arrays of floating point numbers.\nBrought to you by Nathan Warner\n");
- double variance = 0;
- variance = electricity();
- printf("\nThe driver has received this number %1.10f and will keep it for future use.\n",variance);
- printf("Main will return 0 to the operating system. Bye.\n");
+{printf("\nWelcome to the West Beach Electric Company\nThis software is maintained by Nathan Warner\n\n");
+ double current = 0;
+ current = electricity();
+ printf("\nThe driver has received this number %1.5f and will keep it for later.\n",current);
+ printf("A zero will be returned to the oprtating system. Bye.\n");
 }
 
 //End of the function main.c ====================================================================
