@@ -1,0 +1,136 @@
+     1                                  ; Nathan Warner
+     2                                  ; nwarner4@csu.fullerton.edu
+     3                                  ; CPSC 240-3
+     4                                  ; Mar 20, 2024
+     5                                  
+     6                                  ;Declaration section.  The section has no name other than "Declaration section".  Declare here everything that does
+     7                                  ;not have its own place of declaration
+     8                                  
+     9                                  global electricity
+    10                                  
+    11                                  extern printf
+    12                                  extern stdin
+    13                                  extern scanf
+    14                                  
+    15                                  
+    16                                  float_size equ 60
+    17                                  
+    18                                  segment .data
+    19                                  ;This section (or segment) is for declaring initialized arrays
+    20                                  
+    21 00000000 0A546869732070726F-     program_desc db 10, "This program will manage your arrays of 64-bit floats", 10, 0
+    21 00000009 6772616D2077696C6C-
+    21 00000012 206D616E6167652079-
+    21 0000001B 6F7572206172726179-
+    21 00000024 73206F662036342D62-
+    21 0000002D 697420666C6F617473-
+    21 00000036 0A00               
+    22 00000038 466F72207468652061-     prog_instruction db "For the array enter a sequence of 64-bit floats separated by white space.", 10, 0
+    22 00000041 7272617920656E7465-
+    22 0000004A 722061207365717565-
+    22 00000053 6E6365206F66203634-
+    22 0000005C 2D62697420666C6F61-
+    22 00000065 747320736570617261-
+    22 0000006E 746564206279207768-
+    22 00000077 697465207370616365-
+    22 00000080 2E0A00             
+    23 00000083 416674657220746865-     exit_instruction db "After the last input press enter followed by Control+D:", 10, 0
+    23 0000008C 206C61737420696E70-
+    23 00000095 757420707265737320-
+    23 0000009E 656E74657220666F6C-
+    23 000000A7 6C6F77656420627920-
+    23 000000B0 436F6E74726F6C2B44-
+    23 000000B9 3A0A00             
+    24 000000BC 0A5468657365206E75-     numbers_received db 10, "These numbers were received and placed into an array", 10, 0
+    24 000000C5 6D6265727320776572-
+    24 000000CE 652072656365697665-
+    24 000000D7 6420616E6420706C61-
+    24 000000E0 63656420696E746F20-
+    24 000000E9 616E2061727261790A-
+    24 000000F2 00                 
+    25 000000F3 546865207661726961-     variance db "The variance of the inputted numbers is %1.6lf", 10, 0
+    25 000000FC 6E6365206F66207468-
+    25 00000105 6520696E7075747465-
+    25 0000010E 64206E756D62657273-
+    25 00000117 2069732025312E366C-
+    25 00000120 660A00             
+    26 00000123 256C6600                format db "%lf", 0
+    27                                  
+    28                                  
+    29                                  segment .bss
+    30                                  ;This section (or segment) is for declaring empty arrays
+    31                                  
+    32                                  align 64
+    33 00000000 <res 340h>              backup_storage_area resb 832
+    34 00000340 <res 60h>               array resq 12 ;Array of 12 qwords, will be used to take in user inputs for floats, as well as computing the mean and variance
+    35                                  
+    36                                  
+    37                                  segment .text
+    38                                  
+    39                                  electricity:
+    40                                  
+    41                                      ;Back up the GPRs (General Purpose Registers)
+    42 00000000 55                          push rbp
+    43 00000001 4889E5                      mov rbp, rsp
+    44 00000004 53                          push rbx
+    45 00000005 51                          push rcx
+    46 00000006 52                          push rdx
+    47 00000007 57                          push rdi
+    48 00000008 56                          push rsi
+    49 00000009 4150                        push r8
+    50 0000000B 4151                        push r9
+    51 0000000D 4152                        push r10
+    52 0000000F 4153                        push r11
+    53 00000011 4154                        push r12
+    54 00000013 4155                        push r13
+    55 00000015 4156                        push r14
+    56 00000017 4157                        push r15
+    57 00000019 9C                          pushf
+    58                                  
+    59                                      ;Backup the registers other than the GPRs
+    60 0000001A B807000000                  mov rax,7
+    61 0000001F BA00000000                  mov rdx,0
+    62 00000024 0FAE2425[00000000]          xsave [backup_storage_area]
+    63                                  
+    64                                  
+    65                                  
+    66                                  
+    67                                  
+    68                                      
+    69                                  
+    70                                  
+    71                                      ;Back up value in xmm15 before restoring registers
+    72 0000002C 6A00                        push qword 0
+    73 0000002E F2440F113C24                movsd [rsp], xmm15
+    74                                  
+    75                                  
+    76                                  
+    77                                      ;Restore the values to non-GPRs
+    78 00000034 B807000000                  mov rax, 7
+    79 00000039 BA00000000                  mov rdx, 0
+    80 0000003E 0FAE2C25[00000000]          xrstor [backup_storage_area]
+    81                                  
+    82                                  
+    83 00000046 F20F100424                  movsd xmm0, [rsp]
+    84 0000004B 58                          pop rax
+    85                                      
+    86                                  
+    87                                  
+    88                                      ;Restore the GPRs
+    89 0000004C 9D                          popf
+    90 0000004D 415F                        pop r15
+    91 0000004F 415E                        pop r14
+    92 00000051 415D                        pop r13
+    93 00000053 415C                        pop r12
+    94 00000055 415B                        pop r11
+    95 00000057 415A                        pop r10
+    96 00000059 4159                        pop r9
+    97 0000005B 4158                        pop r8
+    98 0000005D 5E                          pop rsi
+    99 0000005E 5F                          pop rdi
+   100 0000005F 5A                          pop rdx
+   101 00000060 59                          pop rcx
+   102 00000061 5B                          pop rbx
+   103 00000062 5D                          pop rbp   ;Restore rbp to the base of the activation record of the caller program
+   104 00000063 C3                          ret
+   105                                  ;End of the function electricity.asm ====================================================================
