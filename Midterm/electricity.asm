@@ -303,10 +303,10 @@ resistance_2_bad:
     jmp exit
 
 exit:
-    ;Moves values for electric force and resistances to lower registers for use on the next block
-    movsd xmm8, xmm10
-    movsd xmm9, xmm11
-    movsd xmm10, xmm12
+    ; ;Moves values for electric force and resistances to lower registers for use on the next block
+    ; movsd xmm8, xmm10
+    ; movsd xmm9, xmm11
+    ; movsd xmm10, xmm12
 
 
     ;Thank you message
@@ -318,9 +318,9 @@ exit:
 
     ;Block to call current
     mov rax, 3
-    movsd xmm0, xmm8
-    movsd xmm1, xmm9
-    movsd xmm2, xmm10
+    movsd xmm0, xmm10
+    movsd xmm1, xmm11
+    movsd xmm2, xmm12
     call current
     movsd xmm14, xmm0 ;moves value of total current to xmm14
 

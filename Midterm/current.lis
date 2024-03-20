@@ -34,7 +34,9 @@
     23 00000072 2063757272656E7420-
     23 0000007B 69732025312E356C66-
     23 00000084 20616D70732E0A0A00 
-    24                                  
+    24 0000008D 5468652076616C7565-     test_value db "The value is %1.6lf", 10, 0
+    24 00000096 2069732025312E366C-
+    24 0000009F 660A00             
     25                                  
     26                                  segment .bss
     27                                  ;This section (or segment) is for declaring empty arrays
@@ -80,76 +82,95 @@
     67 00000036 F2440F10E2                  movsd xmm12, xmm2
     68 0000003B F2450F10EA                  movsd xmm13, xmm10
     69                                  
-    70                                  
-    71                                  
-    72                                      ;Block to get the current of the first circuit
-    73 00000040 F2450F5ED3                  divsd xmm10, xmm11
-    74 00000045 F2450F10DA                  movsd xmm11, xmm10 ;move the result into xmm11
+    70                                      ;testing values
+    71 00000040 B801000000                  mov rax, 1
+    72 00000045 48BF-                       mov rdi, test_value
+    72 00000047 [8D00000000000000] 
+    73 0000004F F2410F10C2                  movsd xmm0, xmm10
+    74 00000054 E8(00000000)                call printf
     75                                  
-    76                                      ;Block to get the current of the second circuit
-    77 0000004A F2450F5EEC                  divsd xmm13, xmm12
-    78 0000004F F2450F10E5                  movsd xmm12, xmm13 ;move the result into xmm12
-    79                                  
-    80                                      ;Output the current of the first circuit to the screen
-    81 00000054 B801000000                  mov rax, 1
-    82 00000059 48BF-                       mov rdi, current_first_circuit
-    82 0000005B [0400000000000000] 
-    83 00000063 F2410F10C3                  movsd xmm0, xmm11
-    84 00000068 E8(00000000)                call printf
+    76 00000059 B801000000                      mov rax, 1
+    77 0000005E 48BF-                       mov rdi, test_value
+    77 00000060 [8D00000000000000] 
+    78 00000068 F2410F10C3                  movsd xmm0, xmm11
+    79 0000006D E8(00000000)                call printf
+    80                                  
+    81 00000072 B801000000                      mov rax, 1
+    82 00000077 48BF-                       mov rdi, test_value
+    82 00000079 [8D00000000000000] 
+    83 00000081 F2410F10C4                  movsd xmm0, xmm12
+    84 00000086 E8(00000000)                call printf
     85                                  
     86                                  
-    87                                      ;Output the current of the second circuit to the screen
-    88 0000006D B801000000                  mov rax, 1
-    89 00000072 48BF-                       mov rdi, current_second_circuit
-    89 00000074 [3600000000000000] 
-    90 0000007C F2410F10C4                  movsd xmm0, xmm12
-    91 00000081 E8(00000000)                call printf
-    92                                  
-    93                                  
-    94                                      ;Block to add currents together and set return value
-    95 00000086 F2450F58DC                  addsd xmm11, xmm12
-    96                                  
-    97                                      
-    98                                      ;Output the total current to the screen
-    99 0000008B B801000000                  mov rax, 1
-   100 00000090 48BF-                       mov rdi, total_current
-   100 00000092 [6900000000000000] 
-   101 0000009A F2410F10C3                  movsd xmm0, xmm11
-   102 0000009F E8(00000000)                call printf
-   103                                  
-   104                                  
-   105                                      ;Back up value in xmm11 before restoring registers
-   106 000000A4 6A00                        push qword 0
-   107 000000A6 F2440F111C24                movsd [rsp], xmm11
+    87                                  
+    88                                      ;Block to get the current of the first circuit
+    89 0000008B F2450F5ED3                  divsd xmm10, xmm11
+    90 00000090 F2450F10DA                  movsd xmm11, xmm10 ;move the result into xmm11
+    91                                  
+    92                                      ;Block to get the current of the second circuit
+    93 00000095 F2450F5EEC                  divsd xmm13, xmm12
+    94 0000009A F2450F10E5                  movsd xmm12, xmm13 ;move the result into xmm12
+    95                                  
+    96                                      ;Output the current of the first circuit to the screen
+    97 0000009F B801000000                  mov rax, 1
+    98 000000A4 48BF-                       mov rdi, current_first_circuit
+    98 000000A6 [0400000000000000] 
+    99 000000AE F2410F10C3                  movsd xmm0, xmm11
+   100 000000B3 E8(00000000)                call printf
+   101                                  
+   102                                  
+   103                                      ;Output the current of the second circuit to the screen
+   104 000000B8 B801000000                  mov rax, 1
+   105 000000BD 48BF-                       mov rdi, current_second_circuit
+   105 000000BF [3600000000000000] 
+   106 000000C7 F2410F10C4                  movsd xmm0, xmm12
+   107 000000CC E8(00000000)                call printf
    108                                  
    109                                  
-   110                                  
-   111                                      ;Restore the values to non-GPRs
-   112 000000AC B807000000                  mov rax, 7
-   113 000000B1 BA00000000                  mov rdx, 0
-   114 000000B6 0FAE2C25[00000000]          xrstor [backup_storage_area]
-   115                                  
-   116                                  
-   117 000000BE F20F100424                  movsd xmm0, [rsp]
-   118 000000C3 58                          pop rax
-   119                                      
+   110                                      ;Block to add currents together and set return value
+   111 000000D1 F2450F58DC                  addsd xmm11, xmm12
+   112                                  
+   113                                      
+   114                                      ;Output the total current to the screen
+   115 000000D6 B801000000                  mov rax, 1
+   116 000000DB 48BF-                       mov rdi, total_current
+   116 000000DD [6900000000000000] 
+   117 000000E5 F2410F10C3                  movsd xmm0, xmm11
+   118 000000EA E8(00000000)                call printf
+   119                                  
    120                                  
-   121                                  
-   122                                      ;Restore the GPRs
-   123 000000C4 9D                          popf
-   124 000000C5 415F                        pop r15
-   125 000000C7 415E                        pop r14
-   126 000000C9 415D                        pop r13
-   127 000000CB 415C                        pop r12
-   128 000000CD 415B                        pop r11
-   129 000000CF 415A                        pop r10
-   130 000000D1 4159                        pop r9
-   131 000000D3 4158                        pop r8
-   132 000000D5 5E                          pop rsi
-   133 000000D6 5F                          pop rdi
-   134 000000D7 5A                          pop rdx
-   135 000000D8 59                          pop rcx
-   136 000000D9 5B                          pop rbx
-   137 000000DA 5D                          pop rbp   ;Restore rbp to the base of the activation record of the caller program
-   138 000000DB C3                          ret
-   139                                  ;End of the function electricity.asm ====================================================================
+   121                                      ;Back up value in xmm11 before restoring registers
+   122 000000EF 6A00                        push qword 0
+   123 000000F1 F2440F111C24                movsd [rsp], xmm11
+   124                                  
+   125                                  
+   126                                  
+   127                                      ;Restore the values to non-GPRs
+   128 000000F7 B807000000                  mov rax, 7
+   129 000000FC BA00000000                  mov rdx, 0
+   130 00000101 0FAE2C25[00000000]          xrstor [backup_storage_area]
+   131                                  
+   132                                  
+   133 00000109 F20F100424                  movsd xmm0, [rsp]
+   134 0000010E 58                          pop rax
+   135                                      
+   136                                  
+   137                                  
+   138                                      ;Restore the GPRs
+   139 0000010F 9D                          popf
+   140 00000110 415F                        pop r15
+   141 00000112 415E                        pop r14
+   142 00000114 415D                        pop r13
+   143 00000116 415C                        pop r12
+   144 00000118 415B                        pop r11
+   145 0000011A 415A                        pop r10
+   146 0000011C 4159                        pop r9
+   147 0000011E 4158                        pop r8
+   148 00000120 5E                          pop rsi
+   149 00000121 5F                          pop rdi
+   150 00000122 5A                          pop rdx
+   151 00000123 59                          pop rcx
+   152 00000124 5B                          pop rbx
+   153 00000125 5D                          pop rbp   ;Restore rbp to the base of the activation record of the caller program
+   154 00000126 C3                          ret
+   155                                  ;End of the function current.asm ====================================================================

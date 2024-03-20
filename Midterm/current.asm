@@ -21,7 +21,7 @@ format db "%lf", 0
 current_first_circuit db "The current on the first circuit is %1.5lf amps.", 10, 0
 current_second_circuit db "The current on the second circuit is %1.5lf amps.", 10, 0
 total_current db "The total current is %1.5lf amps.", 10, 10, 0
-
+test_value db "The value is %1.6lf", 10, 0
 
 segment .bss
 ;This section (or segment) is for declaring empty arrays
@@ -66,6 +66,22 @@ current:
     movsd xmm11, xmm1
     movsd xmm12, xmm2
     movsd xmm13, xmm10
+
+    ;testing values
+    mov rax, 1
+    mov rdi, test_value
+    movsd xmm0, xmm10
+    call printf
+
+        mov rax, 1
+    mov rdi, test_value
+    movsd xmm0, xmm11
+    call printf
+
+        mov rax, 1
+    mov rdi, test_value
+    movsd xmm0, xmm12
+    call printf
 
 
 
