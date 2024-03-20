@@ -24,7 +24,6 @@ false equ 0
 segment .data
 ;This section (or segment) is for declaring initialized arrays
 
-; program_desc db 10, "This program will manage your arrays of 64-bit floats", 10, 0
 electric_force_prompt db "Please enter the electric force in the circuit (volts): ", 0
 resistance_1_prompt db "Please enter the resistance in circuit number 1 (ohms): ", 0
 resistance_2_prompt db "Please enter the resistance in circuit number 2 (ohms): ", 0
@@ -304,7 +303,7 @@ resistance_2_bad:
     jmp exit
 
 exit:
-    ;Moves values for sides and angles to lower registers for use on the next block
+    ;Moves values for electric force and resistances to lower registers for use on the next block
     movsd xmm8, xmm10
     movsd xmm9, xmm11
     movsd xmm10, xmm12

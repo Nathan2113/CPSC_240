@@ -6,9 +6,6 @@
 
 #/bin/bash
 
-#Program name "Arrays"
-#Author: Nathan Warner
-#This file is the script file that accompanies the "Arrays" program.
 
 #Delete some un-needed files
 rm *.o

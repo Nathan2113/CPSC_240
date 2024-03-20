@@ -136,4 +136,4 @@ current:
     pop rbx
     pop rbp   ;Restore rbp to the base of the activation record of the caller program
     ret
-;End of the function electricity.asm ====================================================================
+;End of the function current.asm ====================================================================
