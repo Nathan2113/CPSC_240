@@ -1,0 +1,279 @@
+     1                                  ;****************************************************************************************************************************
+     2                                  ;Program name: "Arrays" - This program will first welcome the user to the program, as well as outputting its developer.     *
+     3                                  ;After this initial message, the program will let the user know the directions of the program, which is as follows:         *
+     4                                  ;                                                                                                                           *
+     5                                  ;"This program will manage your arrays of 64-bit floats                                                                     *
+     6                                  ;For the array enter a sequence of 64-bit floats separated by white space.                                                  *
+     7                                  ;After the last input press enter followed by Control+D:"                                                                   *
+     8                                  ;                                                                                                                           *
+     9                                  ;The program will then take in user input, validating each input to make sure they are entering valid float numbers, and    *
+    10                                  ;this process is done through the input_array.asm file, using isfloat.asm to validate their inputs. If the user inputs an   *
+    11                                  ;invalid input, the program will let them know with the following message:                                                  *
+    12                                  ;                                                                                                                           *
+    13                                  ;"The last input was invalid and not entered into the array.""                                                              *
+    14                                  ;                                                                                                                           *
+    15                                  ;Once the array has been fully entered, the program will output the entire array to the screen, which is done in the        *
+    16                                  ;output_array.c file using the C language. Once the array has been output, the program will then compute the mean of the    *
+    17                                  ;array using compute_mean.asm, and will then use the mean it found to compute the variance using compute_variance.cpp,      *
+    18                                  ;which uses C++. Once the variance has been found, the program will output the variance to the screen for the user, and     *
+    19                                  ;will then send the variance to main.c, where the program will let the user know that the variance will be kept for         *
+    20                                  ;future use, and that a 0 will be sent to the operating system.                                                             *
+    21                                  ;                                                                                                                           *
+    22                                  ;This program is free software: you can redistribute it and/or modify it under the terms of the GNU General Public License  *
+    23                                  ;version 3 as published by the Free Software Foundation.  This program is distributed in the hope that it will be useful,   *
+    24                                  ;but WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See   *
+    25                                  ;the GNU General Public License for more details A copy of the GNU General Public License v3 is available here:             *
+    26                                  ;<https://www.gnu.org/licenses/>.                                                                                           *
+    27                                  ;****************************************************************************************************************************
+    28                                  
+    29                                  
+    30                                  
+    31                                  
+    32                                  ;========1=========2=========3=========4=========5=========6=========7=========8=========9=========0=========1=========2=========3**
+    33                                  ;Author information
+    34                                  ;  Author name: Nathan Warner
+    35                                  ;  Author email: nwarner4@csu.fullerton.edu
+    36                                  ;
+    37                                  ;Program information
+    38                                  ;  Program name: Arrays
+    39                                  ;  Programming languages: Two modules in C, four modules in x86_64, one module in C++, and one module in bash
+    40                                  ;  Date program began: 2024-Mar-3
+    41                                  ;  Date of last update: 2024-Mar-7
+    42                                  ;  Files in this program: main.c, manager.asm, r.sh, output_array.c, compute_mean.asm, compute_variance.cpp, input_array.asm, isfloat.asm
+    43                                  ;  Testing: Alpha testing completed.  All functions are correct.
+    44                                  ;  Status: Ready for release to customers
+    45                                  ;
+    46                                  ;Purpose
+    47                                  ;  The program will take in an array of valid floating point numbers from the user, find the mean of the array, 
+    48                                  ;       and find the variance, which it will output to the screen and send to main.c
+    49                                  ;
+    50                                  ;This file:
+    51                                  ;  File name: manager.asm
+    52                                  ;  Language: X86-64
+    53                                  ;  Max page width: 124 columns
+    54                                  ;  Assemble (standard): nasm -f elf64 -l manager.lis -o manager.o manager.asm
+    55                                  ;  Assemble (debug): nasm -g dwarf -l manager.lis -o manager.o manager.asm
+    56                                  ;  Optimal print specification: Landscape, 7 points, monospace, 8½x11 paper
+    57                                  ;  Prototype of this function: double manager();
+    58                                  ;========1=========2=========3=========4=========5=========6=========7=========8=========9=========0=========1=========2=========3**
+    59                                  
+    60                                  ;Declaration section.  The section has no name other than "Declaration section".  Declare here everything that does
+    61                                  ;not have its own place of declaration
+    62                                  
+    63                                  global manager
+    64                                  
+    65                                  extern printf
+    66                                  extern stdin
+    67                                  extern scanf
+    68                                  extern fgets
+    69                                  extern strlen
+    70                                  extern isfloat
+    71                                  extern atof
+    72                                  
+    73                                  
+    74                                  name_string_size equ 48
+    75                                  title_string_size equ 48
+    76                                  
+    77                                  true equ -1
+    78                                  false equ 0
+    79                                  
+    80                                  float_size equ 60
+    81                                  
+    82                                  segment .data
+    83                                  ;This section (or segment) is for declaring initialized arrays
+    84                                  
+    85 00000000 0A506C656173652065-     name_prompt db 10, "Please enter your name: ", 0
+    85 00000009 6E74657220796F7572-
+    85 00000012 206E616D653A2000   
+    86 0000001A 0A506C656173652065-     title_prompt db 10, "Please enter your title (Mr, Ms, Sergeant, Chief, Project Leader, etc): ", 0
+    86 00000023 6E74657220796F7572-
+    86 0000002C 207469746C6520284D-
+    86 00000035 722C204D732C205365-
+    86 0000003E 726765616E742C2043-
+    86 00000047 686965662C2050726F-
+    86 00000050 6A656374204C656164-
+    86 00000059 65722C20657463293A-
+    86 00000062 2000               
+    87 00000064 0A4E69636520746F20-     meeting_msg db 10, "Nice to meet you %s %s", 10, 10, 0
+    87 0000006D 6D65657420796F7520-
+    87 00000076 25732025730A0A00   
+    88 0000007E 0A546869732070726F-     program_desc db 10, "This program will generate 64-bit IEEE float numbers.", 10, 0
+    88 00000087 6772616D2077696C6C-
+    88 00000090 2067656E6572617465-
+    88 00000099 2036342D6269742049-
+    88 000000A2 45454520666C6F6174-
+    88 000000AB 206E756D626572732E-
+    88 000000B4 0A00               
+    89 000000B6 486F77206D616E7920-     array_size_prompt db "How many numbers do you want? Today's limit is 100 per customer: ", 0
+    89 000000BF 6E756D626572732064-
+    89 000000C8 6F20796F752077616E-
+    89 000000D1 743F20546F64617927-
+    89 000000DA 73206C696D69742069-
+    89 000000E3 732031303020706572-
+    89 000000EC 20637573746F6D6572-
+    89 000000F5 3A2000             
+    90 000000F8 596F7572206E756D62-     values_stored db "Your numbers have been stored in an array. Here is that array.", 10, 0
+    90 00000101 657273206861766520-
+    90 0000010A 6265656E2073746F72-
+    90 00000113 656420696E20616E20-
+    90 0000011C 61727261792E204865-
+    90 00000125 726520697320746861-
+    90 0000012E 742061727261792E0A-
+    90 00000137 00                 
+    91 00000138 256C6600                format db "%lf", 0
+    92                                  
+    93 0000013C 0A546865206E756D62-     test_output db 10, "The number is: %1.6lf", 10, 0
+    93 00000145 65722069733A202531-
+    93 0000014E 2E366C660A00       
+    94                                  
+    95                                  
+    96                                  segment .bss
+    97                                  ;This section (or segment) is for declaring empty arrays
+    98                                  
+    99                                  align 64
+   100 00000000 <res 340h>              backup_storage_area resb 832
+   101 00000340 <res 320h>              array resq 100 ;Array of 100 qwords
+   102                                  
+   103 00000660 <res 30h>               user_name resb name_string_size
+   104                                  
+   105 00000690 <res 30h>               user_title resb title_string_size
+   106                                  
+   107                                  segment .text
+   108                                  
+   109                                  manager:
+   110                                  
+   111                                      ;Back up the GPRs (General Purpose Registers)
+   112 00000000 55                          push rbp
+   113 00000001 4889E5                      mov rbp, rsp
+   114 00000004 53                          push rbx
+   115 00000005 51                          push rcx
+   116 00000006 52                          push rdx
+   117 00000007 57                          push rdi
+   118 00000008 56                          push rsi
+   119 00000009 4150                        push r8
+   120 0000000B 4151                        push r9
+   121 0000000D 4152                        push r10
+   122 0000000F 4153                        push r11
+   123 00000011 4154                        push r12
+   124 00000013 4155                        push r13
+   125 00000015 4156                        push r14
+   126 00000017 4157                        push r15
+   127 00000019 9C                          pushf
+   128                                  
+   129                                      ;Backup the registers other than the GPRs
+   130 0000001A B807000000                  mov rax,7
+   131 0000001F BA00000000                  mov rdx,0
+   132 00000024 0FAE2425[00000000]          xsave [backup_storage_area]
+   133                                  
+   134                                  
+   135                                  
+   136                                  
+   137                                      ;Output prompt for first and last name
+   138 0000002C B800000000                  mov rax, 0
+   139 00000031 48BF-                       mov rdi, name_prompt ;"Please enter your name: "
+   139 00000033 [0000000000000000] 
+   140 0000003B E8(00000000)                call printf
+   141                                  
+   142                                      ;Input user names
+   143 00000040 B800000000                  mov rax, 0
+   144 00000045 48BF-                       mov rdi, user_name
+   144 00000047 [6006000000000000] 
+   145 0000004F BE30000000                  mov rsi, name_string_size ;48
+   146 00000054 488B1425[00000000]          mov rdx, [stdin]
+   147 0000005C E8(00000000)                call fgets
+   148                                  
+   149                                      ;Remove newline
+   150 00000061 B800000000                  mov rax, 0
+   151 00000066 48BF-                       mov rdi, user_name
+   151 00000068 [6006000000000000] 
+   152 00000070 E8(00000000)                call strlen
+   153 00000075 C680[5F060000]00            mov [user_name+rax-1], byte 0
+   154                                  
+   155                                      ;Ask user for their title
+   156 0000007C B800000000                  mov rax, 0
+   157 00000081 48BF-                       mov rdi, title_prompt ;"Please enter your title (Sergeant, Chief, CEO, President, Teacher, etc): "
+   157 00000083 [1A00000000000000] 
+   158 0000008B E8(00000000)                call printf
+   159                                  
+   160                                      ;Input user title
+   161 00000090 B800000000                  mov rax, 0
+   162 00000095 48BF-                       mov rdi, user_title
+   162 00000097 [9006000000000000] 
+   163 0000009F BE30000000                  mov rsi, title_string_size ;48
+   164 000000A4 488B1425[00000000]          mov rdx, [stdin]
+   165 000000AC E8(00000000)                call fgets
+   166                                  
+   167                                      ;Remove newline
+   168 000000B1 B800000000                  mov rax, 0
+   169 000000B6 48BF-                       mov rdi, user_title
+   169 000000B8 [9006000000000000] 
+   170 000000C0 E8(00000000)                call strlen
+   171 000000C5 C680[8F060000]00            mov [user_title+rax-1], byte 0
+   172                                  
+   173                                  
+   174                                  
+   175                                      ;Say good morning to the user
+   176 000000CC B800000000                  mov rax, 0
+   177 000000D1 48BF-                       mov rdi, meeting_msg ;"Nice to meet you %s %s"
+   177 000000D3 [6400000000000000] 
+   178 000000DB 48BE-                       mov rsi, user_title
+   178 000000DD [9006000000000000] 
+   179 000000E5 48BA-                       mov rdx, user_name
+   179 000000E7 [6006000000000000] 
+   180 000000EF E8(00000000)                call printf
+   181                                  
+   182                                  
+   183                                      ;Output the program description for the user
+   184 000000F4 B800000000                  mov rax, 0
+   185 000000F9 48BF-                       mov rdi, program_desc
+   185 000000FB [7E00000000000000] 
+   186 00000103 E8(00000000)                call printf
+   187                                  
+   188                                      
+   189                                      ;Ask the user how many numbers they want to store into the array
+   190 00000108 B800000000                  mov rax, 0
+   191 0000010D 48BF-                       mov rdi, array_size_prompt
+   191 0000010F [B600000000000000] 
+   192 00000117 E8(00000000)                call printf
+   193                                  
+   194                                      ;WILL GET VALUE FROM USER LATER, FOR NOW, STORING 6 IN R15
+   195 0000011C 41BF06000000                mov r15, 6
+   196                                  
+   197                                      
+   198                                  
+   199                                  
+   200                                      ;Back up value in xmm15 (variance) before restoring registers
+   201 00000122 6A00                        push qword 0
+   202 00000124 F2440F113C24                movsd [rsp], xmm15
+   203                                  
+   204                                  
+   205                                  
+   206                                      ;Restore the values to non-GPRs
+   207 0000012A B807000000                  mov rax, 7
+   208 0000012F BA00000000                  mov rdx, 0
+   209 00000134 0FAE2C25[00000000]          xrstor [backup_storage_area]
+   210                                  
+   211                                  
+   212 0000013C F20F100424                  movsd xmm0, [rsp]
+   213 00000141 58                          pop rax
+   214                                      
+   215                                  
+   216                                  
+   217                                      ;Restore the GPRs
+   218 00000142 9D                          popf
+   219 00000143 415F                        pop r15
+   220 00000145 415E                        pop r14
+   221 00000147 415D                        pop r13
+   222 00000149 415C                        pop r12
+   223 0000014B 415B                        pop r11
+   224 0000014D 415A                        pop r10
+   225 0000014F 4159                        pop r9
+   226 00000151 4158                        pop r8
+   227 00000153 5E                          pop rsi
+   228 00000154 5F                          pop rdi
+   229 00000155 5A                          pop rdx
+   230 00000156 59                          pop rcx
+   231 00000157 5B                          pop rbx
+   232 00000158 5D                          pop rbp   ;Restore rbp to the base of the activation record of the caller program
+   233 00000159 C3                          ret
+   234                                  ;End of the function manager.asm ====================================================================
