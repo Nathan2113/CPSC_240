@@ -88,9 +88,10 @@ meeting_msg db 10, "Nice to meet you %s %s", 10, 10, 0
 program_desc db 10, "This program will generate 64-bit IEEE float numbers.", 10, 0
 array_size_prompt db "How many numbers do you want? Today's limit is 100 per customer: ", 0
 values_stored db "Your numbers have been stored in an array. Here is that array.", 10, 0
-format db "%lf", 0
+format_float db "%lf", 0
+format_int db "%ld", 0
 
-test_output db 10, "The number is: %1.6lf", 10, 0
+test_output db 10, "The number input is %lu", 10, 0
 
 
 segment .bss
@@ -191,8 +192,22 @@ manager:
     mov rdi, array_size_prompt
     call printf
 
-    ;WILL GET VALUE FROM USER LATER, FOR NOW, STORING 6 IN R15
-    mov r15, 6
+
+    mov rax, 0
+    mov rdi, format_int
+    push qword -9 ;rsp points to -9
+    push qword -9 ;rsp points to -9
+    mov rsi, rsp
+    call scanf
+    pop r11
+    pop r8
+
+
+    ;Output array size given by user
+    mov rax, 0
+    mov rdi, test_output
+    mov rsi, r11
+    call printf
 
     
 

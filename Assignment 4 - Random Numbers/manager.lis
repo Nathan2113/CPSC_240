@@ -120,160 +120,185 @@
     90 00000125 726520697320746861-
     90 0000012E 742061727261792E0A-
     90 00000137 00                 
-    91 00000138 256C6600                format db "%lf", 0
-    92                                  
-    93 0000013C 0A546865206E756D62-     test_output db 10, "The number is: %1.6lf", 10, 0
-    93 00000145 65722069733A202531-
-    93 0000014E 2E366C660A00       
-    94                                  
+    91 00000138 256C6600                format_float db "%lf", 0
+    92 0000013C 256C6400                format_int db "%ld", 0
+    93                                  
+    94 00000140 0A546865206E756D62-     test_output db 10, "The number input is %lu", 10, 0
+    94 00000149 657220696E70757420-
+    94 00000152 697320256C750A00   
     95                                  
-    96                                  segment .bss
-    97                                  ;This section (or segment) is for declaring empty arrays
-    98                                  
-    99                                  align 64
-   100 00000000 <res 340h>              backup_storage_area resb 832
-   101 00000340 <res 320h>              array resq 100 ;Array of 100 qwords
-   102                                  
-   103 00000660 <res 30h>               user_name resb name_string_size
-   104                                  
-   105 00000690 <res 30h>               user_title resb title_string_size
-   106                                  
-   107                                  segment .text
-   108                                  
-   109                                  manager:
-   110                                  
-   111                                      ;Back up the GPRs (General Purpose Registers)
-   112 00000000 55                          push rbp
-   113 00000001 4889E5                      mov rbp, rsp
-   114 00000004 53                          push rbx
-   115 00000005 51                          push rcx
-   116 00000006 52                          push rdx
-   117 00000007 57                          push rdi
-   118 00000008 56                          push rsi
-   119 00000009 4150                        push r8
-   120 0000000B 4151                        push r9
-   121 0000000D 4152                        push r10
-   122 0000000F 4153                        push r11
-   123 00000011 4154                        push r12
-   124 00000013 4155                        push r13
-   125 00000015 4156                        push r14
-   126 00000017 4157                        push r15
-   127 00000019 9C                          pushf
-   128                                  
-   129                                      ;Backup the registers other than the GPRs
-   130 0000001A B807000000                  mov rax,7
-   131 0000001F BA00000000                  mov rdx,0
-   132 00000024 0FAE2425[00000000]          xsave [backup_storage_area]
-   133                                  
+    96                                  
+    97                                  segment .bss
+    98                                  ;This section (or segment) is for declaring empty arrays
+    99                                  
+   100                                  align 64
+   101 00000000 <res 340h>              backup_storage_area resb 832
+   102 00000340 <res 320h>              array resq 100 ;Array of 100 qwords
+   103                                  
+   104 00000660 <res 30h>               user_name resb name_string_size
+   105                                  
+   106 00000690 <res 30h>               user_title resb title_string_size
+   107                                  
+   108                                  segment .text
+   109                                  
+   110                                  manager:
+   111                                  
+   112                                      ;Back up the GPRs (General Purpose Registers)
+   113 00000000 55                          push rbp
+   114 00000001 4889E5                      mov rbp, rsp
+   115 00000004 53                          push rbx
+   116 00000005 51                          push rcx
+   117 00000006 52                          push rdx
+   118 00000007 57                          push rdi
+   119 00000008 56                          push rsi
+   120 00000009 4150                        push r8
+   121 0000000B 4151                        push r9
+   122 0000000D 4152                        push r10
+   123 0000000F 4153                        push r11
+   124 00000011 4154                        push r12
+   125 00000013 4155                        push r13
+   126 00000015 4156                        push r14
+   127 00000017 4157                        push r15
+   128 00000019 9C                          pushf
+   129                                  
+   130                                      ;Backup the registers other than the GPRs
+   131 0000001A B807000000                  mov rax,7
+   132 0000001F BA00000000                  mov rdx,0
+   133 00000024 0FAE2425[00000000]          xsave [backup_storage_area]
    134                                  
    135                                  
    136                                  
-   137                                      ;Output prompt for first and last name
-   138 0000002C B800000000                  mov rax, 0
-   139 00000031 48BF-                       mov rdi, name_prompt ;"Please enter your name: "
-   139 00000033 [0000000000000000] 
-   140 0000003B E8(00000000)                call printf
-   141                                  
-   142                                      ;Input user names
-   143 00000040 B800000000                  mov rax, 0
-   144 00000045 48BF-                       mov rdi, user_name
-   144 00000047 [6006000000000000] 
-   145 0000004F BE30000000                  mov rsi, name_string_size ;48
-   146 00000054 488B1425[00000000]          mov rdx, [stdin]
-   147 0000005C E8(00000000)                call fgets
-   148                                  
-   149                                      ;Remove newline
-   150 00000061 B800000000                  mov rax, 0
-   151 00000066 48BF-                       mov rdi, user_name
-   151 00000068 [6006000000000000] 
-   152 00000070 E8(00000000)                call strlen
-   153 00000075 C680[5F060000]00            mov [user_name+rax-1], byte 0
-   154                                  
-   155                                      ;Ask user for their title
-   156 0000007C B800000000                  mov rax, 0
-   157 00000081 48BF-                       mov rdi, title_prompt ;"Please enter your title (Sergeant, Chief, CEO, President, Teacher, etc): "
-   157 00000083 [1A00000000000000] 
-   158 0000008B E8(00000000)                call printf
-   159                                  
-   160                                      ;Input user title
-   161 00000090 B800000000                  mov rax, 0
-   162 00000095 48BF-                       mov rdi, user_title
-   162 00000097 [9006000000000000] 
-   163 0000009F BE30000000                  mov rsi, title_string_size ;48
-   164 000000A4 488B1425[00000000]          mov rdx, [stdin]
-   165 000000AC E8(00000000)                call fgets
-   166                                  
-   167                                      ;Remove newline
-   168 000000B1 B800000000                  mov rax, 0
-   169 000000B6 48BF-                       mov rdi, user_title
-   169 000000B8 [9006000000000000] 
-   170 000000C0 E8(00000000)                call strlen
-   171 000000C5 C680[8F060000]00            mov [user_title+rax-1], byte 0
-   172                                  
+   137                                  
+   138                                      ;Output prompt for first and last name
+   139 0000002C B800000000                  mov rax, 0
+   140 00000031 48BF-                       mov rdi, name_prompt ;"Please enter your name: "
+   140 00000033 [0000000000000000] 
+   141 0000003B E8(00000000)                call printf
+   142                                  
+   143                                      ;Input user names
+   144 00000040 B800000000                  mov rax, 0
+   145 00000045 48BF-                       mov rdi, user_name
+   145 00000047 [6006000000000000] 
+   146 0000004F BE30000000                  mov rsi, name_string_size ;48
+   147 00000054 488B1425[00000000]          mov rdx, [stdin]
+   148 0000005C E8(00000000)                call fgets
+   149                                  
+   150                                      ;Remove newline
+   151 00000061 B800000000                  mov rax, 0
+   152 00000066 48BF-                       mov rdi, user_name
+   152 00000068 [6006000000000000] 
+   153 00000070 E8(00000000)                call strlen
+   154 00000075 C680[5F060000]00            mov [user_name+rax-1], byte 0
+   155                                  
+   156                                      ;Ask user for their title
+   157 0000007C B800000000                  mov rax, 0
+   158 00000081 48BF-                       mov rdi, title_prompt ;"Please enter your title (Sergeant, Chief, CEO, President, Teacher, etc): "
+   158 00000083 [1A00000000000000] 
+   159 0000008B E8(00000000)                call printf
+   160                                  
+   161                                      ;Input user title
+   162 00000090 B800000000                  mov rax, 0
+   163 00000095 48BF-                       mov rdi, user_title
+   163 00000097 [9006000000000000] 
+   164 0000009F BE30000000                  mov rsi, title_string_size ;48
+   165 000000A4 488B1425[00000000]          mov rdx, [stdin]
+   166 000000AC E8(00000000)                call fgets
+   167                                  
+   168                                      ;Remove newline
+   169 000000B1 B800000000                  mov rax, 0
+   170 000000B6 48BF-                       mov rdi, user_title
+   170 000000B8 [9006000000000000] 
+   171 000000C0 E8(00000000)                call strlen
+   172 000000C5 C680[8F060000]00            mov [user_title+rax-1], byte 0
    173                                  
    174                                  
-   175                                      ;Say good morning to the user
-   176 000000CC B800000000                  mov rax, 0
-   177 000000D1 48BF-                       mov rdi, meeting_msg ;"Nice to meet you %s %s"
-   177 000000D3 [6400000000000000] 
-   178 000000DB 48BE-                       mov rsi, user_title
-   178 000000DD [9006000000000000] 
-   179 000000E5 48BA-                       mov rdx, user_name
-   179 000000E7 [6006000000000000] 
-   180 000000EF E8(00000000)                call printf
-   181                                  
+   175                                  
+   176                                      ;Say good morning to the user
+   177 000000CC B800000000                  mov rax, 0
+   178 000000D1 48BF-                       mov rdi, meeting_msg ;"Nice to meet you %s %s"
+   178 000000D3 [6400000000000000] 
+   179 000000DB 48BE-                       mov rsi, user_title
+   179 000000DD [9006000000000000] 
+   180 000000E5 48BA-                       mov rdx, user_name
+   180 000000E7 [6006000000000000] 
+   181 000000EF E8(00000000)                call printf
    182                                  
-   183                                      ;Output the program description for the user
-   184 000000F4 B800000000                  mov rax, 0
-   185 000000F9 48BF-                       mov rdi, program_desc
-   185 000000FB [7E00000000000000] 
-   186 00000103 E8(00000000)                call printf
-   187                                  
-   188                                      
-   189                                      ;Ask the user how many numbers they want to store into the array
-   190 00000108 B800000000                  mov rax, 0
-   191 0000010D 48BF-                       mov rdi, array_size_prompt
-   191 0000010F [B600000000000000] 
-   192 00000117 E8(00000000)                call printf
-   193                                  
-   194                                      ;WILL GET VALUE FROM USER LATER, FOR NOW, STORING 6 IN R15
-   195 0000011C 41BF06000000                mov r15, 6
-   196                                  
-   197                                      
-   198                                  
-   199                                  
-   200                                      ;Back up value in xmm15 (variance) before restoring registers
-   201 00000122 6A00                        push qword 0
-   202 00000124 F2440F113C24                movsd [rsp], xmm15
-   203                                  
-   204                                  
+   183                                  
+   184                                      ;Output the program description for the user
+   185 000000F4 B800000000                  mov rax, 0
+   186 000000F9 48BF-                       mov rdi, program_desc
+   186 000000FB [7E00000000000000] 
+   187 00000103 E8(00000000)                call printf
+   188                                  
+   189                                      
+   190                                      ;Ask the user how many numbers they want to store into the array
+   191 00000108 B800000000                  mov rax, 0
+   192 0000010D 48BF-                       mov rdi, array_size_prompt
+   192 0000010F [B600000000000000] 
+   193 00000117 E8(00000000)                call printf
+   194                                  
+   195                                  
+   196 0000011C B800000000                  mov rax, 0
+   197 00000121 48BF-                       mov rdi, format_int
+   197 00000123 [3C01000000000000] 
+   198 0000012B 6AF7                        push qword -9 ;rsp points to -9
+   199 0000012D 6AF7                        push qword -9 ;rsp points to -9
+   200 0000012F 4889E6                      mov rsi, rsp
+   201 00000132 E8(00000000)                call scanf
+   202                                      ;mov r11, [rsp]
+   203 00000137 415B                        pop r11
+   204 00000139 4158                        pop r8
    205                                  
-   206                                      ;Restore the values to non-GPRs
-   207 0000012A B807000000                  mov rax, 7
-   208 0000012F BA00000000                  mov rdx, 0
-   209 00000134 0FAE2C25[00000000]          xrstor [backup_storage_area]
-   210                                  
-   211                                  
-   212 0000013C F20F100424                  movsd xmm0, [rsp]
-   213 00000141 58                          pop rax
-   214                                      
-   215                                  
-   216                                  
-   217                                      ;Restore the GPRs
-   218 00000142 9D                          popf
-   219 00000143 415F                        pop r15
-   220 00000145 415E                        pop r14
-   221 00000147 415D                        pop r13
-   222 00000149 415C                        pop r12
-   223 0000014B 415B                        pop r11
-   224 0000014D 415A                        pop r10
-   225 0000014F 4159                        pop r9
-   226 00000151 4158                        pop r8
-   227 00000153 5E                          pop rsi
-   228 00000154 5F                          pop rdi
-   229 00000155 5A                          pop rdx
-   230 00000156 59                          pop rcx
-   231 00000157 5B                          pop rbx
-   232 00000158 5D                          pop rbp   ;Restore rbp to the base of the activation record of the caller program
-   233 00000159 C3                          ret
-   234                                  ;End of the function manager.asm ====================================================================
+   206                                      ; ;WILL GET VALUE FROM USER LATER, FOR NOW, STORING 6 IN R15
+   207                                      ; mov r15, 6
+   208                                  
+   209                                      ; ;Get array size from user
+   210                                      ; mov rax, 0
+   211                                      ; call scanf
+   212                                      ; mov r15, rax
+   213                                  
+   214                                      ;Output array size given by user
+   215 0000013B B800000000                  mov rax, 0
+   216 00000140 48BF-                       mov rdi, test_output
+   216 00000142 [4001000000000000] 
+   217 0000014A 4C89DE                      mov rsi, r11
+   218 0000014D E8(00000000)                call printf
+   219                                  
+   220                                      
+   221                                  
+   222                                  
+   223                                      ;Back up value in xmm15 (variance) before restoring registers
+   224 00000152 6A00                        push qword 0
+   225 00000154 F2440F113C24                movsd [rsp], xmm15
+   226                                  
+   227                                  
+   228                                  
+   229                                      ;Restore the values to non-GPRs
+   230 0000015A B807000000                  mov rax, 7
+   231 0000015F BA00000000                  mov rdx, 0
+   232 00000164 0FAE2C25[00000000]          xrstor [backup_storage_area]
+   233                                  
+   234                                  
+   235 0000016C F20F100424                  movsd xmm0, [rsp]
+   236 00000171 58                          pop rax
+   237                                      
+   238                                  
+   239                                  
+   240                                      ;Restore the GPRs
+   241 00000172 9D                          popf
+   242 00000173 415F                        pop r15
+   243 00000175 415E                        pop r14
+   244 00000177 415D                        pop r13
+   245 00000179 415C                        pop r12
+   246 0000017B 415B                        pop r11
+   247 0000017D 415A                        pop r10
+   248 0000017F 4159                        pop r9
+   249 00000181 4158                        pop r8
+   250 00000183 5E                          pop rsi
+   251 00000184 5F                          pop rdi
+   252 00000185 5A                          pop rdx
+   253 00000186 59                          pop rcx
+   254 00000187 5B                          pop rbx
+   255 00000188 5D                          pop rbp   ;Restore rbp to the base of the activation record of the caller program
+   256 00000189 C3                          ret
+   257                                  ;End of the function manager.asm ====================================================================
