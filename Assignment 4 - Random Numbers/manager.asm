@@ -1,61 +1,58 @@
-;****************************************************************************************************************************
-;Program name: "Arrays" - This program will first welcome the user to the program, as well as outputting its developer.     *
-;After this initial message, the program will let the user know the directions of the program, which is as follows:         *
-;                                                                                                                           *
-;"This program will manage your arrays of 64-bit floats                                                                     *
-;For the array enter a sequence of 64-bit floats separated by white space.                                                  *
-;After the last input press enter followed by Control+D:"                                                                   *
-;                                                                                                                           *
-;The program will then take in user input, validating each input to make sure they are entering valid float numbers, and    *
-;this process is done through the input_array.asm file, using isfloat.asm to validate their inputs. If the user inputs an   *
-;invalid input, the program will let them know with the following message:                                                  *
-;                                                                                                                           *
-;"The last input was invalid and not entered into the array.""                                                              *
-;                                                                                                                           *
-;Once the array has been fully entered, the program will output the entire array to the screen, which is done in the        *
-;output_array.c file using the C language. Once the array has been output, the program will then compute the mean of the    *
-;array using compute_mean.asm, and will then use the mean it found to compute the variance using compute_variance.cpp,      *
-;which uses C++. Once the variance has been found, the program will output the variance to the screen for the user, and     *
-;will then send the variance to main.c, where the program will let the user know that the variance will be kept for         *
-;future use, and that a 0 will be sent to the operating system.                                                             *
-;                                                                                                                           *
-;This program is free software: you can redistribute it and/or modify it under the terms of the GNU General Public License  *
-;version 3 as published by the Free Software Foundation.  This program is distributed in the hope that it will be useful,   *
-;but WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See   *
-;the GNU General Public License for more details A copy of the GNU General Public License v3 is available here:             *
-;<https://www.gnu.org/licenses/>.                                                                                           *
-;****************************************************************************************************************************
+; /***************************************************************************************************************************
+; Program name: "Non-deterministic Random Numbers" - This program will welcome the user to the program, then will ask        *
+; for their name and title. After welcoming the user, the program will give a description of what it does for the user       *
+;                                                                                                                            *
+; This program will generate 64-bit IEEE float numbers.                                                                      *
+; How many numbers do you want. Today's limit is 100 per customer:                                                           *
+; Your numbers have been stored in an array. Here is that array.                                                             *
+;                                                                                                                            *
+; The program will then take in user input for the size of the array that they want, if the user inputs a number greater     *
+; than 100, or a negative number, the program will tell them that they have entered an invalid input, and to try again       *
+;                                                                                                                            *
+; "Invalid array size...Try again:                                                                                           *
+;                                                                                                                            *
+; Once the user has input a valid array size, the program lets them know it is generating n random numbers, where n is the   *
+; array size the user input above. Once the array has been filled with random numbers, the program will output the entire    *
+; array, then it will normalize the array to be between the values 1.0 and 2.0, and will output the entire array again.      *
+; After this second array output, the program will then sort the array (using C++ library functions) and will output the     *
+; array one last time for the user, this time sorted from least to greatest                                                  *
+;                                                                                                                            *
+; The program will then say goodbye to the user, and terminate the program                                                   *
+;                                                                                                                            *
+; This program is free software: you can redistribute it and/or modify it under the terms of the GNU General Public License  *
+; version 3 as published by the Free Software Foundation.  This program is distributed in the hope that it will be useful,   *
+; but WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See   *
+; the GNU General Public License for more details A copy of the GNU General Public License v3 is available here:             *
+; <https://www.gnu.org/licenses/>.                                                                                           *
+; ****************************************************************************************************************************/
 
 
+; /**********************************************************************************************************************************
+; Author information
+;   Author name: Nathan Warner
+;   Author email: nwarner4@csu.fullerton.edu
 
+; Program information
+;   Program name: Non-deterministic Random Numbers
+;   Programming languages: One module in C, one module in C++, five modules in x86_64 assembly, and one module in bash
+;   Date program began: 2024-Apr-8
+;   Date of last update: 2024-Apr-11
+;   Files in this program: main.c, sort.cpp, manager.asm, fill_random_array.asm, isnan.asm, show_array.asm, normalize_array.asm, r.sh
+;   Testing: Alpha testing completed.  All functions are correct.
+;   Status: Ready for release to customers
 
-;========1=========2=========3=========4=========5=========6=========7=========8=========9=========0=========1=========2=========3**
-;Author information
-;  Author name: Nathan Warner
-;  Author email: nwarner4@csu.fullerton.edu
-;
-;Program information
-;  Program name: Arrays
-;  Programming languages: Two modules in C, four modules in x86_64, one module in C++, and one module in bash
-;  Date program began: 2024-Mar-3
-;  Date of last update: 2024-Mar-7
-;  Files in this program: main.c, manager.asm, r.sh, output_array.c, compute_mean.asm, compute_variance.cpp, input_array.asm, isfloat.asm
-;  Testing: Alpha testing completed.  All functions are correct.
-;  Status: Ready for release to customers
-;
-;Purpose
-;  The program will take in an array of valid floating point numbers from the user, find the mean of the array, 
-;       and find the variance, which it will output to the screen and send to main.c
-;
-;This file:
-;  File name: manager.asm
-;  Language: X86-64
-;  Max page width: 124 columns
-;  Assemble (standard): nasm -f elf64 -l manager.lis -o manager.o manager.asm
-;  Assemble (debug): nasm -g dwarf -l manager.lis -o manager.o manager.asm
-;  Optimal print specification: Landscape, 7 points, monospace, 8½x11 paper
-;  Prototype of this function: double manager();
-;========1=========2=========3=========4=========5=========6=========7=========8=========9=========0=========1=========2=========3**
+; Purpose
+;   The program will create an array of size n, where n is input by the user, and between 1 and 100, and will create a random number
+;     array, will normalize the array between 1.0 and 2.0, and then sort the array
+
+; This file:
+;   File name: manager.asm
+;   Language: x86_64 assembly
+;   Max page width: 124 columns
+;   Assemble (standard): nasm -f elf64 -l manager.lis -o manager.o manager.asm
+;   Optimal print specification: Landscape, 7 points, monospace, 8½x11 paper
+;   Prototype of this function: char* manager();
+; ***********************************************************************************************************************************/
 
 ;Declaration section.  The section has no name other than "Declaration section".  Declare here everything that does
 ;not have its own place of declaration
@@ -67,28 +64,30 @@ extern stdin
 extern scanf
 extern fgets
 extern strlen
-extern isfloat
-extern atof
+extern isdigit
+extern fill_random_array
+extern show_array
+extern normalize_array
+extern sort
 
 
 name_string_size equ 48
 title_string_size equ 48
 
-true equ -1
-false equ 0
-
-float_size equ 60
 
 segment .data
 ;This section (or segment) is for declaring initialized arrays
 
 name_prompt db 10, "Please enter your name: ", 0
-title_prompt db 10, "Please enter your title (Mr, Ms, Sergeant, Chief, Project Leader, etc): ", 0
-meeting_msg db 10, "Nice to meet you %s %s", 10, 10, 0
+title_prompt db "Please enter your title (Mr, Ms, Sergeant, Chief, Project Leader, etc): ", 0
+meeting_msg db "Nice to meet you %s %s", 10, 0
 program_desc db 10, "This program will generate 64-bit IEEE float numbers.", 10, 0
 array_size_prompt db "How many numbers do you want? Today's limit is 100 per customer: ", 0
-values_stored db "Your numbers have been stored in an array. Here is that array.", 10, 0
-format_float db "%lf", 0
+values_stored db "Your numbers have been stored in an array. Here is that array.", 10, 10, 0
+invalid_arr_size db "Invalid array size...Try again: ", 0
+normalize_array_output db 10, "The array will now be normalized to the range of 1.0 to 2.0. Here is the normalized array", 10, 10, 0
+sort_array_output db 10, "The array will now be sorted", 10, 10, 0
+goodbye_msg db 10, "Good bye %s. You are welcome any time.", 10, 0
 format_int db "%ld", 0
 
 test_output db 10, "The number input is %lu", 10, 0
@@ -102,7 +101,6 @@ backup_storage_area resb 832
 array resq 100 ;Array of 100 qwords
 
 user_name resb name_string_size
-
 user_title resb title_string_size
 
 segment .text
@@ -131,7 +129,6 @@ manager:
     mov rax,7
     mov rdx,0
     xsave [backup_storage_area]
-
 
 
 
@@ -172,7 +169,6 @@ manager:
     mov [user_title+rax-1], byte 0
 
 
-
     ;Say good morning to the user
     mov rax, 0
     mov rdi, meeting_msg ;"Nice to meet you %s %s"
@@ -183,39 +179,126 @@ manager:
 
     ;Output the program description for the user
     mov rax, 0
-    mov rdi, program_desc
+    mov rdi, program_desc ;"This program will generate 64-bit IEEE float numbers."
     call printf
 
     
     ;Ask the user how many numbers they want to store into the array
     mov rax, 0
-    mov rdi, array_size_prompt
+    mov rdi, array_size_prompt ;"How many numbers do you want? Today's limit is 100 per customer: "
     call printf
 
-
+    ;Get user input for array size
     mov rax, 0
-    mov rdi, format_int
+    mov rdi, format_int ;"%ld"
     push qword -9 ;rsp points to -9
     push qword -9 ;rsp points to -9
     mov rsi, rsp
     call scanf
-    pop r11
+    pop r15
     pop r8
 
 
-    ;Output array size given by user
+
+    ;Check if the input is in the range
+    cmp r15, 100
+    jg bad_array_size
+
+    cmp r15, 1
+    jl bad_array_size
+
+    jmp array_size_exit
+
+;If the array size entered by the user is not valid, the program jumps here, which reprompts them for a valid input
+bad_array_size:
     mov rax, 0
-    mov rdi, test_output
-    mov rsi, r11
+    mov rdi, invalid_arr_size
     call printf
 
-    
+
+    ;Get user input for array size
+    mov rax, 0
+    mov rdi, format_int ;"%ld"
+    push qword -9 ;rsp points to -9
+    push qword -9 ;rsp points to -9
+    mov rsi, rsp
+    call scanf
+    pop r15
+    pop r8
+
+    cmp r15, 100
+    jg bad_array_size
+
+    cmp r15, 1
+    jl bad_array_size
+
+    jmp array_size_exit
 
 
-    ;Back up value in xmm15 (variance) before restoring registers
-    push qword 0
-    movsd [rsp], xmm15
+array_size_exit:
 
+    ;Calling fill_random_array
+    mov rax, 0
+    mov rdi, array
+    mov rsi, r15 ;array size
+    call fill_random_array
+
+
+    ;Output that the array size has been stored
+    mov rax, 0
+    mov rdi, values_stored ;"Your numbers have been stored in an array. Here is that array."
+    call printf
+
+
+    ;Calling show array, which outputs the entire array to the screen in hex and scientific format
+    mov rax, 0
+    mov rdi, array
+    mov rsi, r15 ;array size
+    call show_array
+
+
+    ;Output to let the user know the array will now be normalized
+    mov rax, 0
+    mov rdi, normalize_array_output ;"The array will now be normalized to the range of 1.0 to 2.0. Here is the normalized array"
+    call printf
+
+    ;Calling normalize_array
+    mov rax, 0
+    mov rdi, array
+    mov rsi, r15 ;array size
+    call normalize_array
+
+    ;Calling show array, which outputs the entire array to the screen in hex and scientific format
+    mov rax, 0
+    mov rdi, array
+    mov rsi, r15 ;array size
+    call show_array
+
+
+    ;Output to let the user know the array is being sorted
+    mov rax, 0
+    mov rdi, sort_array_output ;"The array will now be sorted"
+    call printf
+
+    ;Calling sort_array
+    mov rax, 0
+    mov rdi, array
+    mov rsi, r15 ;array size
+    call sort
+
+
+    ;Calling show array, which outputs the entire array to the screen in hex and scientific format
+    mov rax, 0
+    mov rdi, array
+    mov rsi, r15 ;array size
+    call show_array
+
+
+    ;Output goodbye message
+    mov rax, 0
+    mov rdi, goodbye_msg ;"Good bye %s. You are welcome any time."
+    mov rsi, user_title
+    call printf
 
 
     ;Restore the values to non-GPRs
@@ -223,11 +306,7 @@ manager:
     mov rdx, 0
     xrstor [backup_storage_area]
 
-
-    movsd xmm0, [rsp]
-    pop rax
-    
-
+    mov rax, user_name
 
     ;Restore the GPRs
     popf

@@ -1,0 +1,168 @@
+     1                                  ; /***************************************************************************************************************************
+     2                                  ; Program name: "Non-deterministic Random Numbers" - This program will welcome the user to the program, then will ask        *
+     3                                  ; for their name and title. After welcoming the user, the program will give a description of what it does for the user       *
+     4                                  ;                                                                                                                            *
+     5                                  ; This program will generate 64-bit IEEE float numbers.                                                                      *
+     6                                  ; How many numbers do you want. Today's limit is 100 per customer:                                                           *
+     7                                  ; Your numbers have been stored in an array. Here is that array.                                                             *
+     8                                  ;                                                                                                                            *
+     9                                  ; The program will then take in user input for the size of the array that they want, if the user inputs a number greater     *
+    10                                  ; than 100, or a negative number, the program will tell them that they have entered an invalid input, and to try again       *
+    11                                  ;                                                                                                                            *
+    12                                  ; "Invalid array size...Try again:                                                                                           *
+    13                                  ;                                                                                                                            *
+    14                                  ; Once the user has input a valid array size, the program lets them know it is generating n random numbers, where n is the   *
+    15                                  ; array size the user input above. Once the array has been filled with random numbers, the program will output the entire    *
+    16                                  ; array, then it will normalize the array to be between the values 1.0 and 2.0, and will output the entire array again.      *
+    17                                  ; After this second array output, the program will then sort the array (using C++ library functions) and will output the     *
+    18                                  ; array one last time for the user, this time sorted from least to greatest                                                  *
+    19                                  ;                                                                                                                            *
+    20                                  ; The program will then say goodbye to the user, and terminate the program                                                   *
+    21                                  ;                                                                                                                            *
+    22                                  ; This program is free software: you can redistribute it and/or modify it under the terms of the GNU General Public License  *
+    23                                  ; version 3 as published by the Free Software Foundation.  This program is distributed in the hope that it will be useful,   *
+    24                                  ; but WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See   *
+    25                                  ; the GNU General Public License for more details A copy of the GNU General Public License v3 is available here:             *
+    26                                  ; <https://www.gnu.org/licenses/>.                                                                                           *
+    27                                  ; ****************************************************************************************************************************/
+    28                                  
+    29                                  
+    30                                  ; /**********************************************************************************************************************************
+    31                                  ; Author information
+    32                                  ;   Author name: Nathan Warner
+    33                                  ;   Author email: nwarner4@csu.fullerton.edu
+    34                                  
+    35                                  ; Program information
+    36                                  ;   Program name: Non-deterministic Random Numbers
+    37                                  ;   Programming languages: One module in C, one module in C++, five modules in x86_64 assembly, and one module in bash
+    38                                  ;   Date program began: 2024-Apr-8
+    39                                  ;   Date of last update: 2024-Apr-11
+    40                                  ;   Files in this program: main.c, sort.cpp, manager.asm, fill_random_array.asm, isnan.asm, show_array.asm, normalize_array.asm, r.sh
+    41                                  ;   Testing: Alpha testing completed.  All functions are correct.
+    42                                  ;   Status: Ready for release to customers
+    43                                  
+    44                                  ; Purpose
+    45                                  ;   The program will create an array of size n, where n is input by the user, and between 1 and 100, and will create a random number
+    46                                  ;     array, will normalize the array between 1.0 and 2.0, and then sort the array
+    47                                  
+    48                                  ; This file:
+    49                                  ;   File name: show_array.asm
+    50                                  ;   Language: x86_64 assembly
+    51                                  ;   Max page width: 124 columns
+    52                                  ;   Assemble (standard): nasm -f elf64 -l show_array.lis -o show_array.o show_array.asm
+    53                                  ;   Optimal print specification: Landscape, 7 points, monospace, 8½x11 paper
+    54                                  ;   Prototype of this function: void show_array(double *arr, int size);
+    55                                  ; ***********************************************************************************************************************************/
+    56                                  
+    57                                  ;Declaration section.  The section has no name other than "Declaration section".  Declare here everything that does
+    58                                  ;not have its own place of declaration
+    59                                  
+    60                                  global show_array
+    61                                  
+    62                                  extern printf
+    63                                  
+    64                                  ; column_header_output db "IEEE %18s\nScientific Decimal"
+    65 00000000 494545453735340909-     header_output db "IEEE754			Scientific Decimal", 10, 0
+    65 00000009 09536369656E746966-
+    65 00000012 696320446563696D61-
+    65 0000001B 6C0A00             
+    66 0000001E 3078253031366C7820-     output_format db "0x%016lx      %-18.13g", 10, 0
+    66 00000027 2020202020252D3138-
+    66 00000030 2E3133670A00       
+    67                                  
+    68                                  float_size equ 60
+    69                                  
+    70                                  segment .data
+    71                                  ;This section (or segment) is for declaring initialized arrays
+    72                                  
+    73                                  segment .bss
+    74                                  ;This section (or segment) is for declaring empty arrays
+    75                                  
+    76                                  align 64
+    77 00000000 <res 340h>              backup_storage_area resb 832
+    78                                  
+    79                                  
+    80                                  segment .text
+    81                                  
+    82                                  show_array:
+    83                                  
+    84                                      ;Back up the GPRs (General Purpose Registers)
+    85 00000036 55                          push rbp
+    86 00000037 4889E5                      mov rbp, rsp
+    87 0000003A 53                          push rbx
+    88 0000003B 51                          push rcx
+    89 0000003C 52                          push rdx
+    90 0000003D 57                          push rdi
+    91 0000003E 56                          push rsi
+    92 0000003F 4150                        push r8
+    93 00000041 4151                        push r9
+    94 00000043 4152                        push r10
+    95 00000045 4153                        push r11
+    96 00000047 4154                        push r12
+    97 00000049 4155                        push r13
+    98 0000004B 4156                        push r14
+    99 0000004D 4157                        push r15
+   100 0000004F 9C                          pushf
+   101                                  
+   102                                      ;Backup the registers other than the GPRs
+   103 00000050 B807000000                  mov rax,7
+   104 00000055 BA00000000                  mov rdx,0
+   105 0000005A 0FAE2425[00000000]          xsave [backup_storage_area]
+   106                                  
+   107                                      ;Establish show_array variables
+   108 00000062 4989FD                      mov r13, rdi ;the array itself
+   109 00000065 4989F6                      mov r14, rsi ;array size
+   110 00000068 41BF00000000                mov r15, 0 ;r15 is the current index of the array
+   111                                  
+   112                                  
+   113                                  
+   114                                      ;Output column headers
+   115 0000006E B800000000                  mov rax, 0
+   116 00000073 48BF-                       mov rdi, header_output
+   116 00000075 [0000000000000000] 
+   117 0000007D E8(00000000)                call printf
+   118                                  
+   119                                  begin:
+   120                                  
+   121                                      ;Ends the loop if the current array index is the same as user input
+   122 00000082 4D39F7                      cmp r15, r14
+   123 00000085 7425                        je quit
+   124                                  
+   125                                      ;Output the values in this index of the array
+   126 00000087 B801000000                  mov rax, 1
+   127 0000008C 48BF-                       mov rdi, output_format
+   127 0000008E [1E00000000000000] 
+   128 00000096 4B8B74FD00                  mov rsi, [r13+r15*8]
+   129 0000009B F2430F1044FD00              movsd xmm0, [r13+r15*8]
+   130 000000A2 E8(00000000)                call printf
+   131                                  
+   132 000000A7 49FFC7                      inc r15
+   133 000000AA EBD6                        jmp begin
+   134                                  
+   135                                  
+   136                                  quit:
+   137                                  
+   138                                      ;Restore the values to non-GPRs
+   139 000000AC B807000000                  mov rax, 7
+   140 000000B1 BA00000000                  mov rdx, 0
+   141 000000B6 0FAE2C25[00000000]          xrstor [backup_storage_area]
+   142                                  
+   143                                  
+   144                                      ;Restore the GPRs
+   145 000000BE 9D                          popf
+   146 000000BF 415F                        pop r15
+   147 000000C1 415E                        pop r14
+   148 000000C3 415D                        pop r13
+   149 000000C5 415C                        pop r12
+   150 000000C7 415B                        pop r11
+   151 000000C9 415A                        pop r10
+   152 000000CB 4159                        pop r9
+   153 000000CD 4158                        pop r8
+   154 000000CF 5E                          pop rsi
+   155 000000D0 5F                          pop rdi
+   156 000000D1 5A                          pop rdx
+   157 000000D2 59                          pop rcx
+   158 000000D3 5B                          pop rbx
+   159 000000D4 5D                          pop rbp   ;Restore rbp to the base of the activation record of the caller program
+   160 000000D5 C3                          ret
+   161                                  ;End of the function show_array.asm ====================================================================

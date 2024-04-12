@@ -1,0 +1,150 @@
+     1                                  ; /***************************************************************************************************************************
+     2                                  ; Program name: "Non-deterministic Random Numbers" - This program will welcome the user to the program, then will ask        *
+     3                                  ; for their name and title. After welcoming the user, the program will give a description of what it does for the user       *
+     4                                  ;                                                                                                                            *
+     5                                  ; This program will generate 64-bit IEEE float numbers.                                                                      *
+     6                                  ; How many numbers do you want. Today's limit is 100 per customer:                                                           *
+     7                                  ; Your numbers have been stored in an array. Here is that array.                                                             *
+     8                                  ;                                                                                                                            *
+     9                                  ; The program will then take in user input for the size of the array that they want, if the user inputs a number greater     *
+    10                                  ; than 100, or a negative number, the program will tell them that they have entered an invalid input, and to try again       *
+    11                                  ;                                                                                                                            *
+    12                                  ; "Invalid array size...Try again:                                                                                           *
+    13                                  ;                                                                                                                            *
+    14                                  ; Once the user has input a valid array size, the program lets them know it is generating n random numbers, where n is the   *
+    15                                  ; array size the user input above. Once the array has been filled with random numbers, the program will output the entire    *
+    16                                  ; array, then it will normalize the array to be between the values 1.0 and 2.0, and will output the entire array again.      *
+    17                                  ; After this second array output, the program will then sort the array (using C++ library functions) and will output the     *
+    18                                  ; array one last time for the user, this time sorted from least to greatest                                                  *
+    19                                  ;                                                                                                                            *
+    20                                  ; The program will then say goodbye to the user, and terminate the program                                                   *
+    21                                  ;                                                                                                                            *
+    22                                  ; This program is free software: you can redistribute it and/or modify it under the terms of the GNU General Public License  *
+    23                                  ; version 3 as published by the Free Software Foundation.  This program is distributed in the hope that it will be useful,   *
+    24                                  ; but WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See   *
+    25                                  ; the GNU General Public License for more details A copy of the GNU General Public License v3 is available here:             *
+    26                                  ; <https://www.gnu.org/licenses/>.                                                                                           *
+    27                                  ; ****************************************************************************************************************************/
+    28                                  
+    29                                  
+    30                                  ; /**********************************************************************************************************************************
+    31                                  ; Author information
+    32                                  ;   Author name: Nathan Warner
+    33                                  ;   Author email: nwarner4@csu.fullerton.edu
+    34                                  
+    35                                  ; Program information
+    36                                  ;   Program name: Non-deterministic Random Numbers
+    37                                  ;   Programming languages: One module in C, one module in C++, five modules in x86_64 assembly, and one module in bash
+    38                                  ;   Date program began: 2024-Apr-8
+    39                                  ;   Date of last update: 2024-Apr-11
+    40                                  ;   Files in this program: main.c, sort.cpp, manager.asm, fill_random_array.asm, isnan.asm, show_array.asm, normalize_array.asm, r.sh
+    41                                  ;   Testing: Alpha testing completed.  All functions are correct.
+    42                                  ;   Status: Ready for release to customers
+    43                                  
+    44                                  ; Purpose
+    45                                  ;   The program will create an array of size n, where n is input by the user, and between 1 and 100, and will create a random number
+    46                                  ;     array, will normalize the array between 1.0 and 2.0, and then sort the array
+    47                                  
+    48                                  ; This file:
+    49                                  ;   File name: isnan.asm
+    50                                  ;   Language: x86_64 assembly
+    51                                  ;   Max page width: 124 columns
+    52                                  ;   Assemble (standard): nasm -f elf64 -l isnan.lis -o isnan.o isnan.asm
+    53                                  ;   Optimal print specification: Landscape, 7 points, monospace, 8½x11 paper
+    54                                  ;   Prototype of this function: bool isnan(double num);
+    55                                  ; ***********************************************************************************************************************************/
+    56                                  
+    57                                  ;Declaration section.  The section has no name other than "Declaration section".  Declare here everything that does
+    58                                  ;not have its own place of declaration
+    59                                  
+    60                                  global isnan
+    61                                  
+    62                                  extern printf
+    63                                  
+    64                                  
+    65                                  float_size equ 60
+    66                                  
+    67                                  segment .data
+    68                                  ;This section (or segment) is for declaring initialized arrays
+    69                                  
+    70                                  segment .bss
+    71                                  ;This section (or segment) is for declaring empty arrays
+    72                                  
+    73                                  align 64
+    74 00000000 <res 340h>              backup_storage_area resb 832
+    75                                  
+    76                                  
+    77                                  segment .text
+    78                                  
+    79                                  isnan:
+    80                                  
+    81                                      ;Back up the GPRs (General Purpose Registers)
+    82 00000000 55                          push rbp
+    83 00000001 4889E5                      mov rbp, rsp
+    84 00000004 53                          push rbx
+    85 00000005 51                          push rcx
+    86 00000006 52                          push rdx
+    87 00000007 57                          push rdi
+    88 00000008 56                          push rsi
+    89 00000009 4150                        push r8
+    90 0000000B 4151                        push r9
+    91 0000000D 4152                        push r10
+    92 0000000F 4153                        push r11
+    93 00000011 4154                        push r12
+    94 00000013 4155                        push r13
+    95 00000015 4156                        push r14
+    96 00000017 4157                        push r15
+    97 00000019 9C                          pushf
+    98                                  
+    99                                      ;Backup the registers other than the GPRs
+   100 0000001A B807000000                  mov rax,7
+   101 0000001F BA00000000                  mov rdx,0
+   102 00000024 0FAE2425[00000000]          xsave [backup_storage_area]
+   103                                  
+   104 0000002C 4989FE                      mov r14, rdi ;r14 will hold the value passed into isnan
+   105 0000002F 49BFFFFFFFFFFFFFEF-         mov r15, 0x7FEFFFFFFFFFFFFF ;r15 will hold the value right before a float would be considered a nan
+   105 00000038 7F                 
+   106                                  
+   107 00000039 4D39FE                      cmp r14, r15
+   108 0000003C 7F02                        jg return_true
+   109                                  
+   110 0000003E EB09                        jmp return_false
+   111                                  
+   112                                  
+   113                                  
+   114                                  return_true:
+   115                                  
+   116 00000040 48C7C0FFFFFFFF              mov rax, -1
+   117 00000047 EB07                        jmp quit
+   118                                  
+   119                                  return_false:
+   120                                  
+   121 00000049 B800000000                  mov rax, 0
+   122 0000004E EB00                        jmp quit
+   123                                  
+   124                                  quit:
+   125                                  
+   126                                      ;Restore the values to non-GPRs
+   127 00000050 B807000000                  mov rax, 7
+   128 00000055 BA00000000                  mov rdx, 0
+   129 0000005A 0FAE2C25[00000000]          xrstor [backup_storage_area]
+   130                                      
+   131                                  
+   132                                      ;Restore the GPRs
+   133 00000062 9D                          popf
+   134 00000063 415F                        pop r15
+   135 00000065 415E                        pop r14
+   136 00000067 415D                        pop r13
+   137 00000069 415C                        pop r12
+   138 0000006B 415B                        pop r11
+   139 0000006D 415A                        pop r10
+   140 0000006F 4159                        pop r9
+   141 00000071 4158                        pop r8
+   142 00000073 5E                          pop rsi
+   143 00000074 5F                          pop rdi
+   144 00000075 5A                          pop rdx
+   145 00000076 59                          pop rcx
+   146 00000077 5B                          pop rbx
+   147 00000078 5D                          pop rbp   ;Restore rbp to the base of the activation record of the caller program
+   148 00000079 C3                          ret
+   149                                  ;End of the function isnan.asm ====================================================================

@@ -47,26 +47,21 @@ Purpose
     array, will normalize the array between 1.0 and 2.0, and then sort the array
 
 This file:
-  File name: main.c
-  Language: C
+  File name: sort.cpp
+  Language: C++
   Max page width: 124 columns
-  Assemble (standard): gcc  -m64 -Wall -no-pie -o main.o -std=c2x -c main.c
+  Assemble (standard): g++  -c -m64 -Wall -fno-pie -no-pie -o sort.o sort.cpp
   Optimal print specification: Landscape, 7 points, monospace, 8½x11 paper
-  Prototype of this function: int main(int argc, const char * argv[]);
+  Prototype of this function: void sort(double *arr, int size)
 ***********************************************************************************************************************************/
 
-
 #include <stdio.h>
-#include <math.h>
+#include <algorithm>
+#include <iostream>
 
-extern char* manager();
+extern "C" void sort(double *arr, int size);
 
-int main(int argc, const char * argv[])
-{printf("\nWelcome to Random Products, LLC\n");
- printf("This software is maintained by Nathan Warner\n");
- char* userName = manager();
- printf("\nOh, %s. We hope you enjoyed your arrays. Do come again.\n", userName);
- printf("A zero will be sent to the operating system.\n");
+void sort(double *arr, int size) {
+    std::sort(arr, arr+size, std::less<double>());
 }
-
-//End of the function main.c ====================================================================
+//End of the function sort.cpp ====================================================================

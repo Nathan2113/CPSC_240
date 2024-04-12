@@ -1,6 +1,7 @@
 {
     "files.eol": "\n",
     "files.associations": {
-        "math.h": "c"
+        "math.h": "c",
+        "string": "c"
     }
 }
