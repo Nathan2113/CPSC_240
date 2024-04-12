@@ -51,7 +51,6 @@
 #   Language: Bash
 #   Max page width: 124 columns
 #   Optimal print specification: Landscape, 7 points, monospace, 8½x11 paper
-#   Prototype of this function: int main(int argc, const char * argv[]);
 # ***********************************************************************************************************************************/
 
 
