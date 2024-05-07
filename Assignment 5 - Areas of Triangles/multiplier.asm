@@ -60,17 +60,17 @@
 ;Declaration section.  The section has no name other than "Declaration section".  Declare here everything that does
 ;not have its own place of declaration
 
-global sin
+global multiplier
 
-extern multiplier
-extern printf ;REMOVE
+extern printf
 
 ; float_size equ 60
 
 segment .data
 ;This section (or segment) is for declaring initialized arrays
-
-test_val db 10, "The test value is: %1.15lf", 0
+test_num db 10, "The test numerator is: %1.5lf", 0
+test_denom db 10, "The test denominator is: %1.5lf", 0
+test_val db 10, "The test value is: %1.5lf", 0
 format db "%lf", 0
 
 segment .bss
@@ -83,7 +83,7 @@ array resq 12 ;Array of 12 qwords, will be used to take in user inputs for float
 
 segment .text
 
-sin:
+multiplier:
 
     ;Back up the GPRs (General Purpose Registers)
     push rbp
@@ -109,66 +109,63 @@ sin:
     xsave [backup_storage_area]
 
 
-    ;Setting up registers for sin
-    mov r14, 0 ;Term counter
-    movsd xmm9, xmm0 ;Permanent (constant)
-    movsd xmm8, xmm0 ;Current term
-    pxor xmm10, xmm10 ;xmm10 will hold sin(x)
+    ;Setting up registers for multiplier
+    mov rbx, rdi ;term counter
+    movsd xmm13, xmm0 ;xmm13 = x(constant)
+    mulsd xmm13, xmm13 ;xmm13 = x^2
+    mov r8, -1
+
+    cvtsi2sd xmm12, r8 ;Converting -1 to -1.0 and storing it into xmm12
+
+    mulsd xmm13, xmm12 ;xmm13 = -x^2
+
+    ;work on denominator
+    ;mov the value of 2 into rax to correctly use mul, which multiplies the specified register by rax
+    ; mov rax, 2
+    imul rbx, 2
+    add rbx, 2 ;rbx = 2n + 2
+    mov rcx, rbx
+    inc rcx ;rcx = 2n + 3
+    ; mov rax, rcx
+    imul rbx, rcx
+    
+
+    cvtsi2sd xmm14, rbx ;xmm14 is now the denominator
 
     ; ;TESTING OUTPUT
     ; mov rax, 1
     ; mov rdi, test_val
     ; mov rsi, format
-    ; movsd xmm0, xmm8
+    ; movsd xmm0, xmm14
     ; call printf
 
+    ; ;TESTING OUTPUT
+    ; mov rax, 1
+    ; mov rdi, test_num
+    ; mov rsi, format
+    ; movsd xmm0, xmm13
+    ; call printf
 
-multiplier_loop:   
-    ;Calling multiplier
-    mov rax, 1
-    mov rdi, r14 ;Term counter
-    movsd xmm0, xmm9 ;Value for x
-    call multiplier
-    movsd xmm12, xmm0
+    ; ;TESTING OUTPUT
+    ; mov rax, 1
+    ; mov rdi, test_denom
+    ; mov rsi, format
+    ; movsd xmm0, xmm14
+    ; call printf
 
+    divsd xmm13, xmm14 ;Final division
 
-    ; ;TESTING XMM12 -> multiplier working correctly
+    ; ;TESTING OUTPUT
     ; mov rax, 1
     ; mov rdi, test_val
     ; mov rsi, format
-    ; movsd xmm0, xmm12
+    ; movsd xmm0, xmm13
     ; call printf
 
-    mulsd xmm8, xmm12
-    inc r14
 
-
-
-    addsd xmm10, xmm8
-
-    ; ;TESTING XMM VALUE
-    ; mov rax, 1
-    ; mov rdi, test_val
-    ; mov rsi, format
-    ; movsd xmm0, xmm10
-    ; call printf
-
-    cmp r14, 20
-    jle multiplier_loop
-
-exit:
-    addsd xmm9, xmm10
-
-    ; ;TESTING XMM VALUE
-    ; mov rax, 1
-    ; mov rdi, test_val
-    ; mov rsi, format
-    ; movsd xmm0, xmm9
-    ; call printf
-
-    ;Back up value in xmm9 before restoring registers
+    ;Back up value in xmm13 before restoring registers
     push qword 0
-    movsd [rsp], xmm9
+    movsd [rsp], xmm13
 
 
 

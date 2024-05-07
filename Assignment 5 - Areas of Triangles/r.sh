@@ -63,14 +63,23 @@
 rm *.o
 rm *.out
 
-echo "Assemble the source file main.asm"
-nasm -f elf64 -l main.lis -o main.o main.asm
+echo "Assemble the source file main.c"
+gcc -m64 -Wall -no-pie -o main.o -std=c2x -c main.c
 
-echo "Assemble the source file producer"
+echo "Assemble the source file producer.asm"
 nasm -f elf64 -l producer.lis -o producer.o producer.asm
 
+echo "Assemble the source file sin.asm"
+nasm -f elf64 -l sin.lis -o sin.o sin.asm
+
+echo "Assemble the source file strlen.asm"
+nasm -f elf64 -l strlen.lis -o strlen.o strlen.asm
+
+echo "Assemble the source file multiplier.asm"
+nasm -f elf64 -l multiplier.lis -o multiplier.o multiplier.asm
+
 echo "Link the object modules to create an executable file"
-g++ -m64 -Wall -no-pie -o main.out isfloat.o main.o producer.o compute_mean.o output_array.o compute_variance.o  -std=c2x -c noexecstack -lm
+gcc -m64 -Wall -no-pie -o main.out  main.o producer.o sin.o strlen.o multiplier.o -std=c2x -z noexecstack -lm
 
 echo "Execute the program"
 chmod +x main.out

@@ -65,6 +65,10 @@ global producer
 extern sin
 extern atof
 extern ftoa
+extern strlen
+
+
+extern printf ;REMOVE
 
 
 ; float_size equ 60
@@ -72,18 +76,38 @@ extern ftoa
 segment .data
 ;This section (or segment) is for declaring initialized arrays
 
+side_1_prompt db "Please enter the length of side 1: ", 0 ;String size: 35
+side_2_prompt db "Please enter the length of side 2: ", 0 ;String size: 35
+angle_prompt db "Please enter the degrees of the angle between: ", 0 ;String size: 47
+output_area db "The area of the triangle is %1.5lf square feet.", 0 ;String size: 47
+area_output db "The area of the triangle is %1.5lf square feet.", 0 ;String size: 47 (MAY BE SUBJECT TO CHANGE)
+thank_you_message db "Thank you for using Nathan's product.", 0 ;String size: 37
+sin_test db 10, "The sin of x is: %1.5lf", 0 ;String size 24 GET RID OF NEWLINE
+test_area db 10, "The area is: %1.6lf", 0 ;REMOVE
+test_val db 10, "The value is: %1.6lf", 10, 0 ;REMOVE
+format db "%lf", 0
+newline db 10
+
+
+angle_180 dq 180.0
+pi dq 3.14159265359
+two dq 2.0
+side_one dq 13.7
+side_two dq 8.955
+angle dq 27.455
 
 segment .bss
 ;This section (or segment) is for declaring empty arrays
 
 align 64
 backup_storage_area resb 832
-array resq 12 ;Array of 12 qwords, will be used to take in user inputs for floats, as well as computing the mean and variance
-
+side_1 resb 12
+side_2 resb 12
+angle_input resb 12
 
 segment .text
 
-manager:
+producer:
 
     ;Back up the GPRs (General Purpose Registers)
     push rbp
@@ -109,8 +133,234 @@ manager:
     xsave [backup_storage_area]
 
 
+    ;Block that outputs the first side prompt
+    mov rax, 1 ;1 is the write code
+    mov rdi, 1 ;Destination of the output device
+    mov rsi, side_1_prompt ;"Please enter the length of side 1: "
+    mov rdx, 35 ;String size
+    syscall
 
 
+    ;Block that takes user input for the first side
+    mov rax, 0 ;0 = read
+    mov rdi, 0 ;0 = stdin
+    mov r8, side_1
+    mov rdx, 5
+    syscall
+
+    ; ;Block that removes the newline
+    ; mov rax, 0
+    ; mov rdi, rsp
+    ; call strlen
+    ; mov [rsp + rax - 1], byte 0
+
+    ; ;Block that outputs a newline
+    ; mov rax, 1 ;1 is the write code
+    ; mov rdi, 1 ;Destination of the output device
+    ; mov rsi, newline ;Just a newline character (10)
+    ; mov rdx, 1 ;String size
+    ; syscall
+
+
+    ; ;Block that converts the string input by the user for the first side into a float
+    ; mov rax, 0
+    ; mov rdi, rcx
+    ; call atof
+    ; movsd xmm8, xmm0
+
+    ; ;TESTING VALUE
+    ; mov rax, 0
+    ; mov rdi, test_val
+    ; mov rsi, format
+    ; movsd xmm0, xmm8
+    ; call printf
+
+
+
+    ;Block that outputs the second side prompt
+    mov rax, 1 ;1 is the write code
+    mov rdi, 1 ;Destination of the output device
+    mov r9, side_2_prompt ;"Please enter the length of side 2: "
+    mov rdx, 35 ;String size
+    syscall
+
+
+
+    ;Block that takes user input for the second side
+    mov rax, 0 ;0 = read
+    mov rdi, 0 ;0 = stdin
+    mov rsi, side_2
+    mov rdx, 8
+    syscall
+
+
+    ;Block that outputs a newline
+    mov rax, 1 ;1 is the write code
+    mov rdi, 1 ;Destination of the output device
+    mov rsi, newline ;Just a newline character (10)
+    mov rdx, 1 ;String size
+    syscall
+
+
+    ;Block that converts the string input by the user for the second side into a float
+    mov rax, 0
+    mov rdi, rsp
+    call atof
+    movsd xmm9, xmm0
+
+    ;TESTING VALUE
+    mov rax, 0
+    mov rdi, test_val
+    mov rsi, format
+    movsd xmm0, xmm9
+    call printf
+
+
+
+    ; ;Block that outputs a newline
+    ; mov rax, 1 ;1 is the write code
+    ; mov rdi, 1 ;Destination of the output device
+    ; mov rsi, newline ;Just a newline character (10)
+    ; mov rdx, 1 ;String size
+    ; syscall
+
+
+
+
+    ;Block that outputs the angle prompt
+    mov rax, 1 ;1 is the write code
+    mov rdi, 1 ;Destination of the output device
+    mov rsi, angle_prompt ;"Please enter the degrees of the angle between: "
+    mov rdx, 47 ;String size
+    syscall
+
+
+    ;Block that takes user input for the angle
+    mov rax, 0 ;0 = read
+    mov rdi, 0 ;0 = stdin
+    mov r10, angle_input
+    mov rdx, 8
+    syscall
+
+
+    ;Block that outputs a newline
+    mov rax, 1 ;1 is the write code
+    mov rdi, 1 ;Destination of the output device
+    mov rsi, newline ;Just a newline character (10)
+    mov rdx, 1 ;String size
+    syscall
+
+
+    ;Block that converts the string input by the user for the angle into a float
+    mov rax, 0
+    mov rdi, rsp
+    call atof
+    movsd xmm10, xmm0
+
+
+    ;TESTING VALUE
+    mov rax, 0
+    mov rdi, test_val
+    mov rsi, format
+    movsd xmm0, xmm10
+    call printf
+
+    ; ;Block that outputs a newline
+    ; mov rax, 1 ;1 is the write code
+    ; mov rdi, 1 ;Destination of the output device
+    ; mov rsi, newline ;Just a newline character (10)
+    ; mov rdx, 1 ;String size
+    ; syscall
+
+
+    ; ;CONVERTING FROM DEGREES TO RADIANS (OLD FUNCTION)
+    ; movsd xmm8, qword [angle]
+    ; movsd xmm9, qword [angle_180]
+    ; movsd xmm10, qword [pi]
+    ; divsd xmm10, xmm9
+    ; mulsd xmm8, xmm10
+
+    ;CONVERTING FROM DEGREES TO RADIANS
+    movsd xmm12, qword [angle_180]
+    movsd xmm11, qword [pi]
+    divsd xmm11, xmm12
+    mulsd xmm10, xmm11
+
+    ;TESTING SIN FUNCTION
+    mov rax, 1
+    movsd xmm0, xmm10
+    call sin
+    movsd xmm15, xmm0
+
+    ;BLOCK TESTING SIN FUNCTION OUTPUT
+    mov rax, 1
+    mov rdi, sin_test
+    mov rsi, format
+    movsd xmm0, xmm15
+    call printf
+
+
+    ;Computing the area of the triangle after finding sine
+    ;The formula being used is 1/2 * a * b * sin(x) where:
+    ;a = the length of the first side
+    ;b = the length of the second side
+    ;x = the angle in degrees
+    ;xmm13 holds side 1
+    ;xmm14 holds side 2
+    ;xmm15 holds sin(x)
+
+    movsd xmm13, qword [side_one]
+    movsd xmm14, qword [side_two]
+    mulsd xmm13, xmm14
+    mulsd xmm13, xmm15
+    divsd xmm13, qword [two]
+
+    ;TESTING AREA
+    mov rax, 1
+    mov rdi, test_area
+    mov rsi, format
+    movsd xmm0, xmm13
+    call printf
+    
+    
+
+
+
+    ;Block that outputs the area
+    mov rax, 1 ;1 is the write code
+    mov rdi, 1 ;Destination of the output device
+    mov rsi, area_output ;"The area of this triangle is %1.5lf square feet."
+    mov rdx, 47 ;String size
+    syscall
+
+
+
+    ;Block that outputs a newline
+    mov rax, 1 ;1 is the write code
+    mov rdi, 1 ;Destination of the output device
+    mov rsi, newline ;Just a newline character (10)
+    mov rdx, 1 ;String size
+    syscall
+
+
+
+
+    ;Block that outputs thank you message
+    mov rax, 1 ;1 is the write code
+    mov rdi, 1 ;Destination of the output device
+    mov rsi, thank_you_message ;"Thank you for using Nathan's product."
+    mov rdx, 37 ;String size
+    syscall
+
+
+
+
+    ;Block that outputs a newline
+    mov rax, 1 ;1 is the write code
+    mov rdi, 1 ;Destination of the output device
+    mov rsi, newline ;Just a newline character (10)
+    mov rdx, 1 ;String size
+    syscall
 
 
 

@@ -64,11 +64,12 @@ This file:
 extern double producer();
 
 int main(int argc, const char * argv[])
-{printf("\nWelcome to Arrays fo floating point numbers.\nBrought to you by Nathan Warner\n");
- double variance = 0;
- variance = producer();
- printf("\nThe driver has received this number %1.10f and will keep it for future use.\n",variance);
- printf("Main will return 0 to the operating system. Bye.\n");
+{printf("\nWelcome to Nathan Warner's Area Machine\n");
+printf("We compute all your areas.\n");
+ double area = 0;
+ area = producer();
+ printf("\nThe driver has received this number %1.5f and will keep it for future use.\n",area);
+ printf("A zero will be sent to the OS as a sign of successful conclusion.\nBye");
 }
 
 //End of the function main.c ====================================================================
