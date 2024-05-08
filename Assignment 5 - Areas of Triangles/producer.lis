@@ -66,394 +66,462 @@
     66                                  extern atof
     67                                  extern ftoa
     68                                  extern strlen
-    69                                  
+    69                                  extern gcvt
     70                                  
-    71                                  extern printf ;REMOVE
-    72                                  
+    71                                  
+    72                                  extern printf ;REMOVE
     73                                  
-    74                                  ; float_size equ 60
-    75                                  
-    76                                  segment .data
-    77                                  ;This section (or segment) is for declaring initialized arrays
-    78                                  
-    79 00000000 506C6561736520656E-     side_1_prompt db "Please enter the length of side 1: ", 0 ;String size: 35
-    79 00000009 74657220746865206C-
-    79 00000012 656E677468206F6620-
-    79 0000001B 7369646520313A2000 
-    80 00000024 506C6561736520656E-     side_2_prompt db "Please enter the length of side 2: ", 0 ;String size: 35
-    80 0000002D 74657220746865206C-
-    80 00000036 656E677468206F6620-
-    80 0000003F 7369646520323A2000 
-    81 00000048 506C6561736520656E-     angle_prompt db "Please enter the degrees of the angle between: ", 0 ;String size: 47
-    81 00000051 746572207468652064-
-    81 0000005A 656772656573206F66-
-    81 00000063 2074686520616E676C-
-    81 0000006C 65206265747765656E-
-    81 00000075 3A2000             
-    82 00000078 546865206172656120-     output_area db "The area of the triangle is %1.5lf square feet.", 0 ;String size: 47
-    82 00000081 6F6620746865207472-
-    82 0000008A 69616E676C65206973-
-    82 00000093 2025312E356C662073-
-    82 0000009C 717561726520666565-
-    82 000000A5 742E00             
-    83 000000A8 546865206172656120-     area_output db "The area of the triangle is %1.5lf square feet.", 0 ;String size: 47 (MAY BE SUBJECT TO CHANGE)
-    83 000000B1 6F6620746865207472-
-    83 000000BA 69616E676C65206973-
-    83 000000C3 2025312E356C662073-
-    83 000000CC 717561726520666565-
-    83 000000D5 742E00             
-    84 000000D8 5468616E6B20796F75-     thank_you_message db "Thank you for using Nathan's product.", 0 ;String size: 37
-    84 000000E1 20666F72207573696E-
-    84 000000EA 67204E617468616E27-
-    84 000000F3 732070726F64756374-
-    84 000000FC 2E00               
-    85 000000FE 0A5468652073696E20-     sin_test db 10, "The sin of x is: %1.5lf", 0 ;String size 24 GET RID OF NEWLINE
-    85 00000107 6F6620782069733A20-
-    85 00000110 25312E356C6600     
-    86 00000117 0A5468652061726561-     test_area db 10, "The area is: %1.6lf", 0 ;REMOVE
-    86 00000120 2069733A2025312E36-
-    86 00000129 6C6600             
-    87 0000012C 0A5468652076616C75-     test_val db 10, "The value is: %1.6lf", 10, 0 ;REMOVE
-    87 00000135 652069733A2025312E-
-    87 0000013E 366C660A00         
-    88 00000143 256C6600                format db "%lf", 0
-    89 00000147 0A                      newline db 10
-    90                                  
-    91                                  
-    92 00000148 0000000000806640        angle_180 dq 180.0
-    93 00000150 EA2E4454FB210940        pi dq 3.14159265359
-    94 00000158 0000000000000040        two dq 2.0
-    95 00000160 6666666666662B40        side_one dq 13.7
-    96 00000168 295C8FC2F5E82140        side_two dq 8.955
-    97 00000170 14AE47E17A743B40        angle dq 27.455
-    98                                  
-    99                                  segment .bss
-   100                                  ;This section (or segment) is for declaring empty arrays
-   101                                  
-   102                                  align 64
-   103 00000000 <res 340h>              backup_storage_area resb 832
-   104 00000340 <res Ch>                side_1 resb 12
-   105 0000034C <res Ch>                side_2 resb 12
-   106 00000358 <res Ch>                angle_input resb 12
-   107                                  
-   108                                  segment .text
-   109                                  
-   110                                  producer:
-   111                                  
-   112                                      ;Back up the GPRs (General Purpose Registers)
-   113 00000000 55                          push rbp
-   114 00000001 4889E5                      mov rbp, rsp
-   115 00000004 53                          push rbx
-   116 00000005 51                          push rcx
-   117 00000006 52                          push rdx
-   118 00000007 57                          push rdi
-   119 00000008 56                          push rsi
-   120 00000009 4150                        push r8
-   121 0000000B 4151                        push r9
-   122 0000000D 4152                        push r10
-   123 0000000F 4153                        push r11
-   124 00000011 4154                        push r12
-   125 00000013 4155                        push r13
-   126 00000015 4156                        push r14
-   127 00000017 4157                        push r15
-   128 00000019 9C                          pushf
-   129                                  
-   130                                      ;Backup the registers other than the GPRs
-   131 0000001A B807000000                  mov rax,7
-   132 0000001F BA00000000                  mov rdx,0
-   133 00000024 0FAE2425[00000000]          xsave [backup_storage_area]
-   134                                  
+    74                                  
+    75                                  ; float_size equ 60
+    76                                  numeric_string_array_size equ 32
+    77                                  line_feed equ 10
+    78                                  null equ 0
+    79                                  
+    80                                  segment .data
+    81                                  ;This section (or segment) is for declaring initialized arrays
+    82                                  
+    83 00000000 506C6561736520656E-     side_1_prompt db "Please enter the length of side 1: ", 0 ;String size: 35
+    83 00000009 74657220746865206C-
+    83 00000012 656E677468206F6620-
+    83 0000001B 7369646520313A2000 
+    84 00000024 506C6561736520656E-     side_2_prompt db "Please enter the length of side 2: ", 0 ;String size: 35
+    84 0000002D 74657220746865206C-
+    84 00000036 656E677468206F6620-
+    84 0000003F 7369646520323A2000 
+    85 00000048 506C6561736520656E-     angle_prompt db "Please enter the degrees of the angle between: ", 0 ;String size: 47
+    85 00000051 746572207468652064-
+    85 0000005A 656772656573206F66-
+    85 00000063 2074686520616E676C-
+    85 0000006C 65206265747765656E-
+    85 00000075 3A2000             
+    86 00000078 546865206172656120-     output_area db "The area of the triangle is %1.5lf square feet.", 0 ;String size: 47
+    86 00000081 6F6620746865207472-
+    86 0000008A 69616E676C65206973-
+    86 00000093 2025312E356C662073-
+    86 0000009C 717561726520666565-
+    86 000000A5 742E00             
+    87 000000A8 546865206172656120-     area_output_1 db "The area of the triangle is ", 0
+    87 000000B1 6F6620746865207472-
+    87 000000BA 69616E676C65206973-
+    87 000000C3 2000               
+    88 000000C5 207371756172652066-     area_output_2 db " square feet.", 0
+    88 000000CE 6565742E00         
+    89 000000D3 5468616E6B20796F75-     thank_you_message db "Thank you for using Nathan's product.", 0 ;String size: 37
+    89 000000DC 20666F72207573696E-
+    89 000000E5 67204E617468616E27-
+    89 000000EE 732070726F64756374-
+    89 000000F7 2E00               
+    90 000000F9 0A5468652073696E20-     sin_test db 10, "The sin of x is: %1.5lf", 0 ;String size 24 GET RID OF NEWLINE
+    90 00000102 6F6620782069733A20-
+    90 0000010B 25312E356C6600     
+    91                                  ; test_area db 10, "The area is: %1.6lf", 0 ;REMOVE
+    92                                  ; test_val db 10, "The value is: %1.6lf", 10, 0 ;REMOVE
+    93 00000112 256C6600                format db "%lf", 0
+    94 00000116 0A                      newline db 10
+    95 00000117 0A4920616D20776F72-     test_seg db 10, "I am working", 10, 10, 0
+    95 00000120 6B696E670A0A00     
+    96                                  
+    97 00000127 0000000000806640        angle_180 dq 180.0
+    98 0000012F EA2E4454FB210940        pi dq 3.14159265359
+    99 00000137 0000000000000040        two dq 2.0
+   100                                  ; side_one dq 13.7
+   101                                  ; side_two dq 8.955
+   102                                  ; angle dq 27.455
+   103                                  
+   104                                  segment .bss
+   105                                  ;This section (or segment) is for declaring empty arrays
+   106                                  
+   107                                  align 64
+   108 00000000 <res 340h>              backup_storage_area resb 832
+   109 00000340 <res 20h>               first_side resb numeric_string_array_size
+   110 00000360 <res 20h>               second_side resb numeric_string_array_size
+   111 00000380 <res 20h>               angle resb numeric_string_array_size
+   112 000003A0 <res 20h>               area_output resb numeric_string_array_size
+   113                                  
+   114                                  segment .text
+   115                                  
+   116                                  producer:
+   117                                  
+   118                                      ;Back up the GPRs (General Purpose Registers)
+   119 00000000 55                          push rbp
+   120 00000001 4889E5                      mov rbp, rsp
+   121 00000004 53                          push rbx
+   122 00000005 51                          push rcx
+   123 00000006 52                          push rdx
+   124 00000007 57                          push rdi
+   125 00000008 56                          push rsi
+   126 00000009 4150                        push r8
+   127 0000000B 4151                        push r9
+   128 0000000D 4152                        push r10
+   129 0000000F 4153                        push r11
+   130 00000011 4154                        push r12
+   131 00000013 4155                        push r13
+   132 00000015 4156                        push r14
+   133 00000017 4157                        push r15
+   134 00000019 9C                          pushf
    135                                  
-   136                                      ;Block that outputs the first side prompt
-   137 0000002C B801000000                  mov rax, 1 ;1 is the write code
-   138 00000031 BF01000000                  mov rdi, 1 ;Destination of the output device
-   139 00000036 48BE-                       mov rsi, side_1_prompt ;"Please enter the length of side 1: "
-   139 00000038 [0000000000000000] 
-   140 00000040 BA23000000                  mov rdx, 35 ;String size
-   141 00000045 0F05                        syscall
-   142                                  
-   143                                  
-   144                                      ;Block that takes user input for the first side
-   145 00000047 B800000000                  mov rax, 0 ;0 = read
-   146 0000004C BF00000000                  mov rdi, 0 ;0 = stdin
-   147 00000051 49B8-                       mov r8, side_1
-   147 00000053 [4003000000000000] 
-   148 0000005B BA05000000                  mov rdx, 5
-   149 00000060 0F05                        syscall
-   150                                  
-   151                                      ; ;Block that removes the newline
-   152                                      ; mov rax, 0
-   153                                      ; mov rdi, rsp
-   154                                      ; call strlen
-   155                                      ; mov [rsp + rax - 1], byte 0
-   156                                  
-   157                                      ; ;Block that outputs a newline
-   158                                      ; mov rax, 1 ;1 is the write code
-   159                                      ; mov rdi, 1 ;Destination of the output device
-   160                                      ; mov rsi, newline ;Just a newline character (10)
-   161                                      ; mov rdx, 1 ;String size
-   162                                      ; syscall
-   163                                  
-   164                                  
-   165                                      ; ;Block that converts the string input by the user for the first side into a float
-   166                                      ; mov rax, 0
-   167                                      ; mov rdi, rcx
-   168                                      ; call atof
-   169                                      ; movsd xmm8, xmm0
-   170                                  
-   171                                      ; ;TESTING VALUE
-   172                                      ; mov rax, 0
-   173                                      ; mov rdi, test_val
-   174                                      ; mov rsi, format
-   175                                      ; movsd xmm0, xmm8
-   176                                      ; call printf
-   177                                  
-   178                                  
-   179                                  
-   180                                      ;Block that outputs the second side prompt
-   181 00000062 B801000000                  mov rax, 1 ;1 is the write code
-   182 00000067 BF01000000                  mov rdi, 1 ;Destination of the output device
-   183 0000006C 49B9-                       mov r9, side_2_prompt ;"Please enter the length of side 2: "
-   183 0000006E [2400000000000000] 
-   184 00000076 BA23000000                  mov rdx, 35 ;String size
-   185 0000007B 0F05                        syscall
-   186                                  
+   136                                      ;Backup the registers other than the GPRs
+   137 0000001A B807000000                  mov rax,7
+   138 0000001F BA00000000                  mov rdx,0
+   139 00000024 0FAE2425[00000000]          xsave [backup_storage_area]
+   140                                  
+   141                                      
+   142                                      ;Block to obtain the string length of the first side prompt
+   143 0000002C B800000000                  mov rax, 0
+   144 00000031 48BF-                       mov rdi, side_1_prompt
+   144 00000033 [0000000000000000] 
+   145 0000003B E8(00000000)                call strlen
+   146 00000040 4989C4                      mov r12, rax ;r12 holds the string length of the first side prompt
+   147                                  
+   148                                  
+   149                                      ;Block that outputs the first side prompt
+   150 00000043 B801000000                  mov rax, 1 ;1 is the write code
+   151 00000048 BF01000000                  mov rdi, 1 ;stdout
+   152 0000004D 48BE-                       mov rsi, side_1_prompt ;"Please enter the length of side 1: "
+   152 0000004F [0000000000000000] 
+   153 00000057 4C89E2                      mov rdx, r12 ;String size
+   154 0000005A 0F05                        syscall
+   155                                  
+   156                                      ;Preloop initialization
+   157 0000005C 48BB-                       mov rbx, first_side
+   157 0000005E [4003000000000000] 
+   158 00000066 41BC00000000                mov r12, 0 ;r12 is the counter of number of bytes inputted
+   159 0000006C 6A00                        push qword 0 ;Storage for incoming bytes
+   160                                  
+   161                                  first_side_loop:
+   162 0000006E B800000000                  mov rax, 0 ;0 = read
+   163 00000073 BF00000000                  mov rdi, 0 ;0 = stdin
+   164 00000078 4889E6                      mov rsi, rsp
+   165 0000007B BA01000000                  mov rdx, 1 ;one byte will be read from the input buffer
+   166 00000080 0F05                        syscall
+   167                                  
+   168 00000082 8A0424                      mov al, byte [rsp]
+   169                                  
+   170 00000085 3C0A                        cmp al, line_feed
+   171 00000087 7410                        je exit_side_1
+   172                                  
+   173 00000089 49FFC4                      inc r12
+   174                                  
+   175 0000008C 4983FC20                    cmp r12, numeric_string_array_size
+   176                                      ;if(r12 >= input_array_size)
+   177 00000090 7D05                            jge end_side_1_if_else
+   178                                      ;else (r12 < numeric_string_array_size)
+   179 00000092 8803                            mov byte [rbx], al
+   180 00000094 48FFC3                          inc rbx
+   181                                      end_side_1_if_else:
+   182                                  
+   183 00000097 EBD5                    jmp first_side_loop
+   184                                  
+   185                                  exit_side_1:
+   186 00000099 C60300                      mov byte [rbx], null ;Append the null character
    187                                  
-   188                                  
-   189                                      ;Block that takes user input for the second side
-   190 0000007D B800000000                  mov rax, 0 ;0 = read
-   191 00000082 BF00000000                  mov rdi, 0 ;0 = stdin
-   192 00000087 48BE-                       mov rsi, side_2
-   192 00000089 [4C03000000000000] 
-   193 00000091 BA08000000                  mov rdx, 8
-   194 00000096 0F05                        syscall
-   195                                  
+   188 0000009C 58                          pop rax
+   189                                  
+   190                                  
+   191                                      ;Block to obtain the string length of the second side prompt
+   192 0000009D B800000000                  mov rax, 0
+   193 000000A2 48BF-                       mov rdi, side_2_prompt
+   193 000000A4 [2400000000000000] 
+   194 000000AC E8(00000000)                call strlen
+   195 000000B1 4989C4                      mov r12, rax ;r12 holds the string length of the first side prompt
    196                                  
-   197                                      ;Block that outputs a newline
-   198 00000098 B801000000                  mov rax, 1 ;1 is the write code
-   199 0000009D BF01000000                  mov rdi, 1 ;Destination of the output device
-   200 000000A2 48BE-                       mov rsi, newline ;Just a newline character (10)
-   200 000000A4 [4701000000000000] 
-   201 000000AC BA01000000                  mov rdx, 1 ;String size
-   202 000000B1 0F05                        syscall
-   203                                  
+   197                                  
+   198                                      ;Block that outputs the second side prompt
+   199 000000B4 B801000000                  mov rax, 1 ;1 is the write code
+   200 000000B9 BF01000000                  mov rdi, 1 ;stdout
+   201 000000BE 48BE-                       mov rsi, side_2_prompt ;"Please enter the length of side 2: "
+   201 000000C0 [2400000000000000] 
+   202 000000C8 4C89E2                      mov rdx, r12 ;String size
+   203 000000CB 0F05                        syscall
    204                                  
-   205                                      ;Block that converts the string input by the user for the second side into a float
-   206 000000B3 B800000000                  mov rax, 0
-   207 000000B8 4889E7                      mov rdi, rsp
-   208 000000BB E8(00000000)                call atof
-   209 000000C0 F2440F10C8                  movsd xmm9, xmm0
-   210                                  
-   211                                      ;TESTING VALUE
-   212 000000C5 B800000000                  mov rax, 0
-   213 000000CA 48BF-                       mov rdi, test_val
-   213 000000CC [2C01000000000000] 
-   214 000000D4 48BE-                       mov rsi, format
-   214 000000D6 [4301000000000000] 
-   215 000000DE F2410F10C1                  movsd xmm0, xmm9
-   216 000000E3 E8(00000000)                call printf
-   217                                  
+   205                                      ;Preloop initialization
+   206 000000CD 48BB-                       mov rbx, second_side
+   206 000000CF [6003000000000000] 
+   207 000000D7 41BC00000000                mov r12, 0 ;r12 is the counter of number of bytes inputted
+   208 000000DD 6A00                        push qword 0 ;Storage for incoming bytes
+   209                                  
+   210                                  second_side_loop:
+   211 000000DF B800000000                  mov rax, 0 ;0 = read
+   212 000000E4 BF00000000                  mov rdi, 0 ;0 = stdin
+   213 000000E9 4889E6                      mov rsi, rsp
+   214 000000EC BA01000000                  mov rdx, 1 ;one byte will be read from the input buffer
+   215 000000F1 0F05                        syscall
+   216                                  
+   217 000000F3 8A0424                      mov al, byte [rsp]
    218                                  
-   219                                  
-   220                                      ; ;Block that outputs a newline
-   221                                      ; mov rax, 1 ;1 is the write code
-   222                                      ; mov rdi, 1 ;Destination of the output device
-   223                                      ; mov rsi, newline ;Just a newline character (10)
-   224                                      ; mov rdx, 1 ;String size
-   225                                      ; syscall
-   226                                  
-   227                                  
-   228                                  
-   229                                  
-   230                                      ;Block that outputs the angle prompt
-   231 000000E8 B801000000                  mov rax, 1 ;1 is the write code
-   232 000000ED BF01000000                  mov rdi, 1 ;Destination of the output device
-   233 000000F2 48BE-                       mov rsi, angle_prompt ;"Please enter the degrees of the angle between: "
-   233 000000F4 [4800000000000000] 
-   234 000000FC BA2F000000                  mov rdx, 47 ;String size
-   235 00000101 0F05                        syscall
+   219 000000F6 3C0A                        cmp al, line_feed
+   220 000000F8 7410                        je exit_side_2
+   221                                  
+   222 000000FA 49FFC4                      inc r12
+   223                                  
+   224 000000FD 4983FC20                    cmp r12, numeric_string_array_size
+   225                                      ;if(r12 >= input_array_size)
+   226 00000101 7D05                            jge end_side_2_if_else
+   227                                      ;else (r12 < numeric_string_array_size)
+   228 00000103 8803                            mov byte [rbx], al
+   229 00000105 48FFC3                          inc rbx
+   230                                      end_side_2_if_else:
+   231                                  
+   232 00000108 EBD5                    jmp second_side_loop
+   233                                  
+   234                                  exit_side_2:
+   235 0000010A C60300                      mov byte [rbx], null ;Append the null character
    236                                  
-   237                                  
-   238                                      ;Block that takes user input for the angle
-   239 00000103 B800000000                  mov rax, 0 ;0 = read
-   240 00000108 BF00000000                  mov rdi, 0 ;0 = stdin
-   241 0000010D 49BA-                       mov r10, angle_input
-   241 0000010F [5803000000000000] 
-   242 00000117 BA08000000                  mov rdx, 8
-   243 0000011C 0F05                        syscall
-   244                                  
+   237 0000010D 58                          pop rax
+   238                                  
+   239                                  
+   240                                      ;Block to obtain the string length of the angle prompt
+   241 0000010E B800000000                  mov rax, 0
+   242 00000113 48BF-                       mov rdi, angle_prompt
+   242 00000115 [4800000000000000] 
+   243 0000011D E8(00000000)                call strlen
+   244 00000122 4989C4                      mov r12, rax ;r12 holds the string length of the angle prompt
    245                                  
-   246                                      ;Block that outputs a newline
-   247 0000011E B801000000                  mov rax, 1 ;1 is the write code
-   248 00000123 BF01000000                  mov rdi, 1 ;Destination of the output device
-   249 00000128 48BE-                       mov rsi, newline ;Just a newline character (10)
-   249 0000012A [4701000000000000] 
-   250 00000132 BA01000000                  mov rdx, 1 ;String size
-   251 00000137 0F05                        syscall
-   252                                  
+   246                                  
+   247                                      ;Block that outputs the angle prompt
+   248 00000125 B801000000                  mov rax, 1 ;1 is the write code
+   249 0000012A BF01000000                  mov rdi, 1 ;stdout
+   250 0000012F 48BE-                       mov rsi, angle_prompt ;"Please enter the degree of the angle between: "
+   250 00000131 [4800000000000000] 
+   251 00000139 4C89E2                      mov rdx, r12 ;String size
+   252 0000013C 0F05                        syscall
    253                                  
-   254                                      ;Block that converts the string input by the user for the angle into a float
-   255 00000139 B800000000                  mov rax, 0
-   256 0000013E 4889E7                      mov rdi, rsp
-   257 00000141 E8(00000000)                call atof
-   258 00000146 F2440F10D0                  movsd xmm10, xmm0
-   259                                  
-   260                                  
-   261                                      ;TESTING VALUE
-   262 0000014B B800000000                  mov rax, 0
-   263 00000150 48BF-                       mov rdi, test_val
-   263 00000152 [2C01000000000000] 
-   264 0000015A 48BE-                       mov rsi, format
-   264 0000015C [4301000000000000] 
-   265 00000164 F2410F10C2                  movsd xmm0, xmm10
-   266 00000169 E8(00000000)                call printf
+   254                                      ;Preloop initialization
+   255 0000013E 48BB-                       mov rbx, angle
+   255 00000140 [8003000000000000] 
+   256 00000148 41BC00000000                mov r12, 0 ;r12 is the counter of number of bytes inputted
+   257 0000014E 6A00                        push qword 0 ;Storage for incoming bytes
+   258                                  
+   259                                  angle_loop:
+   260 00000150 B800000000                  mov rax, 0 ;0 = read
+   261 00000155 BF00000000                  mov rdi, 0 ;0 = stdin
+   262 0000015A 4889E6                      mov rsi, rsp
+   263 0000015D BA01000000                  mov rdx, 1 ;one byte will be read from the input buffer
+   264 00000162 0F05                        syscall
+   265                                  
+   266 00000164 8A0424                      mov al, byte [rsp]
    267                                  
-   268                                      ; ;Block that outputs a newline
-   269                                      ; mov rax, 1 ;1 is the write code
-   270                                      ; mov rdi, 1 ;Destination of the output device
-   271                                      ; mov rsi, newline ;Just a newline character (10)
-   272                                      ; mov rdx, 1 ;String size
-   273                                      ; syscall
-   274                                  
-   275                                  
-   276                                      ; ;CONVERTING FROM DEGREES TO RADIANS (OLD FUNCTION)
-   277                                      ; movsd xmm8, qword [angle]
-   278                                      ; movsd xmm9, qword [angle_180]
-   279                                      ; movsd xmm10, qword [pi]
-   280                                      ; divsd xmm10, xmm9
-   281                                      ; mulsd xmm8, xmm10
+   268 00000167 3C0A                        cmp al, line_feed
+   269 00000169 7410                        je exit_angle
+   270                                  
+   271 0000016B 49FFC4                      inc r12
+   272                                  
+   273 0000016E 4983FC20                    cmp r12, numeric_string_array_size
+   274                                      ;if(r12 >= input_array_size)
+   275 00000172 7D05                            jge end_angle_if_else
+   276                                      ;else (r12 < numeric_string_array_size)
+   277 00000174 8803                            mov byte [rbx], al
+   278 00000176 48FFC3                          inc rbx
+   279                                      end_angle_if_else:
+   280                                  
+   281 00000179 EBD5                    jmp angle_loop
    282                                  
-   283                                      ;CONVERTING FROM DEGREES TO RADIANS
-   284 0000016E F2440F102425-               movsd xmm12, qword [angle_180]
-   284 00000174 [48010000]         
-   285 00000178 F2440F101C25-               movsd xmm11, qword [pi]
-   285 0000017E [50010000]         
-   286 00000182 F2450F5EDC                  divsd xmm11, xmm12
-   287 00000187 F2450F59D3                  mulsd xmm10, xmm11
+   283                                  exit_angle:
+   284 0000017B C60300                      mov byte [rbx], null ;Append the null character
+   285                                  
+   286 0000017E 58                          pop rax
+   287                                  
    288                                  
-   289                                      ;TESTING SIN FUNCTION
-   290 0000018C B801000000                  mov rax, 1
-   291 00000191 F2410F10C2                  movsd xmm0, xmm10
-   292 00000196 E8(00000000)                call sin
-   293 0000019B F2440F10F8                  movsd xmm15, xmm0
+   289                                      ;Convert side 1 to float
+   290 0000017F B800000000                  mov rax, 0
+   291 00000184 48BF-                       mov rdi, first_side
+   291 00000186 [4003000000000000] 
+   292 0000018E E8(00000000)                call atof
+   293 00000193 F2440F10C0                  movsd xmm8, xmm0
    294                                  
-   295                                      ;BLOCK TESTING SIN FUNCTION OUTPUT
-   296 000001A0 B801000000                  mov rax, 1
-   297 000001A5 48BF-                       mov rdi, sin_test
-   297 000001A7 [FE00000000000000] 
-   298 000001AF 48BE-                       mov rsi, format
-   298 000001B1 [4301000000000000] 
-   299 000001B9 F2410F10C7                  movsd xmm0, xmm15
-   300 000001BE E8(00000000)                call printf
-   301                                  
-   302                                  
-   303                                      ;Computing the area of the triangle after finding sine
-   304                                      ;The formula being used is 1/2 * a * b * sin(x) where:
-   305                                      ;a = the length of the first side
-   306                                      ;b = the length of the second side
-   307                                      ;x = the angle in degrees
-   308                                      ;xmm13 holds side 1
-   309                                      ;xmm14 holds side 2
-   310                                      ;xmm15 holds sin(x)
-   311                                  
-   312 000001C3 F2440F102C25-               movsd xmm13, qword [side_one]
-   312 000001C9 [60010000]         
-   313 000001CD F2440F103425-               movsd xmm14, qword [side_two]
-   313 000001D3 [68010000]         
-   314 000001D7 F2450F59EE                  mulsd xmm13, xmm14
-   315 000001DC F2450F59EF                  mulsd xmm13, xmm15
-   316 000001E1 F2440F5E2C25-               divsd xmm13, qword [two]
-   316 000001E7 [58010000]         
-   317                                  
-   318                                      ;TESTING AREA
-   319 000001EB B801000000                  mov rax, 1
-   320 000001F0 48BF-                       mov rdi, test_area
-   320 000001F2 [1701000000000000] 
-   321 000001FA 48BE-                       mov rsi, format
-   321 000001FC [4301000000000000] 
-   322 00000204 F2410F10C5                  movsd xmm0, xmm13
-   323 00000209 E8(00000000)                call printf
-   324                                      
-   325                                      
-   326                                  
+   295                                      ;Convert side 2 to float
+   296 00000198 B800000000                  mov rax, 0
+   297 0000019D 48BF-                       mov rdi, second_side
+   297 0000019F [6003000000000000] 
+   298 000001A7 E8(00000000)                call atof
+   299 000001AC F2440F10C8                  movsd xmm9, xmm0
+   300                                  
+   301                                      ;Convert angle to float
+   302 000001B1 B800000000                  mov rax, 0
+   303 000001B6 48BF-                       mov rdi, angle
+   303 000001B8 [8003000000000000] 
+   304 000001C0 E8(00000000)                call atof
+   305 000001C5 F2440F10D0                  movsd xmm10, xmm0
+   306                                  
+   307                                  
+   308                                      ;CONVERTING FROM DEGREES TO RADIANS
+   309                                      ;xmm10 is the radians
+   310 000001CA F2440F102425-               movsd xmm12, qword [angle_180]
+   310 000001D0 [27010000]         
+   311 000001D4 F2440F101C25-               movsd xmm11, qword [pi]
+   311 000001DA [2F010000]         
+   312 000001DE F2450F5EDC                  divsd xmm11, xmm12
+   313 000001E3 F2450F59D3                  mulsd xmm10, xmm11
+   314                                  
+   315                                      ;Calling sine function
+   316 000001E8 B801000000                  mov rax, 1
+   317 000001ED F2410F10C2                  movsd xmm0, xmm10
+   318 000001F2 E8(00000000)                call sin
+   319 000001F7 F2440F10F8                  movsd xmm15, xmm0
+   320                                  
+   321                                  
+   322                                  
+   323                                      ; ;TESTING block to find seg fault
+   324                                      ; mov rax, 0
+   325                                      ; mov rdi, test_seg
+   326                                      ; call printf
    327                                  
    328                                  
-   329                                      ;Block that outputs the area
-   330 0000020E B801000000                  mov rax, 1 ;1 is the write code
-   331 00000213 BF01000000                  mov rdi, 1 ;Destination of the output device
-   332 00000218 48BE-                       mov rsi, area_output ;"The area of this triangle is %1.5lf square feet."
-   332 0000021A [A800000000000000] 
-   333 00000222 BA2F000000                  mov rdx, 47 ;String size
-   334 00000227 0F05                        syscall
-   335                                  
-   336                                  
-   337                                  
-   338                                      ;Block that outputs a newline
-   339 00000229 B801000000                  mov rax, 1 ;1 is the write code
-   340 0000022E BF01000000                  mov rdi, 1 ;Destination of the output device
-   341 00000233 48BE-                       mov rsi, newline ;Just a newline character (10)
-   341 00000235 [4701000000000000] 
-   342 0000023D BA01000000                  mov rdx, 1 ;String size
-   343 00000242 0F05                        syscall
+   329                                  
+   330                                      ;Computing the area of the triangle after finding sine
+   331                                      ;The formula being used is 1/2 * a * b * sin(x) where:
+   332                                      ;a = the length of the first side
+   333                                      ;b = the length of the second side
+   334                                      ;x = the angle in degrees
+   335                                      ;xmm8 holds side 1
+   336                                      ;xmm9 holds side 2
+   337                                      ;xmm15 holds sin(x)
+   338                                  
+   339                                      ; movsd xmm8, qword [side_one]
+   340                                      ; movsd xmm9, qword [side_two]
+   341 000001FC F2450F59C1                  mulsd xmm8, xmm9
+   342 00000201 F2450F59C7                  mulsd xmm8, xmm15
+   343 00000206 F2440F5E0425-               divsd xmm8, qword [two] ;xmm8 now holds the area
+   343 0000020C [37010000]         
    344                                  
-   345                                  
-   346                                  
-   347                                  
-   348                                      ;Block that outputs thank you message
-   349 00000244 B801000000                  mov rax, 1 ;1 is the write code
-   350 00000249 BF01000000                  mov rdi, 1 ;Destination of the output device
-   351 0000024E 48BE-                       mov rsi, thank_you_message ;"Thank you for using Nathan's product."
-   351 00000250 [D800000000000000] 
-   352 00000258 BA25000000                  mov rdx, 37 ;String size
-   353 0000025D 0F05                        syscall
-   354                                  
-   355                                  
-   356                                  
-   357                                  
-   358                                      ;Block that outputs a newline
-   359 0000025F B801000000                  mov rax, 1 ;1 is the write code
-   360 00000264 BF01000000                  mov rdi, 1 ;Destination of the output device
-   361 00000269 48BE-                       mov rsi, newline ;Just a newline character (10)
-   361 0000026B [4701000000000000] 
-   362 00000273 BA01000000                  mov rdx, 1 ;String size
-   363 00000278 0F05                        syscall
-   364                                  
-   365                                  
-   366                                  
+   345                                      
+   346                                                      ;Block outputting sin(x)
+   347 00000210 B801000000                  mov rax, 1
+   348 00000215 48BF-                       mov rdi, sin_test
+   348 00000217 [F900000000000000] 
+   349 0000021F 48BE-                       mov rsi, format
+   349 00000221 [1201000000000000] 
+   350 00000229 F2410F10C7                  movsd xmm0, xmm15
+   351 0000022E E8(00000000)                call printf
+   352                                      
+   353                                  
+   354                                      ;Convert the area into a string
+   355 00000233 B801000000                  mov rax, 1
+   356 00000238 F2410F10C0                  movsd xmm0, xmm8
+   357 0000023D E8(00000000)                call gcvt
+   358 00000242 4989C7                      mov r15, rax
+   359                                  
+   360                                  
+   361                                  
+   362                                      ;Get the length of the area_output_1 string
+   363 00000245 B800000000                  mov rax, 0
+   364 0000024A 48BF-                       mov rdi, area_output_1
+   364 0000024C [A800000000000000] 
+   365 00000254 E8(00000000)                call strlen
+   366 00000259 4989C4                      mov r12, rax
    367                                  
-   368                                  
-   369                                      ;Back up value in xmm15 (variance) before restoring registers
-   370 0000027A 6A00                        push qword 0
-   371 0000027C F2440F113C24                movsd [rsp], xmm15
-   372                                  
-   373                                  
-   374                                  
-   375                                      ;Restore the values to non-GPRs
-   376 00000282 B807000000                  mov rax, 7
-   377 00000287 BA00000000                  mov rdx, 0
-   378 0000028C 0FAE2C25[00000000]          xrstor [backup_storage_area]
-   379                                  
-   380                                  
-   381 00000294 F20F100424                  movsd xmm0, [rsp]
-   382 00000299 58                          pop rax
-   383                                      
+   368                                      ; ;Block that outputs a newline
+   369                                      ; mov byte [newline], 0xa
+   370                                      ; mov byte [newline+1], 0
+   371                                      ; mov rax, 1
+   372                                      ; mov rdi, 1
+   373                                      ; mov rsi, newline
+   374                                      ; mov rdx, 1
+   375                                      ; syscall
+   376                                  
+   377                                      ;Output the first part of the area string
+   378 0000025C B801000000                  mov rax, 1 ;1 is the write code
+   379 00000261 BF01000000                  mov rdi, 1 ;stdout
+   380 00000266 48BE-                       mov rsi, area_output_1 ;"The area of this triangle is "
+   380 00000268 [A800000000000000] 
+   381 00000270 4C89E2                      mov rdx, r12 ;String size
+   382 00000273 0F05                        syscall
+   383                                  
    384                                  
-   385                                  
-   386                                      ;Restore the GPRs
-   387 0000029A 9D                          popf
-   388 0000029B 415F                        pop r15
-   389 0000029D 415E                        pop r14
-   390 0000029F 415D                        pop r13
-   391 000002A1 415C                        pop r12
-   392 000002A3 415B                        pop r11
-   393 000002A5 415A                        pop r10
-   394 000002A7 4159                        pop r9
-   395 000002A9 4158                        pop r8
-   396 000002AB 5E                          pop rsi
-   397 000002AC 5F                          pop rdi
-   398 000002AD 5A                          pop rdx
-   399 000002AE 59                          pop rcx
-   400 000002AF 5B                          pop rbx
-   401 000002B0 5D                          pop rbp   ;Restore rbp to the base of the activation record of the caller program
-   402 000002B1 C3                          ret
-   403                                  ;End of the function manager.asm ====================================================================
+   385                                      ;Use strlen to get the string length of the area
+   386 00000275 B800000000                  mov rax, 0
+   387 0000027A 4C89FF                      mov rdi, r15 ;r15 holds the area string
+   388 0000027D E8(00000000)                call strlen
+   389 00000282 4989C4                      mov r12, rax
+   390                                  
+   391                                      ;Output the area string
+   392 00000285 B801000000                  mov rax, 1 ;1 is the write code
+   393 0000028A BF01000000                  mov rdi, 1 ;stdout
+   394 0000028F 4C89FE                      mov rsi, r15 ;r15 holds the string area
+   395 00000292 4C89E2                      mov rdx, r12 ;String size  
+   396 00000295 0F05                        syscall
+   397                                  
+   398                                      ;Get the length of the area_output_2 string
+   399 00000297 B800000000                  mov rax, 0
+   400 0000029C 48BF-                       mov rdi, area_output_2
+   400 0000029E [C500000000000000] 
+   401 000002A6 E8(00000000)                call strlen
+   402 000002AB 4989C4                      mov r12, rax
+   403                                  
+   404                                  
+   405                                  
+   406                                      ;Output the second part of the area string
+   407 000002AE B801000000                  mov rax, 1 ;1 is the write code
+   408 000002B3 BF01000000                  mov rdi, 1 ;stdout
+   409 000002B8 48BE-                       mov rsi, area_output_2 ;" square feet."
+   409 000002BA [C500000000000000] 
+   410 000002C2 4C89E2                      mov rdx, r12 ;String size
+   411 000002C5 0F05                        syscall
+   412                                  
+   413                                  
+   414                                      ;Block that outputs a newline
+   415 000002C7 C60425[16010000]0A          mov byte [newline], 0xa
+   416 000002CF C60425[17010000]00          mov byte [newline+1], 0
+   417 000002D7 B801000000                  mov rax, 1
+   418 000002DC BF01000000                  mov rdi, 1
+   419 000002E1 48BE-                       mov rsi, newline
+   419 000002E3 [1601000000000000] 
+   420 000002EB BA01000000                  mov rdx, 1
+   421 000002F0 0F05                        syscall
+   422                                  
+   423                                  
+   424                                      ;Block that outputs thank you message
+   425 000002F2 B801000000                  mov rax, 1 ;1 is the write code
+   426 000002F7 BF01000000                  mov rdi, 1 ;Destination of the output device
+   427 000002FC 48BE-                       mov rsi, thank_you_message ;"Thank you for using Nathan's product."
+   427 000002FE [D300000000000000] 
+   428 00000306 BA25000000                  mov rdx, 37 ;String size
+   429 0000030B 0F05                        syscall
+   430                                  
+   431                                  
+   432                                      ;Block that outputs a newline
+   433 0000030D C60425[16010000]0A          mov byte [newline], 0xa
+   434 00000315 C60425[17010000]00          mov byte [newline+1], 0
+   435 0000031D B801000000                  mov rax, 1
+   436 00000322 BF01000000                  mov rdi, 1
+   437 00000327 48BE-                       mov rsi, newline
+   437 00000329 [1601000000000000] 
+   438 00000331 BA01000000                  mov rdx, 1
+   439 00000336 0F05                        syscall
+   440                                  
+   441                                  
+   442                                  
+   443                                      ;Back up value in xmm8 area before restoring registers
+   444 00000338 6A00                        push qword 0
+   445 0000033A F2440F110424                movsd [rsp], xmm8
+   446                                  
+   447                                  
+   448                                  
+   449                                      ;Restore the values to non-GPRs
+   450 00000340 B807000000                  mov rax, 7
+   451 00000345 BA00000000                  mov rdx, 0
+   452 0000034A 0FAE2C25[00000000]          xrstor [backup_storage_area]
+   453                                  
+   454                                  
+   455 00000352 F20F100424                  movsd xmm0, [rsp]
+   456 00000357 58                          pop rax
+   457                                      
+   458                                  
+   459                                      ;Restore the GPRs
+   460 00000358 9D                          popf
+   461 00000359 415F                        pop r15
+   462 0000035B 415E                        pop r14
+   463 0000035D 415D                        pop r13
+   464 0000035F 415C                        pop r12
+   465 00000361 415B                        pop r11
+   466 00000363 415A                        pop r10
+   467 00000365 4159                        pop r9
+   468 00000367 4158                        pop r8
+   469 00000369 5E                          pop rsi
+   470 0000036A 5F                          pop rdi
+   471 0000036B 5A                          pop rdx
+   472 0000036C 59                          pop rcx
+   473 0000036D 5B                          pop rbx
+   474 0000036E 5D                          pop rbp   ;Restore rbp to the base of the activation record of the caller program
+   475 0000036F C3                          ret
+   476                                  ;End of the function manager.asm ====================================================================

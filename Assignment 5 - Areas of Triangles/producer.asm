@@ -66,12 +66,16 @@ extern sin
 extern atof
 extern ftoa
 extern strlen
+extern gcvt
 
 
 extern printf ;REMOVE
 
 
 ; float_size equ 60
+numeric_string_array_size equ 32
+line_feed equ 10
+null equ 0
 
 segment .data
 ;This section (or segment) is for declaring initialized arrays
@@ -80,30 +84,32 @@ side_1_prompt db "Please enter the length of side 1: ", 0 ;String size: 35
 side_2_prompt db "Please enter the length of side 2: ", 0 ;String size: 35
 angle_prompt db "Please enter the degrees of the angle between: ", 0 ;String size: 47
 output_area db "The area of the triangle is %1.5lf square feet.", 0 ;String size: 47
-area_output db "The area of the triangle is %1.5lf square feet.", 0 ;String size: 47 (MAY BE SUBJECT TO CHANGE)
+area_output_1 db "The area of the triangle is ", 0
+area_output_2 db " square feet.", 0
 thank_you_message db "Thank you for using Nathan's product.", 0 ;String size: 37
 sin_test db 10, "The sin of x is: %1.5lf", 0 ;String size 24 GET RID OF NEWLINE
-test_area db 10, "The area is: %1.6lf", 0 ;REMOVE
-test_val db 10, "The value is: %1.6lf", 10, 0 ;REMOVE
+; test_area db 10, "The area is: %1.6lf", 0 ;REMOVE
+; test_val db 10, "The value is: %1.6lf", 10, 0 ;REMOVE
 format db "%lf", 0
 newline db 10
-
+test_seg db 10, "I am working", 10, 10, 0
 
 angle_180 dq 180.0
 pi dq 3.14159265359
 two dq 2.0
-side_one dq 13.7
-side_two dq 8.955
-angle dq 27.455
+; side_one dq 13.7
+; side_two dq 8.955
+; angle dq 27.455
 
 segment .bss
 ;This section (or segment) is for declaring empty arrays
 
 align 64
 backup_storage_area resb 832
-side_1 resb 12
-side_2 resb 12
-angle_input resb 12
+first_side resb numeric_string_array_size
+second_side resb numeric_string_array_size
+angle resb numeric_string_array_size
+area_output resb numeric_string_array_size
 
 segment .text
 
@@ -132,172 +138,193 @@ producer:
     mov rdx,0
     xsave [backup_storage_area]
 
+    
+    ;Block to obtain the string length of the first side prompt
+    mov rax, 0
+    mov rdi, side_1_prompt
+    call strlen
+    mov r12, rax ;r12 holds the string length of the first side prompt
+
 
     ;Block that outputs the first side prompt
     mov rax, 1 ;1 is the write code
-    mov rdi, 1 ;Destination of the output device
+    mov rdi, 1 ;stdout
     mov rsi, side_1_prompt ;"Please enter the length of side 1: "
-    mov rdx, 35 ;String size
+    mov rdx, r12 ;String size
     syscall
 
+    ;Preloop initialization
+    mov rbx, first_side
+    mov r12, 0 ;r12 is the counter of number of bytes inputted
+    push qword 0 ;Storage for incoming bytes
 
-    ;Block that takes user input for the first side
+first_side_loop:
     mov rax, 0 ;0 = read
     mov rdi, 0 ;0 = stdin
-    mov r8, side_1
-    mov rdx, 5
+    mov rsi, rsp
+    mov rdx, 1 ;one byte will be read from the input buffer
     syscall
 
-    ; ;Block that removes the newline
-    ; mov rax, 0
-    ; mov rdi, rsp
-    ; call strlen
-    ; mov [rsp + rax - 1], byte 0
+    mov al, byte [rsp]
 
-    ; ;Block that outputs a newline
-    ; mov rax, 1 ;1 is the write code
-    ; mov rdi, 1 ;Destination of the output device
-    ; mov rsi, newline ;Just a newline character (10)
-    ; mov rdx, 1 ;String size
-    ; syscall
+    cmp al, line_feed
+    je exit_side_1
+
+    inc r12
+
+    cmp r12, numeric_string_array_size
+    ;if(r12 >= input_array_size)
+        jge end_side_1_if_else
+    ;else (r12 < numeric_string_array_size)
+        mov byte [rbx], al
+        inc rbx
+    end_side_1_if_else:
+
+jmp first_side_loop
+
+exit_side_1:
+    mov byte [rbx], null ;Append the null character
+
+    pop rax
 
 
-    ; ;Block that converts the string input by the user for the first side into a float
-    ; mov rax, 0
-    ; mov rdi, rcx
-    ; call atof
-    ; movsd xmm8, xmm0
-
-    ; ;TESTING VALUE
-    ; mov rax, 0
-    ; mov rdi, test_val
-    ; mov rsi, format
-    ; movsd xmm0, xmm8
-    ; call printf
-
+    ;Block to obtain the string length of the second side prompt
+    mov rax, 0
+    mov rdi, side_2_prompt
+    call strlen
+    mov r12, rax ;r12 holds the string length of the first side prompt
 
 
     ;Block that outputs the second side prompt
     mov rax, 1 ;1 is the write code
-    mov rdi, 1 ;Destination of the output device
-    mov r9, side_2_prompt ;"Please enter the length of side 2: "
-    mov rdx, 35 ;String size
+    mov rdi, 1 ;stdout
+    mov rsi, side_2_prompt ;"Please enter the length of side 2: "
+    mov rdx, r12 ;String size
     syscall
 
+    ;Preloop initialization
+    mov rbx, second_side
+    mov r12, 0 ;r12 is the counter of number of bytes inputted
+    push qword 0 ;Storage for incoming bytes
 
-
-    ;Block that takes user input for the second side
+second_side_loop:
     mov rax, 0 ;0 = read
     mov rdi, 0 ;0 = stdin
-    mov rsi, side_2
-    mov rdx, 8
+    mov rsi, rsp
+    mov rdx, 1 ;one byte will be read from the input buffer
     syscall
 
+    mov al, byte [rsp]
 
-    ;Block that outputs a newline
-    mov rax, 1 ;1 is the write code
-    mov rdi, 1 ;Destination of the output device
-    mov rsi, newline ;Just a newline character (10)
-    mov rdx, 1 ;String size
-    syscall
+    cmp al, line_feed
+    je exit_side_2
+
+    inc r12
+
+    cmp r12, numeric_string_array_size
+    ;if(r12 >= input_array_size)
+        jge end_side_2_if_else
+    ;else (r12 < numeric_string_array_size)
+        mov byte [rbx], al
+        inc rbx
+    end_side_2_if_else:
+
+jmp second_side_loop
+
+exit_side_2:
+    mov byte [rbx], null ;Append the null character
+
+    pop rax
 
 
-    ;Block that converts the string input by the user for the second side into a float
+    ;Block to obtain the string length of the angle prompt
     mov rax, 0
-    mov rdi, rsp
-    call atof
-    movsd xmm9, xmm0
-
-    ;TESTING VALUE
-    mov rax, 0
-    mov rdi, test_val
-    mov rsi, format
-    movsd xmm0, xmm9
-    call printf
-
-
-
-    ; ;Block that outputs a newline
-    ; mov rax, 1 ;1 is the write code
-    ; mov rdi, 1 ;Destination of the output device
-    ; mov rsi, newline ;Just a newline character (10)
-    ; mov rdx, 1 ;String size
-    ; syscall
-
-
+    mov rdi, angle_prompt
+    call strlen
+    mov r12, rax ;r12 holds the string length of the angle prompt
 
 
     ;Block that outputs the angle prompt
     mov rax, 1 ;1 is the write code
-    mov rdi, 1 ;Destination of the output device
-    mov rsi, angle_prompt ;"Please enter the degrees of the angle between: "
-    mov rdx, 47 ;String size
+    mov rdi, 1 ;stdout
+    mov rsi, angle_prompt ;"Please enter the degree of the angle between: "
+    mov rdx, r12 ;String size
     syscall
 
+    ;Preloop initialization
+    mov rbx, angle
+    mov r12, 0 ;r12 is the counter of number of bytes inputted
+    push qword 0 ;Storage for incoming bytes
 
-    ;Block that takes user input for the angle
+angle_loop:
     mov rax, 0 ;0 = read
     mov rdi, 0 ;0 = stdin
-    mov r10, angle_input
-    mov rdx, 8
+    mov rsi, rsp
+    mov rdx, 1 ;one byte will be read from the input buffer
     syscall
 
+    mov al, byte [rsp]
 
-    ;Block that outputs a newline
-    mov rax, 1 ;1 is the write code
-    mov rdi, 1 ;Destination of the output device
-    mov rsi, newline ;Just a newline character (10)
-    mov rdx, 1 ;String size
-    syscall
+    cmp al, line_feed
+    je exit_angle
+
+    inc r12
+
+    cmp r12, numeric_string_array_size
+    ;if(r12 >= input_array_size)
+        jge end_angle_if_else
+    ;else (r12 < numeric_string_array_size)
+        mov byte [rbx], al
+        inc rbx
+    end_angle_if_else:
+
+jmp angle_loop
+
+exit_angle:
+    mov byte [rbx], null ;Append the null character
+
+    pop rax
 
 
-    ;Block that converts the string input by the user for the angle into a float
+    ;Convert side 1 to float
     mov rax, 0
-    mov rdi, rsp
+    mov rdi, first_side
+    call atof
+    movsd xmm8, xmm0
+
+    ;Convert side 2 to float
+    mov rax, 0
+    mov rdi, second_side
+    call atof
+    movsd xmm9, xmm0
+
+    ;Convert angle to float
+    mov rax, 0
+    mov rdi, angle
     call atof
     movsd xmm10, xmm0
 
 
-    ;TESTING VALUE
-    mov rax, 0
-    mov rdi, test_val
-    mov rsi, format
-    movsd xmm0, xmm10
-    call printf
-
-    ; ;Block that outputs a newline
-    ; mov rax, 1 ;1 is the write code
-    ; mov rdi, 1 ;Destination of the output device
-    ; mov rsi, newline ;Just a newline character (10)
-    ; mov rdx, 1 ;String size
-    ; syscall
-
-
-    ; ;CONVERTING FROM DEGREES TO RADIANS (OLD FUNCTION)
-    ; movsd xmm8, qword [angle]
-    ; movsd xmm9, qword [angle_180]
-    ; movsd xmm10, qword [pi]
-    ; divsd xmm10, xmm9
-    ; mulsd xmm8, xmm10
-
     ;CONVERTING FROM DEGREES TO RADIANS
+    ;xmm10 is the radians
     movsd xmm12, qword [angle_180]
     movsd xmm11, qword [pi]
     divsd xmm11, xmm12
     mulsd xmm10, xmm11
 
-    ;TESTING SIN FUNCTION
+    ;Calling sine function
     mov rax, 1
     movsd xmm0, xmm10
     call sin
     movsd xmm15, xmm0
 
-    ;BLOCK TESTING SIN FUNCTION OUTPUT
-    mov rax, 1
-    mov rdi, sin_test
-    mov rsi, format
-    movsd xmm0, xmm15
-    call printf
+
+
+    ; ;TESTING block to find seg fault
+    ; mov rax, 0
+    ; mov rdi, test_seg
+    ; call printf
+
 
 
     ;Computing the area of the triangle after finding sine
@@ -305,44 +332,93 @@ producer:
     ;a = the length of the first side
     ;b = the length of the second side
     ;x = the angle in degrees
-    ;xmm13 holds side 1
-    ;xmm14 holds side 2
+    ;xmm8 holds side 1
+    ;xmm9 holds side 2
     ;xmm15 holds sin(x)
 
-    movsd xmm13, qword [side_one]
-    movsd xmm14, qword [side_two]
-    mulsd xmm13, xmm14
-    mulsd xmm13, xmm15
-    divsd xmm13, qword [two]
+    ; movsd xmm8, qword [side_one]
+    ; movsd xmm9, qword [side_two]
+    mulsd xmm8, xmm9
+    mulsd xmm8, xmm15
+    divsd xmm8, qword [two] ;xmm8 now holds the area
 
-    ;TESTING AREA
+    
+    ; ;Block outputting sin(x)
+    ; mov rax, 1
+    ; mov rdi, sin_test
+    ; mov rsi, format
+    ; movsd xmm0, xmm15
+    ; call printf
+
+
+    ;Convert the area into a string
     mov rax, 1
-    mov rdi, test_area
-    mov rsi, format
-    movsd xmm0, xmm13
-    call printf
-    
-    
+    movsd xmm0, xmm8
+    call gcvt
+    mov r15, rax
 
 
 
-    ;Block that outputs the area
+    ;Get the length of the area_output_1 string
+    mov rax, 0
+    mov rdi, area_output_1
+    call strlen
+    mov r12, rax
+
+    ; ;Block that outputs a newline
+    ; mov byte [newline], 0xa
+    ; mov byte [newline+1], 0
+    ; mov rax, 1
+    ; mov rdi, 1
+    ; mov rsi, newline
+    ; mov rdx, 1
+    ; syscall
+
+    ;Output the first part of the area string
     mov rax, 1 ;1 is the write code
-    mov rdi, 1 ;Destination of the output device
-    mov rsi, area_output ;"The area of this triangle is %1.5lf square feet."
-    mov rdx, 47 ;String size
+    mov rdi, 1 ;stdout
+    mov rsi, area_output_1 ;"The area of this triangle is "
+    mov rdx, r12 ;String size
     syscall
 
+
+    ;Use strlen to get the string length of the area
+    mov rax, 0
+    mov rdi, r15 ;r15 holds the area string
+    call strlen
+    mov r12, rax
+
+    ;Output the area string
+    mov rax, 1 ;1 is the write code
+    mov rdi, 1 ;stdout
+    mov rsi, r15 ;r15 holds the string area
+    mov rdx, r12 ;String size  
+    syscall
+
+    ;Get the length of the area_output_2 string
+    mov rax, 0
+    mov rdi, area_output_2
+    call strlen
+    mov r12, rax
+
+
+
+    ;Output the second part of the area string
+    mov rax, 1 ;1 is the write code
+    mov rdi, 1 ;stdout
+    mov rsi, area_output_2 ;" square feet."
+    mov rdx, r12 ;String size
+    syscall
 
 
     ;Block that outputs a newline
-    mov rax, 1 ;1 is the write code
-    mov rdi, 1 ;Destination of the output device
-    mov rsi, newline ;Just a newline character (10)
-    mov rdx, 1 ;String size
+    mov byte [newline], 0xa
+    mov byte [newline+1], 0
+    mov rax, 1
+    mov rdi, 1
+    mov rsi, newline
+    mov rdx, 1
     syscall
-
-
 
 
     ;Block that outputs thank you message
@@ -353,22 +429,20 @@ producer:
     syscall
 
 
-
-
     ;Block that outputs a newline
-    mov rax, 1 ;1 is the write code
-    mov rdi, 1 ;Destination of the output device
-    mov rsi, newline ;Just a newline character (10)
-    mov rdx, 1 ;String size
+    mov byte [newline], 0xa
+    mov byte [newline+1], 0
+    mov rax, 1
+    mov rdi, 1
+    mov rsi, newline
+    mov rdx, 1
     syscall
 
 
 
-
-
-    ;Back up value in xmm15 (variance) before restoring registers
+    ;Back up value in xmm8 area before restoring registers
     push qword 0
-    movsd [rsp], xmm15
+    movsd [rsp], xmm8
 
 
 
@@ -381,7 +455,6 @@ producer:
     movsd xmm0, [rsp]
     pop rax
     
-
 
     ;Restore the GPRs
     popf
