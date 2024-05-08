@@ -1,61 +1,45 @@
-;****************************************************************************************************************************
-;Program name: "Arrays" - This program will first welcome the user to the program, as well as outputting its developer.     *
-;After this initial message, the program will let the user know the directions of the program, which is as follows:         *
-;                                                                                                                           *
-;"This program will manage your arrays of 64-bit floats                                                                     *
-;For the array enter a sequence of 64-bit floats separated by white space.                                                  *
-;After the last input press enter followed by Control+D:"                                                                   *
-;                                                                                                                           *
-;The program will then take in user input, validating each input to make sure they are entering valid float numbers, and    *
-;this process is done through the input_array.asm file, using isfloat.asm to validate their inputs. If the user inputs an   *
-;invalid input, the program will let them know with the following message:                                                  *
-;                                                                                                                           *
-;"The last input was invalid and not entered into the array.""                                                              *
-;                                                                                                                           *
-;Once the array has been fully entered, the program will output the entire array to the screen, which is done in the        *
-;output_array.c file using the C language. Once the array has been output, the program will then compute the mean of the    *
-;array using compute_mean.asm, and will then use the mean it found to compute the variance using compute_variance.cpp,      *
-;which uses C++. Once the variance has been found, the program will output the variance to the screen for the user, and     *
-;will then send the variance to main.c, where the program will let the user know that the variance will be kept for         *
-;future use, and that a 0 will be sent to the operating system.                                                             *
-;                                                                                                                           *
-;This program is free software: you can redistribute it and/or modify it under the terms of the GNU General Public License  *
-;version 3 as published by the Free Software Foundation.  This program is distributed in the hope that it will be useful,   *
-;but WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See   *
-;the GNU General Public License for more details A copy of the GNU General Public License v3 is available here:             *
-;<https://www.gnu.org/licenses/>.                                                                                           *
-;****************************************************************************************************************************
+;/****************************************************************************************************************************
+;Program name: "Areas of Triangles" - This program will prompt the user for the lengths of 2 sides of a triangle and the 
+;size of the angle between them. All I/O in this program will be handled in pure assembly using syscalls. The conversions
+;atof (string to float) and ftoa (float to string) both use built-in library functions. When computing the area of the 
+;triangle, sin(x), where x is the angle, is used in the formula, and sin(x) is computed using a Taylor series, programmed in 
+;x86_64. When the user has input 2 sides and the angle between, the program will convert the strings input by the user into
+;floats, calculate the area, then convert the area into a string and output the area to the screen. Once the area has been  
+;output to the screen, the program will then return the area to the driver function, written in C, and will confirm its 
+;retrieval and convey a goobye message to the user.
+
+;WARNING: THIS PROGRAM DOES NOT VALIDATE USER INPUT
+;****************************************************************************************************************************/
 
 
 
-
-;========1=========2=========3=========4=========5=========6=========7=========8=========9=========0=========1=========2=========3**
+;/**********************************************************************************************************************************
 ;Author information
 ;  Author name: Nathan Warner
 ;  Author email: nwarner4@csu.fullerton.edu
-;
+
 ;Program information
-;  Program name: Arrays
-;  Programming languages: Two modules in C, four modules in x86_64, one module in C++, and one module in bash
-;  Date program began: 2024-Mar-3
-;  Date of last update: 2024-Mar-7
-;  Files in this program: main.c, manager.asm, r.sh, output_array.c, compute_mean.asm, compute_variance.cpp, input_array.asm, isfloat.asm
+;  Program name: Areas of Triangles
+;  Programming languages: One module in C, four modules in x86_64, and one module in bash
+;  Date program began: 2024-May-4
+;  Date of last update: 2024-Mar-8
+;  Files in this program: main.c, producer.asm multiplier.asm sin.asm strlen.asm r.sh
 ;  Testing: Alpha testing completed.  All functions are correct.
 ;  Status: Ready for release to customers
-;
+
 ;Purpose
-;  The program will take in an array of valid floating point numbers from the user, find the mean of the array, 
-;       and find the variance, which it will output to the screen and send to main.c
-;
+;  The program will take in 2 sides of a triangle, as well as the angle between them in degrees from the user.
+;    Using the above information, the program will then compute the area of the triangle and output it to the screen.
+;    All I/O in this program will be done in pure x86_64 assembly using syscalls
+
 ;This file:
-;  File name: manager.asm
-;  Language: X86-64
+;  File name: producer.asm
+;  Language: x86_64
 ;  Max page width: 124 columns
-;  Assemble (standard): nasm -f elf64 -l manager.lis -o manager.o manager.asm
-;  Assemble (debug): nasm -g dwarf -l manager.lis -o manager.o manager.asm
+;  Assemble (standard): nasm -f elf64 -l producer.lis -o producer.o producer.asm
 ;  Optimal print specification: Landscape, 7 points, monospace, 8½x11 paper
-;  Prototype of this function: double manager();
-;========1=========2=========3=========4=========5=========6=========7=========8=========9=========0=========1=========2=========3**
+;  Prototype of this function: int main(int argc, const char * argv[]);
+;***********************************************************************************************************************************/
 
 ;Declaration section.  The section has no name other than "Declaration section".  Declare here everything that does
 ;not have its own place of declaration
@@ -64,15 +48,9 @@ global producer
 
 extern sin
 extern atof
-extern ftoa
 extern strlen
 extern gcvt
 
-
-extern printf ;REMOVE
-
-
-; float_size equ 60
 numeric_string_array_size equ 32
 line_feed equ 10
 null equ 0
@@ -87,19 +65,12 @@ output_area db "The area of the triangle is %1.5lf square feet.", 0 ;String size
 area_output_1 db "The area of the triangle is ", 0
 area_output_2 db " square feet.", 0
 thank_you_message db "Thank you for using Nathan's product.", 0 ;String size: 37
-sin_test db 10, "The sin of x is: %1.5lf", 0 ;String size 24 GET RID OF NEWLINE
-; test_area db 10, "The area is: %1.6lf", 0 ;REMOVE
-; test_val db 10, "The value is: %1.6lf", 10, 0 ;REMOVE
-format db "%lf", 0
 newline db 10
-test_seg db 10, "I am working", 10, 10, 0
+
 
 angle_180 dq 180.0
 pi dq 3.14159265359
 two dq 2.0
-; side_one dq 13.7
-; side_two dq 8.955
-; angle dq 27.455
 
 segment .bss
 ;This section (or segment) is for declaring empty arrays
@@ -137,6 +108,15 @@ producer:
     mov rax,7
     mov rdx,0
     xsave [backup_storage_area]
+
+    ;Block that outputs a newline
+    mov byte [newline], 0xa
+    mov byte [newline+1], 0
+    mov rax, 1
+    mov rdi, 1
+    mov rsi, newline
+    mov rdx, 1
+    syscall
 
     
     ;Block to obtain the string length of the first side prompt
@@ -290,41 +270,34 @@ exit_angle:
     mov rax, 0
     mov rdi, first_side
     call atof
-    movsd xmm8, xmm0
+    movsd xmm13, xmm0
 
     ;Convert side 2 to float
     mov rax, 0
     mov rdi, second_side
     call atof
-    movsd xmm9, xmm0
+    movsd xmm14, xmm0
 
     ;Convert angle to float
     mov rax, 0
     mov rdi, angle
     call atof
-    movsd xmm10, xmm0
-
-
-    ;CONVERTING FROM DEGREES TO RADIANS
-    ;xmm10 is the radians
-    movsd xmm12, qword [angle_180]
-    movsd xmm11, qword [pi]
-    divsd xmm11, xmm12
-    mulsd xmm10, xmm11
-
-    ;Calling sine function
-    mov rax, 1
-    movsd xmm0, xmm10
-    call sin
     movsd xmm15, xmm0
 
 
+    ;CONVERTING FROM DEGREES TO RADIANS
+    ;xmm15 is the radians
+    movsd xmm12, qword [angle_180]
+    movsd xmm11, qword [pi]
+    divsd xmm11, xmm12
+    mulsd xmm15, xmm11
 
-    ; ;TESTING block to find seg fault
-    ; mov rax, 0
-    ; mov rdi, test_seg
-    ; call printf
 
+    ;Calling sine function
+    mov rax, 1
+    movsd xmm0, xmm15
+    call sin
+    movsd xmm15, xmm0
 
 
     ;Computing the area of the triangle after finding sine
@@ -332,30 +305,33 @@ exit_angle:
     ;a = the length of the first side
     ;b = the length of the second side
     ;x = the angle in degrees
-    ;xmm8 holds side 1
-    ;xmm9 holds side 2
+    ;xmm13 holds side 1
+    ;xmm14 holds side 2
     ;xmm15 holds sin(x)
 
-    ; movsd xmm8, qword [side_one]
-    ; movsd xmm9, qword [side_two]
-    mulsd xmm8, xmm9
-    mulsd xmm8, xmm15
-    divsd xmm8, qword [two] ;xmm8 now holds the area
+    mulsd xmm13, xmm14
+    mulsd xmm13, xmm15
+    divsd xmm13, qword [two] ;xmm13 now holds the area
 
-    
-    ; ;Block outputting sin(x)
-    ; mov rax, 1
-    ; mov rdi, sin_test
-    ; mov rsi, format
-    ; movsd xmm0, xmm15
-    ; call printf
 
 
     ;Convert the area into a string
     mov rax, 1
-    movsd xmm0, xmm8
+    movsd xmm0, xmm13
+    mov rdi, 5
+    mov rsi, area_output
     call gcvt
     mov r15, rax
+
+
+    ;Block that outputs a newline
+    mov byte [newline], 0xa
+    mov byte [newline+1], 0
+    mov rax, 1
+    mov rdi, 1
+    mov rsi, newline
+    mov rdx, 1
+    syscall
 
 
 
@@ -365,14 +341,6 @@ exit_angle:
     call strlen
     mov r12, rax
 
-    ; ;Block that outputs a newline
-    ; mov byte [newline], 0xa
-    ; mov byte [newline+1], 0
-    ; mov rax, 1
-    ; mov rdi, 1
-    ; mov rsi, newline
-    ; mov rdx, 1
-    ; syscall
 
     ;Output the first part of the area string
     mov rax, 1 ;1 is the write code
@@ -400,7 +368,6 @@ exit_angle:
     mov rdi, area_output_2
     call strlen
     mov r12, rax
-
 
 
     ;Output the second part of the area string
@@ -442,7 +409,7 @@ exit_angle:
 
     ;Back up value in xmm8 area before restoring registers
     push qword 0
-    movsd [rsp], xmm8
+    movsd [rsp], xmm13
 
 
 
@@ -473,4 +440,4 @@ exit_angle:
     pop rbx
     pop rbp   ;Restore rbp to the base of the activation record of the caller program
     ret
-;End of the function manager.asm ====================================================================
+;End of the function producer.asm ====================================================================

@@ -1,206 +1,149 @@
-     1                                  ;****************************************************************************************************************************
-     2                                  ;Program name: "Arrays" - This program will first welcome the user to the program, as well as outputting its developer.     *
-     3                                  ;After this initial message, the program will let the user know the directions of the program, which is as follows:         *
-     4                                  ;                                                                                                                           *
-     5                                  ;"This program will manage your arrays of 64-bit floats                                                                     *
-     6                                  ;For the array enter a sequence of 64-bit floats separated by white space.                                                  *
-     7                                  ;After the last input press enter followed by Control+D:"                                                                   *
-     8                                  ;                                                                                                                           *
-     9                                  ;The program will then take in user input, validating each input to make sure they are entering valid float numbers, and    *
-    10                                  ;this process is done through the input_array.asm file, using isfloat.asm to validate their inputs. If the user inputs an   *
-    11                                  ;invalid input, the program will let them know with the following message:                                                  *
-    12                                  ;                                                                                                                           *
-    13                                  ;"The last input was invalid and not entered into the array.""                                                              *
-    14                                  ;                                                                                                                           *
-    15                                  ;Once the array has been fully entered, the program will output the entire array to the screen, which is done in the        *
-    16                                  ;output_array.c file using the C language. Once the array has been output, the program will then compute the mean of the    *
-    17                                  ;array using compute_mean.asm, and will then use the mean it found to compute the variance using compute_variance.cpp,      *
-    18                                  ;which uses C++. Once the variance has been found, the program will output the variance to the screen for the user, and     *
-    19                                  ;will then send the variance to main.c, where the program will let the user know that the variance will be kept for         *
-    20                                  ;future use, and that a 0 will be sent to the operating system.                                                             *
-    21                                  ;                                                                                                                           *
-    22                                  ;This program is free software: you can redistribute it and/or modify it under the terms of the GNU General Public License  *
-    23                                  ;version 3 as published by the Free Software Foundation.  This program is distributed in the hope that it will be useful,   *
-    24                                  ;but WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See   *
-    25                                  ;the GNU General Public License for more details A copy of the GNU General Public License v3 is available here:             *
-    26                                  ;<https://www.gnu.org/licenses/>.                                                                                           *
-    27                                  ;****************************************************************************************************************************
-    28                                  
+     1                                  ;/****************************************************************************************************************************
+     2                                  ;Program name: "Areas of Triangles" - This program will prompt the user for the lengths of 2 sides of a triangle and the 
+     3                                  ;size of the angle between them. All I/O in this program will be handled in pure assembly using syscalls. The conversions
+     4                                  ;atof (string to float) and ftoa (float to string) both use built-in library functions. When computing the area of the 
+     5                                  ;triangle, sin(x), where x is the angle, is used in the formula, and sin(x) is computed using a Taylor series, programmed in 
+     6                                  ;x86_64. When the user has input 2 sides and the angle between, the program will convert the strings input by the user into
+     7                                  ;floats, calculate the area, then convert the area into a string and output the area to the screen. Once the area has been  
+     8                                  ;output to the screen, the program will then return the area to the driver function, written in C, and will confirm its 
+     9                                  ;retrieval and convey a goobye message to the user.
+    10                                  
+    11                                  ;WARNING: THIS PROGRAM DOES NOT VALIDATE USER INPUT
+    12                                  ;****************************************************************************************************************************/
+    13                                  
+    14                                  
+    15                                  
+    16                                  ;/**********************************************************************************************************************************
+    17                                  ;Author information
+    18                                  ;  Author name: Nathan Warner
+    19                                  ;  Author email: nwarner4@csu.fullerton.edu
+    20                                  
+    21                                  ;Program information
+    22                                  ;  Program name: Areas of Triangles
+    23                                  ;  Programming languages: One module in C, four modules in x86_64, and one module in bash
+    24                                  ;  Date program began: 2024-May-4
+    25                                  ;  Date of last update: 2024-Mar-8
+    26                                  ;  Files in this program: main.c, producer.asm multiplier.asm sin.asm strlen.asm r.sh
+    27                                  ;  Testing: Alpha testing completed.  All functions are correct.
+    28                                  ;  Status: Ready for release to customers
     29                                  
-    30                                  
-    31                                  
-    32                                  ;========1=========2=========3=========4=========5=========6=========7=========8=========9=========0=========1=========2=========3**
-    33                                  ;Author information
-    34                                  ;  Author name: Nathan Warner
-    35                                  ;  Author email: nwarner4@csu.fullerton.edu
-    36                                  ;
-    37                                  ;Program information
-    38                                  ;  Program name: Arrays
-    39                                  ;  Programming languages: Two modules in C, four modules in x86_64, one module in C++, and one module in bash
-    40                                  ;  Date program began: 2024-Mar-3
-    41                                  ;  Date of last update: 2024-Mar-7
-    42                                  ;  Files in this program: main.c, manager.asm, r.sh, output_array.c, compute_mean.asm, compute_variance.cpp, input_array.asm, isfloat.asm
-    43                                  ;  Testing: Alpha testing completed.  All functions are correct.
-    44                                  ;  Status: Ready for release to customers
-    45                                  ;
-    46                                  ;Purpose
-    47                                  ;  The program will take in an array of valid floating point numbers from the user, find the mean of the array, 
-    48                                  ;       and find the variance, which it will output to the screen and send to main.c
-    49                                  ;
-    50                                  ;This file:
-    51                                  ;  File name: manager.asm
-    52                                  ;  Language: X86-64
-    53                                  ;  Max page width: 124 columns
-    54                                  ;  Assemble (standard): nasm -f elf64 -l manager.lis -o manager.o manager.asm
-    55                                  ;  Assemble (debug): nasm -g dwarf -l manager.lis -o manager.o manager.asm
-    56                                  ;  Optimal print specification: Landscape, 7 points, monospace, 8½x11 paper
-    57                                  ;  Prototype of this function: double manager();
-    58                                  ;========1=========2=========3=========4=========5=========6=========7=========8=========9=========0=========1=========2=========3**
+    30                                  ;Purpose
+    31                                  ;  The program will take in 2 sides of a triangle, as well as the angle between them in degrees from the user.
+    32                                  ;    Using the above information, the program will then compute the area of the triangle and output it to the screen.
+    33                                  ;    All I/O in this program will be done in pure x86_64 assembly using syscalls
+    34                                  
+    35                                  ;This file:
+    36                                  ;  File name: sin.asm
+    37                                  ;  Language: x86_64
+    38                                  ;  Max page width: 124 columns
+    39                                  ;  Assemble (standard): nasm -f elf64 -l sin.lis -o sin.o sin.asm
+    40                                  ;  Optimal print specification: Landscape, 7 points, monospace, 8½x11 paper
+    41                                  ;  Prototype of this function: int main(int argc, const char * argv[]);
+    42                                  ;***********************************************************************************************************************************/
+    43                                  
+    44                                  ;Declaration section.  The section has no name other than "Declaration section".  Declare here everything that does
+    45                                  ;not have its own place of declaration
+    46                                  
+    47                                  global sin
+    48                                  
+    49                                  extern multiplier
+    50                                  
+    51                                  segment .data
+    52                                  ;This section (or segment) is for declaring initialized arrays
+    53                                  
+    54                                  segment .bss
+    55                                  ;This section (or segment) is for declaring empty arrays
+    56                                  
+    57                                  align 64
+    58 00000000 <res 340h>              backup_storage_area resb 832
     59                                  
-    60                                  ;Declaration section.  The section has no name other than "Declaration section".  Declare here everything that does
-    61                                  ;not have its own place of declaration
-    62                                  
-    63                                  global sin
-    64                                  
-    65                                  extern multiplier
-    66                                  extern printf ;REMOVE
-    67                                  
-    68                                  ; float_size equ 60
-    69                                  
-    70                                  segment .data
-    71                                  ;This section (or segment) is for declaring initialized arrays
-    72                                  
-    73 00000000 0A5468652074657374-     test_val db 10, "The test value is: %1.15lf", 0
-    73 00000009 2076616C7565206973-
-    73 00000012 3A2025312E31356C66-
-    73 0000001B 00                 
-    74 0000001C 256C6600                format db "%lf", 0
-    75                                  
-    76                                  segment .bss
-    77                                  ;This section (or segment) is for declaring empty arrays
-    78                                  
-    79                                  align 64
-    80 00000000 <res 340h>              backup_storage_area resb 832
-    81 00000340 <res 60h>               array resq 12 ;Array of 12 qwords, will be used to take in user inputs for floats, as well as computing the mean and variance
-    82                                  
-    83                                  
-    84                                  segment .text
+    60                                  segment .text
+    61                                  
+    62                                  sin:
+    63                                      ;Back up the GPRs (General Purpose Registers)
+    64 00000000 55                          push rbp
+    65 00000001 4889E5                      mov rbp, rsp
+    66 00000004 53                          push rbx
+    67 00000005 51                          push rcx
+    68 00000006 52                          push rdx
+    69 00000007 57                          push rdi
+    70 00000008 56                          push rsi
+    71 00000009 4150                        push r8
+    72 0000000B 4151                        push r9
+    73 0000000D 4152                        push r10
+    74 0000000F 4153                        push r11
+    75 00000011 4154                        push r12
+    76 00000013 4155                        push r13
+    77 00000015 4156                        push r14
+    78 00000017 4157                        push r15
+    79 00000019 9C                          pushf
+    80                                  
+    81                                      ;Backup the registers other than the GPRs
+    82 0000001A B807000000                  mov rax,7
+    83 0000001F BA00000000                  mov rdx,0
+    84 00000024 0FAE2425[00000000]          xsave [backup_storage_area]
     85                                  
-    86                                  sin:
-    87                                  
-    88                                      ;Back up the GPRs (General Purpose Registers)
-    89 00000000 55                          push rbp
-    90 00000001 4889E5                      mov rbp, rsp
-    91 00000004 53                          push rbx
-    92 00000005 51                          push rcx
-    93 00000006 52                          push rdx
-    94 00000007 57                          push rdi
-    95 00000008 56                          push rsi
-    96 00000009 4150                        push r8
-    97 0000000B 4151                        push r9
-    98 0000000D 4152                        push r10
-    99 0000000F 4153                        push r11
-   100 00000011 4154                        push r12
-   101 00000013 4155                        push r13
-   102 00000015 4156                        push r14
-   103 00000017 4157                        push r15
-   104 00000019 9C                          pushf
+    86                                  
+    87                                      ;Setting up registers for sin
+    88 0000002C 41BE00000000                mov r14, 0 ;Term counter
+    89 00000032 F2440F10C8                  movsd xmm9, xmm0 ;Permanent (constant)
+    90 00000037 F2440F10C0                  movsd xmm8, xmm0 ;Current term
+    91 0000003C 66450FEFD2                  pxor xmm10, xmm10 ;xmm10 will hold sin(x)
+    92                                  
+    93                                  
+    94                                  multiplier_loop:   
+    95                                      ;Calling multiplier
+    96 00000041 B801000000                  mov rax, 1
+    97 00000046 4C89F7                      mov rdi, r14 ;Term counter
+    98 00000049 F2410F10C1                  movsd xmm0, xmm9 ;Value for x
+    99 0000004E E8(00000000)                call multiplier
+   100 00000053 F2440F10E0                  movsd xmm12, xmm0
+   101                                  
+   102                                  
+   103 00000058 F2450F59C4                  mulsd xmm8, xmm12
+   104 0000005D 49FFC6                      inc r14
    105                                  
-   106                                      ;Backup the registers other than the GPRs
-   107 0000001A B807000000                  mov rax,7
-   108 0000001F BA00000000                  mov rdx,0
-   109 00000024 0FAE2425[00000000]          xsave [backup_storage_area]
-   110                                  
-   111                                  
-   112                                      ;Setting up registers for sin
-   113 0000002C 41BE00000000                mov r14, 0 ;Term counter
-   114 00000032 F2440F10C8                  movsd xmm9, xmm0 ;Permanent (constant)
-   115 00000037 F2440F10C0                  movsd xmm8, xmm0 ;Current term
-   116 0000003C 66450FEFD2                  pxor xmm10, xmm10 ;xmm10 will hold sin(x)
-   117                                  
-   118                                      ; ;TESTING OUTPUT
-   119                                      ; mov rax, 1
-   120                                      ; mov rdi, test_val
-   121                                      ; mov rsi, format
-   122                                      ; movsd xmm0, xmm8
-   123                                      ; call printf
-   124                                  
-   125                                  
-   126                                  multiplier_loop:   
-   127                                      ;Calling multiplier
-   128 00000041 B801000000                  mov rax, 1
-   129 00000046 4C89F7                      mov rdi, r14 ;Term counter
-   130 00000049 F2410F10C1                  movsd xmm0, xmm9 ;Value for x
-   131 0000004E E8(00000000)                call multiplier
-   132 00000053 F2440F10E0                  movsd xmm12, xmm0
-   133                                  
-   134                                  
-   135                                      ; ;TESTING XMM12 -> multiplier working correctly
-   136                                      ; mov rax, 1
-   137                                      ; mov rdi, test_val
-   138                                      ; mov rsi, format
-   139                                      ; movsd xmm0, xmm12
-   140                                      ; call printf
-   141                                  
-   142 00000058 F2450F59C4                  mulsd xmm8, xmm12
-   143 0000005D 49FFC6                      inc r14
-   144                                  
-   145                                  
-   146                                  
-   147 00000060 F2450F58D0                  addsd xmm10, xmm8
-   148                                  
-   149                                      ; ;TESTING XMM VALUE
-   150                                      ; mov rax, 1
-   151                                      ; mov rdi, test_val
-   152                                      ; mov rsi, format
-   153                                      ; movsd xmm0, xmm10
-   154                                      ; call printf
-   155                                  
-   156 00000065 4983FE14                    cmp r14, 20
-   157 00000069 7ED6                        jle multiplier_loop
-   158                                  
-   159                                  exit:
-   160 0000006B F2450F58CA                  addsd xmm9, xmm10
-   161                                  
-   162                                      ; ;TESTING XMM VALUE
-   163                                      ; mov rax, 1
-   164                                      ; mov rdi, test_val
-   165                                      ; mov rsi, format
-   166                                      ; movsd xmm0, xmm9
-   167                                      ; call printf
-   168                                  
-   169                                      ;Back up value in xmm9 before restoring registers
-   170 00000070 6A00                        push qword 0
-   171 00000072 F2440F110C24                movsd [rsp], xmm9
-   172                                  
-   173                                  
-   174                                  
-   175                                      ;Restore the values to non-GPRs
-   176 00000078 B807000000                  mov rax, 7
-   177 0000007D BA00000000                  mov rdx, 0
-   178 00000082 0FAE2C25[00000000]          xrstor [backup_storage_area]
-   179                                  
-   180                                  
-   181 0000008A F20F100424                  movsd xmm0, [rsp]
-   182 0000008F 58                          pop rax
-   183                                      
-   184                                  
-   185                                  
-   186                                      ;Restore the GPRs
-   187 00000090 9D                          popf
-   188 00000091 415F                        pop r15
-   189 00000093 415E                        pop r14
-   190 00000095 415D                        pop r13
-   191 00000097 415C                        pop r12
-   192 00000099 415B                        pop r11
-   193 0000009B 415A                        pop r10
-   194 0000009D 4159                        pop r9
-   195 0000009F 4158                        pop r8
-   196 000000A1 5E                          pop rsi
-   197 000000A2 5F                          pop rdi
-   198 000000A3 5A                          pop rdx
-   199 000000A4 59                          pop rcx
-   200 000000A5 5B                          pop rbx
-   201 000000A6 5D                          pop rbp   ;Restore rbp to the base of the activation record of the caller program
-   202 000000A7 C3                          ret
-   203                                  ;End of the function sin.asm ====================================================================
+   106                                  
+   107 00000060 F2450F58D0                  addsd xmm10, xmm8
+   108                                  
+   109                                  
+   110 00000065 4983FE14                    cmp r14, 20
+   111 00000069 7ED6                        jle multiplier_loop
+   112                                  
+   113                                  exit:
+   114 0000006B F2450F58CA                  addsd xmm9, xmm10
+   115                                  
+   116                                  
+   117                                      ;Back up value in xmm9 before restoring registers
+   118 00000070 6A00                        push qword 0
+   119 00000072 F2440F110C24                movsd [rsp], xmm9
+   120                                  
+   121                                  
+   122                                      ;Restore the values to non-GPRs
+   123 00000078 B807000000                  mov rax, 7
+   124 0000007D BA00000000                  mov rdx, 0
+   125 00000082 0FAE2C25[00000000]          xrstor [backup_storage_area]
+   126                                  
+   127                                  
+   128 0000008A F20F100424                  movsd xmm0, [rsp]
+   129 0000008F 58                          pop rax
+   130                                      
+   131                                  
+   132                                      ;Restore the GPRs
+   133 00000090 9D                          popf
+   134 00000091 415F                        pop r15
+   135 00000093 415E                        pop r14
+   136 00000095 415D                        pop r13
+   137 00000097 415C                        pop r12
+   138 00000099 415B                        pop r11
+   139 0000009B 415A                        pop r10
+   140 0000009D 4159                        pop r9
+   141 0000009F 4158                        pop r8
+   142 000000A1 5E                          pop rsi
+   143 000000A2 5F                          pop rdi
+   144 000000A3 5A                          pop rdx
+   145 000000A4 59                          pop rcx
+   146 000000A5 5B                          pop rbx
+   147 000000A6 5D                          pop rbp   ;Restore rbp to the base of the activation record of the caller program
+   148 000000A7 C3                          ret
+   149                                  ;End of the function sin.asm ====================================================================
