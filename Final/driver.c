@@ -20,4 +20,4 @@ printf("This program is maintained by Nathan Warner");
  printf("A 0 will be sent to the OS. Bye.\n");
 }
 
-//End of the function main.c ====================================================================
+//End of the function driver.c ====================================================================

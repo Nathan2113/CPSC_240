@@ -15,7 +15,6 @@ extern atof
 extern fgets
 extern stdin
 extern strlen
-extern sscanf
 
 
 
@@ -26,20 +25,17 @@ false equ 0
 segment .data
 ;This section (or segment) is for declaring initialized arrays
 
-test_output db "The test program is working", 10, 0
-; first_input_prompt db 10, 10, "Please enter two floats separated by ws for the first vector: ", 0
-; second_input_prompt db "Thank you. Please enter two floats separated by ws for the second vector: ", 0
 first_input db 10, "Please enter the first number of the first vector: ", 0
 second_input db "Please enter the second number of the first vector: ", 0
 third_input db "Please enter the third number of the second vector: ", 0
 fourth_input db "Please enter the fourth number of the second vector: ", 0
-thank_you_msg db "Thank you.", 10, 10, 0
-dot_product db "The dot product is %1.1lf", 10, 0
-goobye_msg db "Enjoy your dot product.", 10, 10, 0
+thank_you_msg db "Thank you.", 10, 0
+dot_product db 10, "The dot product is %1.1lf", 10, 0
+goobye_msg db "Enjoy your dot product.", 10, 0
 format db "%lf", 0
 string_format db "%s", 0
 invalid db "The number input is invalid...Please try again: ", 0
-input_format db "%s %s", 0
+; input_format db "%s %s", 0
 
 buffer db 20 ; buffer to store the input
 
@@ -83,12 +79,6 @@ dot:
     xsave [backup_storage_area]
 
 
-    ; ;TESTING
-    ; mov rax, 0
-    ; mov rdi, test_output
-    ; call printf
-
-
 get_first_vector:
     ;Output first vector prompt
     mov rax, 0
@@ -110,13 +100,6 @@ get_first_vector:
     call strlen
     mov [rsp + rax - 1], byte 0
 
-    ; ;Separate the input into two registers
-    ; mov rax, buffer
-    ; mov rdi, input_format
-    ; mov rsi, num1
-    ; mov rbx, num2
-    ; call sscanf
-
 
     ;Check if input is a float
     mov rax, 0
@@ -133,11 +116,6 @@ get_first_vector:
 
     ;Fixes the stack
     add rsp, 4096
-
-    ; ;TESTING
-    ; mov rax, 0
-    ; mov rdi, test_output
-    ; call printf
 
     jmp exit
 
@@ -164,12 +142,6 @@ bad_input:
     call strlen
     mov [rsp + rax - 1], byte 0
 
-    ; ;Separate the input into two registers
-    ; mov rax, buffer
-    ; mov rdi, input_format
-    ; mov rsi, num1
-    ; mov rbx, num2
-    ; call sscanf
 
     ;Check if input is a float
     mov rax, 0
@@ -303,11 +275,30 @@ exit:
     ;Fixes the stack
     add rsp, 4096
 
+    
+    ;Output thank you message
+    mov rax, 0
+    mov rdi, thank_you_msg
+    call printf
+
 
     ;Now computing the dot product
     mulsd xmm12, xmm14
     mulsd xmm13, xmm15
     addsd xmm12, xmm13
+
+
+    ;Output the dot product
+    mov rax, 1
+    mov rdi, dot_product
+    mov rsi, format
+    movsd xmm0, xmm12
+    call printf
+
+    ;Output goodbye message
+    mov rax, 0
+    mov rdi, goobye_msg
+    call printf
 
 
     ;Back up value in xmm12 before restoring registers
@@ -344,4 +335,4 @@ exit:
     pop rbx
     pop rbp   ;Restore rbp to the base of the activation record of the caller program
     ret
-;End of the function electricity.asm ====================================================================
+;End of the function dot.asm ====================================================================
