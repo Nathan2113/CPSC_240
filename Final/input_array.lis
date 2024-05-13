@@ -1,0 +1,203 @@
+     1                                  ;****************************************************************************************************************************
+     2                                  ;Program name: "Arrays" - This program will first welcome the user to the program, as well as outputting its developer.     *
+     3                                  ;After this initial message, the program will let the user know the directions of the program, which is as follows:         *
+     4                                  ;                                                                                                                           *
+     5                                  ;"This program will manage your arrays of 64-bit floats                                                                     *
+     6                                  ;For the array enter a sequence of 64-bit floats separated by white space.                                                  *
+     7                                  ;After the last input press enter followed by Control+D:"                                                                   *
+     8                                  ;                                                                                                                           *
+     9                                  ;The program will then take in user input, validating each input to make sure they are entering valid float numbers, and    *
+    10                                  ;this process is done through the input_array.asm file, using isfloat.asm to validate their inputs. If the user inputs an   *
+    11                                  ;invalid input, the program will let them know with the following message:                                                  *
+    12                                  ;                                                                                                                           *
+    13                                  ;"The last input was invalid and not entered into the array.""                                                              *
+    14                                  ;                                                                                                                           *
+    15                                  ;Once the array has been fully entered, the program will output the entire array to the screen, which is done in the        *
+    16                                  ;output_array.c file using the C language. Once the array has been output, the program will then compute the mean of the    *
+    17                                  ;array using compute_mean.asm, and will then use the mean it found to compute the variance using compute_variance.cpp,      *
+    18                                  ;which uses C++. Once the variance has been found, the program will output the variance to the screen for the user, and     *
+    19                                  ;will then send the variance to main.c, where the program will let the user know that the variance will be kept for         *
+    20                                  ;future use, and that a 0 will be sent to the operating system.                                                             *
+    21                                  ;                                                                                                                           *
+    22                                  ;This program is free software: you can redistribute it and/or modify it under the terms of the GNU General Public License  *
+    23                                  ;version 3 as published by the Free Software Foundation.  This program is distributed in the hope that it will be useful,   *
+    24                                  ;but WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See   *
+    25                                  ;the GNU General Public License for more details A copy of the GNU General Public License v3 is available here:             *
+    26                                  ;<https://www.gnu.org/licenses/>.                                                                                           *
+    27                                  ;****************************************************************************************************************************
+    28                                  
+    29                                  
+    30                                  
+    31                                  
+    32                                  ;========1=========2=========3=========4=========5=========6=========7=========8=========9=========0=========1=========2=========3**
+    33                                  ;Author information
+    34                                  ;  Author name: Nathan Warner
+    35                                  ;  Author email: nwarner4@csu.fullerton.edu
+    36                                  ;
+    37                                  ;Program information
+    38                                  ;  Program name: Arrays
+    39                                  ;  Programming languages: Two modules in C, four modules in x86_64, one module in C++, and one module in bash
+    40                                  ;  Date program began: 2024-Mar-3
+    41                                  ;  Date of last update: 2024-Mar-7
+    42                                  ;  Files in this program: main.c, manager.asm, r.sh, output_array.c, compute_mean.asm, compute_variance.cpp, input_array.asm, isfloat.asm
+    43                                  ;  Testing: Alpha testing completed.  All functions are correct.
+    44                                  ;  Status: Ready for release to customers
+    45                                  ;
+    46                                  ;Purpose
+    47                                  ;  The program will take in an array of valid floating point numbers from the user, find the mean of the array, 
+    48                                  ;       and find the variance, which it will output to the screen and send to main.c
+    49                                  ;
+    50                                  ;This file:
+    51                                  ;  File name: input_array.asm
+    52                                  ;  Language: X86-64
+    53                                  ;  Max page width: 124 columns
+    54                                  ;  Assemble (standard): nasm -f elf64 -l input_array.lis -o input_array.o input_array.asm
+    55                                  ;  Optimal print specification: Landscape, 7 points, monospace, 8½x11 paper
+    56                                  ;  Prototype of this function: double input_array(double *array, int size);
+    57                                  ;========1=========2=========3=========4=========5=========6=========7=========8=========9=========0=========1=========2=========3**
+    58                                  
+    59                                  ;Declaration section.  The section has no name other than "Declaration section".  Declare here everything that does
+    60                                  ;not have its own place of declaration
+    61                                  
+    62                                  global input_array
+    63                                  
+    64                                  extern isfloat
+    65                                  extern atof
+    66                                  extern printf
+    67                                  extern scanf
+    68                                  
+    69                                  
+    70                                  segment .data
+    71                                  ;This section (or segment) is for declaring initialized arrays
+    72 00000000 257300                      string_format db "%s", 0
+    73 00000003 546865206C61737420-         user_invalid_input db "The last input was invalid and not entered into the array.", 10, 0
+    73 0000000C 696E70757420776173-
+    73 00000015 20696E76616C696420-
+    73 0000001E 616E64206E6F742065-
+    73 00000027 6E746572656420696E-
+    73 00000030 746F20746865206172-
+    73 00000039 7261792E0A00       
+    74                                  
+    75                                  
+    76                                  segment .bss
+    77                                  ;This section (or segment) is for declaring empty arrays
+    78                                  align 64
+    79 00000000 <res 340h>              backup_storage_area resb 832
+    80                                  
+    81                                  
+    82                                  segment .text
+    83                                  
+    84                                  input_array:
+    85                                      ;Back up the GPRs (General Purpose Registers)
+    86 00000000 55                          push rbp
+    87 00000001 4889E5                      mov rbp, rsp
+    88 00000004 53                          push rbx
+    89 00000005 51                          push rcx
+    90 00000006 52                          push rdx
+    91 00000007 57                          push rdi
+    92 00000008 56                          push rsi
+    93 00000009 4150                        push r8
+    94 0000000B 4151                        push r9
+    95 0000000D 4152                        push r10
+    96 0000000F 4153                        push r11
+    97 00000011 4154                        push r12
+    98 00000013 4155                        push r13
+    99 00000015 4156                        push r14
+   100 00000017 4157                        push r15
+   101 00000019 9C                          pushf
+   102                                  
+   103                                  
+   104                                      ;Backup the registers other than the GPRs
+   105 0000001A B807000000                  mov rax,7
+   106 0000001F BA00000000                  mov rdx,0
+   107 00000024 0FAE2425[00000000]          xsave [backup_storage_area]
+   108                                  
+   109                                  
+   110                                      ;Setting up values for input_array execution
+   111 0000002C 4989FD                      mov r13, rdi ;r13 is the array
+   112 0000002F 4989F6                      mov r14, rsi ;r14 is the max number of values that can be in the array (12)
+   113 00000032 41BF00000000                mov r15, 0 ;r15 is the current index of the array
+   114                                  
+   115                                      
+   116                                  
+   117                                  begin:
+   118 00000038 4881EC00040000              sub rsp, 1024
+   119                                  
+   120                                      ;Ends the loop if the current array size is 12 (maxed out array)
+   121 0000003F 4D39F7                      cmp r15, r14
+   122 00000042 746F                        je quit_loop
+   123                                  
+   124 00000044 B800000000                  mov rax, 0
+   125 00000049 48BF-                       mov rdi, string_format ;"%s"
+   125 0000004B [0000000000000000] 
+   126 00000053 4889E6                      mov rsi, rsp
+   127 00000056 E8(00000000)                call scanf
+   128                                  
+   129 0000005B 4898                        cdqe
+   130 0000005D 4883F8FF                    cmp rax, -1
+   131 00000061 7450                        je quit_loop
+   132                                  
+   133                                  
+   134                                      ;Check user input with isfloat
+   135 00000063 B800000000                  mov rax, 0
+   136 00000068 4889E7                      mov rdi, rsp
+   137 0000006B E8(00000000)                call isfloat
+   138 00000070 4883F800                    cmp rax, 0
+   139 00000074 7420                        je invalid_input
+   140                                  
+   141                                      
+   142                                      ;Set up call to atof
+   143 00000076 B800000000                  mov rax, 0
+   144 0000007B 4889E7                      mov rdi, rsp
+   145 0000007E E8(00000000)                call atof ;double atof(char *w)
+   146                                  
+   147                                      ;copy number into the array
+   148 00000083 F2430F1144FD00              movsd [r13+r15*8], xmm0 ;r15 is the index
+   149 0000008A 49FFC7                      inc r15
+   150                                  
+   151 0000008D 4881C400040000              add rsp, 1024 ;Fixes the stack
+   152 00000094 EBA2                        jmp begin
+   153                                  
+   154                                  
+   155                                  invalid_input:
+   156 00000096 4881C400040000              add rsp, 1024 ;Fixes the stack
+   157 0000009D B800000000                  mov rax, 0
+   158 000000A2 48BF-                       mov rdi, user_invalid_input
+   158 000000A4 [0300000000000000] 
+   159 000000AC E8(00000000)                call printf
+   160                                  
+   161 000000B1 EB85                        jmp begin
+   162                                  
+   163                                  
+   164                                  quit_loop: ;No more looping - restore regs, but save r15
+   165 000000B3 4881C400040000              add rsp, 1024
+   166                                  
+   167                                  
+   168                                  
+   169                                      ; Restore the values to non-GPRs
+   170 000000BA B807000000                  mov rax, 7
+   171 000000BF BA00000000                  mov rdx, 0
+   172 000000C4 0FAE2C25[00000000]          xrstor [backup_storage_area]
+   173                                  
+   174 000000CC 4C89F8                      mov rax, r15
+   175                                  
+   176                                  
+   177                                  
+   178                                      ;Restore the GPRs
+   179 000000CF 9D                          popf
+   180 000000D0 415F                        pop r15
+   181 000000D2 415E                        pop r14
+   182 000000D4 415D                        pop r13
+   183 000000D6 415C                        pop r12
+   184 000000D8 415B                        pop r11
+   185 000000DA 415A                        pop r10
+   186 000000DC 4159                        pop r9
+   187 000000DE 4158                        pop r8
+   188 000000E0 5E                          pop rsi
+   189 000000E1 5F                          pop rdi
+   190 000000E2 5A                          pop rdx
+   191 000000E3 59                          pop rcx
+   192 000000E4 5B                          pop rbx
+   193 000000E5 5D                          pop rbp   ;Restore rbp to the base of the activation record of the caller program
+   194 000000E6 C3                          ret
+   195                                  ;End of the function input_array.asm ====================================================================

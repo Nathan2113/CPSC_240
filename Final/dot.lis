@@ -1,0 +1,385 @@
+     1                                  ; Nathan Warner
+     2                                  ; nwarner4@csu.fullerton.edu
+     3                                  ; CPSC 240-3
+     4                                  ; May 13, 2024
+     5                                  
+     6                                  ;Declaration section.  The section has no name other than "Declaration section".  Declare here everything that does
+     7                                  ;not have its own place of declaration
+     8                                  
+     9                                  global dot
+    10                                  
+    11                                  extern printf
+    12                                  extern isfloat
+    13                                  extern scanf
+    14                                  extern atof
+    15                                  extern fgets
+    16                                  extern stdin
+    17                                  extern strlen
+    18                                  extern sscanf
+    19                                  
+    20                                  
+    21                                  
+    22                                  float_size equ 60
+    23                                  true equ -1
+    24                                  false equ 0
+    25                                  
+    26                                  segment .data
+    27                                  ;This section (or segment) is for declaring initialized arrays
+    28                                  
+    29 00000000 546865207465737420-     test_output db "The test program is working", 10, 0
+    29 00000009 70726F6772616D2069-
+    29 00000012 7320776F726B696E67-
+    29 0000001B 0A00               
+    30                                  ; first_input_prompt db 10, 10, "Please enter two floats separated by ws for the first vector: ", 0
+    31                                  ; second_input_prompt db "Thank you. Please enter two floats separated by ws for the second vector: ", 0
+    32 0000001D 0A506C656173652065-     first_input db 10, "Please enter the first number of the first vector: ", 0
+    32 00000026 6E7465722074686520-
+    32 0000002F 6669727374206E756D-
+    32 00000038 626572206F66207468-
+    32 00000041 652066697273742076-
+    32 0000004A 6563746F723A2000   
+    33 00000052 506C6561736520656E-     second_input db "Please enter the second number of the first vector: ", 0
+    33 0000005B 746572207468652073-
+    33 00000064 65636F6E64206E756D-
+    33 0000006D 626572206F66207468-
+    33 00000076 652066697273742076-
+    33 0000007F 6563746F723A2000   
+    34 00000087 506C6561736520656E-     third_input db "Please enter the third number of the second vector: ", 0
+    34 00000090 746572207468652074-
+    34 00000099 68697264206E756D62-
+    34 000000A2 6572206F6620746865-
+    34 000000AB 207365636F6E642076-
+    34 000000B4 6563746F723A2000   
+    35 000000BC 506C6561736520656E-     fourth_input db "Please enter the fourth number of the second vector: ", 0
+    35 000000C5 746572207468652066-
+    35 000000CE 6F75727468206E756D-
+    35 000000D7 626572206F66207468-
+    35 000000E0 65207365636F6E6420-
+    35 000000E9 766563746F723A2000 
+    36 000000F2 5468616E6B20796F75-     thank_you_msg db "Thank you.", 10, 10, 0
+    36 000000FB 2E0A0A00           
+    37 000000FF 54686520646F742070-     dot_product db "The dot product is %1.1lf", 10, 0
+    37 00000108 726F64756374206973-
+    37 00000111 2025312E316C660A00 
+    38 0000011A 456E6A6F7920796F75-     goobye_msg db "Enjoy your dot product.", 10, 10, 0
+    38 00000123 7220646F742070726F-
+    38 0000012C 647563742E0A0A00   
+    39 00000134 256C6600                format db "%lf", 0
+    40 00000138 257300                  string_format db "%s", 0
+    41 0000013B 546865206E756D6265-     invalid db "The number input is invalid...Please try again: ", 0
+    41 00000144 7220696E7075742069-
+    41 0000014D 7320696E76616C6964-
+    41 00000156 2E2E2E506C65617365-
+    41 0000015F 207472792061676169-
+    41 00000168 6E3A2000           
+    42 0000016C 257320257300            input_format db "%s %s", 0
+    43                                  
+    44 00000172 14                      buffer db 20 ; buffer to store the input
+    45                                  
+    46 00000173 0000000000000000        num1 dq 0
+    47 0000017B 0000000000000000        num2 dq 0
+    48                                  
+    49                                  
+    50                                  segment .bss
+    51                                  ;This section (or segment) is for declaring empty arrays
+    52                                  
+    53                                  align 64
+    54 00000000 <res 340h>              backup_storage_area resb 832
+    55 00000340 <res 10h>               array_1 resq 2; array of 2 qwords
+    56                                  
+    57                                  
+    58                                  segment .text
+    59                                  
+    60                                  dot:
+    61                                  
+    62                                      ;Back up the GPRs (General Purpose Registers)
+    63 00000000 55                          push rbp
+    64 00000001 4889E5                      mov rbp, rsp
+    65 00000004 53                          push rbx
+    66 00000005 51                          push rcx
+    67 00000006 52                          push rdx
+    68 00000007 57                          push rdi
+    69 00000008 56                          push rsi
+    70 00000009 4150                        push r8
+    71 0000000B 4151                        push r9
+    72 0000000D 4152                        push r10
+    73 0000000F 4153                        push r11
+    74 00000011 4154                        push r12
+    75 00000013 4155                        push r13
+    76 00000015 4156                        push r14
+    77 00000017 4157                        push r15
+    78 00000019 9C                          pushf
+    79                                  
+    80                                      ;Backup the registers other than the GPRs
+    81 0000001A B807000000                  mov rax,7
+    82 0000001F BA00000000                  mov rdx,0
+    83 00000024 0FAE2425[00000000]          xsave [backup_storage_area]
+    84                                  
+    85                                  
+    86                                      ; ;TESTING
+    87                                      ; mov rax, 0
+    88                                      ; mov rdi, test_output
+    89                                      ; call printf
+    90                                  
+    91                                  
+    92                                  get_first_vector:
+    93                                      ;Output first vector prompt
+    94 0000002C B800000000                  mov rax, 0
+    95 00000031 48BF-                       mov rdi, first_input
+    95 00000033 [1D00000000000000] 
+    96 0000003B E8(00000000)                call printf
+    97                                  
+    98                                  
+    99                                      ;Get user input for the first vector
+   100 00000040 B800000000                  mov rax, 0
+   101 00000045 4881EC00100000              sub rsp, 4096
+   102 0000004C 4889E7                      mov rdi, rsp
+   103 0000004F BE00100000                  mov rsi, 4096
+   104 00000054 488B1425[00000000]          mov rdx, [stdin]
+   105 0000005C E8(00000000)                call fgets
+   106                                  
+   107                                      ;Remove newline
+   108 00000061 B800000000                  mov rax, 0
+   109 00000066 4889E7                      mov rdi, rsp
+   110 00000069 E8(00000000)                call strlen
+   111 0000006E C64404FF00                  mov [rsp + rax - 1], byte 0
+   112                                  
+   113                                      ; ;Separate the input into two registers
+   114                                      ; mov rax, buffer
+   115                                      ; mov rdi, input_format
+   116                                      ; mov rsi, num1
+   117                                      ; mov rbx, num2
+   118                                      ; call sscanf
+   119                                  
+   120                                  
+   121                                      ;Check if input is a float
+   122 00000073 B800000000                  mov rax, 0
+   123 00000078 4889E7                      mov rdi, rsp
+   124 0000007B E8(00000000)                call isfloat
+   125 00000080 4883F800                    cmp rax, false
+   126 00000084 741B                        je bad_input
+   127                                  
+   128                                      ;Convert the input from string to float
+   129 00000086 B800000000                  mov rax, 0
+   130 0000008B 4889E7                      mov rdi, rsp
+   131 0000008E E8(00000000)                call atof
+   132 00000093 F2440F10E0                  movsd xmm12, xmm0
+   133                                  
+   134                                      ;Fixes the stack
+   135 00000098 4881C400100000              add rsp, 4096
+   136                                  
+   137                                      ; ;TESTING
+   138                                      ; mov rax, 0
+   139                                      ; mov rdi, test_output
+   140                                      ; call printf
+   141                                  
+   142 0000009F EB7A                        jmp exit
+   143                                  
+   144                                  
+   145                                  bad_input:
+   146 000000A1 4881C400100000              add rsp, 4096
+   147                                  
+   148                                      ;Tell the user their input is invalid and have them enter another input
+   149 000000A8 B800000000                  mov rax, 0
+   150 000000AD 48BF-                       mov rdi, invalid
+   150 000000AF [3B01000000000000] 
+   151 000000B7 E8(00000000)                call printf
+   152                                  
+   153                                      ;Gets user input (for either angle or side)
+   154 000000BC B800000000                  mov rax, 0
+   155 000000C1 4881EC00100000              sub rsp, 4096
+   156 000000C8 4889E7                      mov rdi, rsp
+   157 000000CB BE00100000                  mov rsi, 4096
+   158 000000D0 488B1425[00000000]          mov rdx, [stdin]
+   159 000000D8 E8(00000000)                call fgets
+   160                                  
+   161                                      ;Remove newline
+   162 000000DD B800000000                  mov rax, 0
+   163 000000E2 4889E7                      mov rdi, rsp
+   164 000000E5 E8(00000000)                call strlen
+   165 000000EA C64404FF00                  mov [rsp + rax - 1], byte 0
+   166                                  
+   167                                      ; ;Separate the input into two registers
+   168                                      ; mov rax, buffer
+   169                                      ; mov rdi, input_format
+   170                                      ; mov rsi, num1
+   171                                      ; mov rbx, num2
+   172                                      ; call sscanf
+   173                                  
+   174                                      ;Check if input is a float
+   175 000000EF B800000000                  mov rax, 0
+   176 000000F4 4889E7                      mov rdi, rsp
+   177 000000F7 E8(00000000)                call isfloat
+   178 000000FC 4883F800                    cmp rax, false
+   179 00000100 749F                        je bad_input
+   180                                      
+   181                                      ;Convert the input from string to float
+   182 00000102 B800000000                  mov rax, 0
+   183 00000107 4889E7                      mov rdi, rsp
+   184 0000010A E8(00000000)                call atof
+   185 0000010F F2440F10E0                  movsd xmm12, xmm0
+   186                                  
+   187                                      ;Fixes stack
+   188 00000114 4881C400100000              add rsp, 4096
+   189                                  
+   190                                  exit:
+   191                                  
+   192                                      ;Prompt for second number of first vector
+   193 0000011B B800000000                  mov rax, 0
+   194 00000120 48BF-                       mov rdi, second_input
+   194 00000122 [5200000000000000] 
+   195 0000012A E8(00000000)                call printf
+   196                                  
+   197                                      ;Gets user input for second number of first vector
+   198 0000012F B800000000                  mov rax, 0
+   199 00000134 4881EC00100000              sub rsp, 4096
+   200 0000013B 4889E7                      mov rdi, rsp
+   201 0000013E BE00100000                  mov rsi, 4096
+   202 00000143 488B1425[00000000]          mov rdx, [stdin]
+   203 0000014B E8(00000000)                call fgets
+   204                                  
+   205                                      ;Remove newline
+   206 00000150 B800000000                  mov rax, 0
+   207 00000155 4889E7                      mov rdi, rsp
+   208 00000158 E8(00000000)                call strlen
+   209 0000015D C64404FF00                  mov [rsp + rax - 1], byte 0
+   210                                  
+   211                                      ;Check if input is a float
+   212 00000162 B800000000                  mov rax, 0
+   213 00000167 4889E7                      mov rdi, rsp
+   214 0000016A E8(00000000)                call isfloat
+   215 0000016F 4883F800                    cmp rax, false
+   216 00000173 0F8428FFFFFF                je bad_input
+   217                                  
+   218                                      ;Convert the input from string to float
+   219 00000179 B800000000                  mov rax, 0
+   220 0000017E 4889E7                      mov rdi, rsp
+   221 00000181 E8(00000000)                call atof
+   222 00000186 F2440F10E8                  movsd xmm13, xmm0
+   223                                  
+   224                                  
+   225                                      ;Fixes the stack
+   226 0000018B 4881C400100000              add rsp, 4096
+   227                                  
+   228                                  
+   229                                  
+   230                                  
+   231                                      ;Prompt for first number of second vector
+   232 00000192 B800000000                  mov rax, 0
+   233 00000197 48BF-                       mov rdi, third_input
+   233 00000199 [8700000000000000] 
+   234 000001A1 E8(00000000)                call printf
+   235                                  
+   236                                      ;Gets user input for first number of second vector
+   237 000001A6 B800000000                  mov rax, 0
+   238 000001AB 4881EC00100000              sub rsp, 4096
+   239 000001B2 4889E7                      mov rdi, rsp
+   240 000001B5 BE00100000                  mov rsi, 4096
+   241 000001BA 488B1425[00000000]          mov rdx, [stdin]
+   242 000001C2 E8(00000000)                call fgets
+   243                                  
+   244                                      ;Remove newline
+   245 000001C7 B800000000                  mov rax, 0
+   246 000001CC 4889E7                      mov rdi, rsp
+   247 000001CF E8(00000000)                call strlen
+   248 000001D4 C64404FF00                  mov [rsp + rax - 1], byte 0
+   249                                  
+   250                                      ;Check if input is a float
+   251 000001D9 B800000000                  mov rax, 0
+   252 000001DE 4889E7                      mov rdi, rsp
+   253 000001E1 E8(00000000)                call isfloat
+   254 000001E6 4883F800                    cmp rax, false
+   255 000001EA 0F84B1FEFFFF                je bad_input
+   256                                  
+   257                                      ;Convert the input from string to float
+   258 000001F0 B800000000                  mov rax, 0
+   259 000001F5 4889E7                      mov rdi, rsp
+   260 000001F8 E8(00000000)                call atof
+   261 000001FD F2440F10F0                  movsd xmm14, xmm0
+   262                                  
+   263                                  
+   264                                      ;Fixes the stack
+   265 00000202 4881C400100000              add rsp, 4096
+   266                                  
+   267                                  
+   268                                  
+   269                                  
+   270                                      ;Prompt for second number of second vector
+   271 00000209 B800000000                  mov rax, 0
+   272 0000020E 48BF-                       mov rdi, fourth_input
+   272 00000210 [BC00000000000000] 
+   273 00000218 E8(00000000)                call printf
+   274                                  
+   275                                      ;Gets user input for second number of second vector
+   276 0000021D B800000000                  mov rax, 0
+   277 00000222 4881EC00100000              sub rsp, 4096
+   278 00000229 4889E7                      mov rdi, rsp
+   279 0000022C BE00100000                  mov rsi, 4096
+   280 00000231 488B1425[00000000]          mov rdx, [stdin]
+   281 00000239 E8(00000000)                call fgets
+   282                                  
+   283                                      ;Remove newline
+   284 0000023E B800000000                  mov rax, 0
+   285 00000243 4889E7                      mov rdi, rsp
+   286 00000246 E8(00000000)                call strlen
+   287 0000024B C64404FF00                  mov [rsp + rax - 1], byte 0
+   288                                  
+   289                                      ;Check if input is a float
+   290 00000250 B800000000                  mov rax, 0
+   291 00000255 4889E7                      mov rdi, rsp
+   292 00000258 E8(00000000)                call isfloat
+   293 0000025D 4883F800                    cmp rax, false
+   294 00000261 0F843AFEFFFF                je bad_input
+   295                                  
+   296                                      ;Convert the input from string to float
+   297 00000267 B800000000                  mov rax, 0
+   298 0000026C 4889E7                      mov rdi, rsp
+   299 0000026F E8(00000000)                call atof
+   300 00000274 F2440F10F8                  movsd xmm15, xmm0
+   301                                  
+   302                                  
+   303                                      ;Fixes the stack
+   304 00000279 4881C400100000              add rsp, 4096
+   305                                  
+   306                                  
+   307                                      ;Now computing the dot product
+   308 00000280 F2450F59E6                  mulsd xmm12, xmm14
+   309 00000285 F2450F59EF                  mulsd xmm13, xmm15
+   310 0000028A F2450F58E5                  addsd xmm12, xmm13
+   311                                  
+   312                                  
+   313                                      ;Back up value in xmm12 before restoring registers
+   314 0000028F 6A00                        push qword 0
+   315 00000291 F2440F112424                movsd [rsp], xmm12
+   316                                  
+   317                                  
+   318                                  
+   319                                      ;Restore the values to non-GPRs
+   320 00000297 B807000000                  mov rax, 7
+   321 0000029C BA00000000                  mov rdx, 0
+   322 000002A1 0FAE2C25[00000000]          xrstor [backup_storage_area]
+   323                                  
+   324                                  
+   325 000002A9 F20F100424                  movsd xmm0, [rsp]
+   326 000002AE 58                          pop rax
+   327                                      
+   328                                  
+   329                                  
+   330                                      ;Restore the GPRs
+   331 000002AF 9D                          popf
+   332 000002B0 415F                        pop r15
+   333 000002B2 415E                        pop r14
+   334 000002B4 415D                        pop r13
+   335 000002B6 415C                        pop r12
+   336 000002B8 415B                        pop r11
+   337 000002BA 415A                        pop r10
+   338 000002BC 4159                        pop r9
+   339 000002BE 4158                        pop r8
+   340 000002C0 5E                          pop rsi
+   341 000002C1 5F                          pop rdi
+   342 000002C2 5A                          pop rdx
+   343 000002C3 59                          pop rcx
+   344 000002C4 5B                          pop rbx
+   345 000002C5 5D                          pop rbp   ;Restore rbp to the base of the activation record of the caller program
+   346 000002C6 C3                          ret
+   347                                  ;End of the function electricity.asm ====================================================================
