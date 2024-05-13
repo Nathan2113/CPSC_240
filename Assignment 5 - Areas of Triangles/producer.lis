@@ -358,7 +358,7 @@
    318                                      ;Convert the area into a string
    319 0000023B B801000000                  mov rax, 1
    320 00000240 F2410F10C5                  movsd xmm0, xmm13
-   321 00000245 BF05000000                  mov rdi, 5
+   321 00000245 BF0A000000                  mov rdi, 10
    322 0000024A 48BE-                       mov rsi, area_output
    322 0000024C [A003000000000000] 
    323 00000254 E8(00000000)                call gcvt

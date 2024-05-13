@@ -318,7 +318,7 @@ exit_angle:
     ;Convert the area into a string
     mov rax, 1
     movsd xmm0, xmm13
-    mov rdi, 5
+    mov rdi, 10
     mov rsi, area_output
     call gcvt
     mov r15, rax
